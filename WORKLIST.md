@@ -44,7 +44,7 @@
 |---|---|---|---|---|
 | E1 | **FM Towns** | Trilogy CD(GRAPH 已抽於 u7-cht) | ✅ 地形渲染成功(綠草+藍水+森林);8色palette(偶數index)+ chunkyrev 解碼 + 自動分類 + 32→16。物件/怪物 sprite 精修待續 | ✅ 地形完成 |
 | E2 | **Apple IIgs** | woz(1994) | 🧱 **woz 解碼牆**:需自寫 3.5" GCR 解碼器(見 docs/re/e2-apple-iigs.md) | 🧱 |
-| E3 | **MSX** | .dsk(FAT12) | ✅ **格式破解**(Path B 反組譯 OUT.COM):body offset `p*192+i`→VRAM `p*256+i`,SCREEN7 chunky 4bpp。MSXTILES=96 tiles、MSXTOWN=字型、MSXDANG=192 tiles,全清晰可辨。剩:96→52 slot 對映 + 832×16 PNG。decode 工具 `tools/re/msx/decode_msxtiles.py` | ✅ 解碼完成 |
+| E3 | **MSX** | .dsk(FAT12) | ✅ **完成**(Path B 反組譯 OUT.COM 破解格式):body `p*192+i`→VRAM `p*256+i`,SCREEN7 chunky 4bpp。MSXTILES=96 tiles。已建 `assets/tilesets/msx.png`(52槽,`build_msx_pack.py`)+ game tester 驗證 overworld 渲染(水/草/森林/玩家/中文狀態列正常)。工具:`decode_msxtiles.py`/`build_msx_pack.py` | ✅ 完成 |
 | E4 | **PC-98** | `org_game/msx/【PC98】….fdi` | PC-98 FDI + planar 圖格式 | ⬜ |
 | E5 | **Atari** | 1983 ATR(已抽檔)| tile 在 `SET1-5`/`MASTER`?待找;6502 已反組譯 | ⬜ |
 
@@ -59,6 +59,9 @@
 - [ ] **palette / index 對應校準**:各平台 palette 與 engine tile index 須以**實機截圖**(`reference/hg101/`)校準,
       否則色彩/對應錯位(u2-cht FM Towns 經驗:sprite 只用偶數 nibble、palette 對齊實機截圖)。
 - [ ] **CGA palette 確認**:open_ultima CGA 為青/洋紅標準盤,確認與原版一致(或提供盤切換)。
+- [ ] **MSX pack 弱對映槽**(`build_msx_pack.py` SLOT_MAP,低頻載具/怪物近似):slot 6 signpost(用要塞)、
+      11 horse / 12 cart / 16 aircar(MSX 無明確馬/車/飛車 tile,用船/坐騎近似)、29 bear(用綠獸)。
+      地形/結構/船/海怪/玩家/多數陸怪已精確。需精修時對照實機截圖再調 SLOT_MAP。
 
 > 附帶可複用:FM Towns CD 音樂 `extract_fmtowns_cdda.py` → 對應「FM Towns 真音樂」backlog。
 > 每平台流程:抽 → 轉 PNG(對齊 index)→ 載入驗證(截圖)→ commit。
