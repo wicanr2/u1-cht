@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     imagemagick \
     x11-utils \
+    xdotool \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /work
