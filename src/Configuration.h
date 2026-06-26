@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tao/json.hpp>
+#include <nlohmann/json.hpp>
 #include <string>
 
 using namespace std;
@@ -10,39 +10,45 @@ public:
     static void init();
 
     static int getScreenWidth() {
-        return _value.optional<int>("resolution_width").value();
+        return _value.at("resolution_width").get<int>();
     }
 
     static int getScreenHeight() {
-        return _value.optional<int>("resolution_height").value();
+        return _value.at("resolution_height").get<int>();
+    }
+
+    static string getGameFilesPath() {
+        return _value.at("game_files_path").get<string>();
+    }
+
+    static string getLanguage() {
+        return _value.value("language", string("zh-Hant"));
     }
 
     static string getEgaOverworldTilesFilePath() {
-        return _value.optional<string>("game_files_path").value() + "EGATILES.BIN";
+        return getGameFilesPath() + "EGATILES.BIN";
     }
 
     static string getCgaOverworldTilesFilePath() {
-        return _value.optional<string>("game_files_path").value() + "CGATILES.BIN";
+        return getGameFilesPath() + "CGATILES.BIN";
     }
 
     static string getEgaTownFilePath() {
-        return _value.optional<string>("game_files_path").value() + "EGATOWN.BIN";
+        return getGameFilesPath() + "EGATOWN.BIN";
     }
 
     static string getCgaTownFilePath() {
-        return _value.optional<string>("game_files_path").value() + "CGATOWN.BIN";
+        return getGameFilesPath() + "CGATOWN.BIN";
     }
 
     static string getMapFilePath() {
-        return _value.optional<string>("game_files_path").value() + "MAP.BIN";
+        return getGameFilesPath() + "MAP.BIN";
     }
 
     static string getTownMapFilePath() {
-        return _value.optional<string>("game_files_path").value() + "TCD.BIN";
+        return getGameFilesPath() + "TCD.BIN";
     }
 
 private:
-    static tao::json::value _value;
+    static nlohmann::json _value;
 };
-
-

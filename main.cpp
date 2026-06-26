@@ -15,6 +15,7 @@
 #include "src/town/TownScreen.h"
 #include "src/town/TownSpriteTypeLoader.h"
 #include <iostream>
+#include <stdexcept>
 #include "src/Configuration.h"
 
 using namespace std;
@@ -210,7 +211,7 @@ int main(int argc, char *args[]) {
                         currentScreen = static_pointer_cast<Screen>(townScreen);
                         break;
                     case ScreenType::Space:
-                        throw exception("Unhandled");
+                        throw runtime_error("Unhandled");
                 }
 
                 currentScreen->update(timeStep);

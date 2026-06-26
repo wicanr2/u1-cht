@@ -6,6 +6,7 @@
 #include "../common/Fonts.h"
 #include "../CommandDisplay.h"
 #include <iostream>
+#include <stdexcept>
 #include "../common/ShapeUtils.h"
 #include "../Configuration.h"
 
@@ -332,7 +333,7 @@ OverworldSpriteType::SpriteType OverworldScreen::getSpriteType(int tileTypeId) {
             return OverworldSpriteType::SpriteType::DUNGEON_ENTRANCE;
         }
         default:
-            throw exception("Unknown sprite type");
+            throw runtime_error("Unknown sprite type");
     }
 }
 

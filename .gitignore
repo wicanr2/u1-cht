@@ -20,3 +20,9 @@ config.json
 
 # 截圖測試輸出(基準快照另存 tests/snapshots/baseline)
 /tests/snapshots/out/
+reference/
+
+# 原始遊戲素材(版權,大檔,不入庫)
+/org_game/
+/build/
+u1_cht_run

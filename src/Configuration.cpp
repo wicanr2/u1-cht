@@ -1,21 +1,27 @@
 #include "Configuration.h"
+#include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
-tao::json::value Configuration::_value;
+nlohmann::json Configuration::_value;
 
 void Configuration::init() {
-    _value = tao::json::parse_file<>("config.json");
+    ifstream in("config.json");
+    if (!in) {
+        throw runtime_error("Could not open config.json");
+    }
+    in >> _value;
 
     // validate that required configuration entries exist
     try {
         Configuration::getMapFilePath();
         Configuration::getScreenWidth();
         Configuration::getScreenHeight();
-    } catch (exception &ex) {
+    } catch (const exception &ex) {
         auto msg = "Error trying to parse configuration file";
-        cout << msg;
-        throw exception(msg);
+        cout << msg << ": " << ex.what() << endl;
+        throw runtime_error(msg);
     }
 }
