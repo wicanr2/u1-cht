@@ -71,15 +71,37 @@ GS ROM 取得後(memory `retro-bios-source`,Abdess/retrobios `apple2gs.rom/.zip`
 - 本 session 快速下載 GS/OS 系統碟未果(asimov/archive.org 多為錯誤頁或限流)。**待使用者提供系統碟**
   (放 `re_work/iigs/sys/`),管線即可一路跑完。
 
-### 剩餘步驟(系統碟到位後)
-1. GS/OS 開機 + 啟動 ULTIMAI(滑鼠注入,或改造開機碟設 ULTIMAI 為 startup app 免 Finder)。
-2. lua 注入鍵盤/滑鼠導航到 overworld(同 MSX openMSX 法,event-driven)。
-3. dump overworld SHR → 切 16×16 tile → 對映 engine 52 槽 → `build_*_pack.py` 出 PNG。
-   (SHR 是已渲染畫面;tile 直接從 framebuffer 切,繞過 type 0x0001 自訂壓縮)。
+## ★★★ GS/OS 開機 + 遊戲導航(2026-06-27,系統碟到位)
+
+GS/OS System 6.0.2 開機碟(archive.org `IIGSSystem6.0.22mgDisks`,WebSearch 找到)放 `re_work/iigs/sys/`。
+- **開機**:`-flop3 "…Disk 2 System disk.2mg" -flop4 "Ultima I IIgs.woz"` → GS/OS 6.0.2 開到 Finder 桌面
+  (System Disk + Ultima I 兩碟掛載)。GS/OS 開機慢(~150-270s emulated,變異大)。
+- **鍵盤自動導航**(lua `tools/re/iigs/mame_nav_chargen.lua`,ADB 鍵盤會緩衝,早送也生效):
+  Finder type-select 'u' + Cmd+O ×2 → 啟動 ULTIMAI → 過 MidiSynth 警告 → 主選單 A → **完整角色創建**
+  (屬性分配 Right/Down、race/sex/class 字母選、name 打字、Save? Y)。**全程鍵盤可驅動,已驗證到存檔對話框。**
+- **SHR dump 快路**:`-video none`(快 ~8×,~90s/run)+ lua dump bank $E1 → `render_shr.py` 自己渲染,免 xvfb。
+
+### ⛔ 最後一哩卡點:GS/OS 滑鼠對話框
+ULTIMA I IIgs 的存檔/讀檔走 **GS/OS 標準檔案對話框**(SFPutFile / SFGetFile,640 模式):
+- 存檔「Save thy game as…」:Return 偶可按 Save(時序敏感)→ 回主選單。
+- 讀檔「Which game my Lord?」(主選單 B):**需滑鼠雙擊存檔檔**。鍵盤 Down/Return/type-select 皆無法選檔開啟 → 退回主選單。
+- 滑鼠機制可用(ADB 相對:`MOUSE0/1/2`,`set_value(delta)` 每 frame 累加;**pin 到角落 X=-30×60f 已驗證**),
+  但移到檔案/按鈕需校準 delta→pixel 比例(640 QuickDraw 座標),且存+讀兩個對話框各需校準 → 多輪迭代(每輪~90s)。
+
+### 剩餘步驟(接續)
+1. 校準滑鼠 delta→pixel,雙擊讀檔對話框的存檔 → 進 overworld(或滑鼠點 Save 按鈕過存檔對話框)。
+   - 替代:找 Ultima I IIgs **現成存檔檔**放碟上、或改造碟設 ULTIMAI auto-launch 免 Finder。
+2. dump overworld SHR → `render_shr.py` → 切 16×16 tile → 對映 engine 52 槽 → `build_*_pack.py` 出 PNG。
+   (SHR 是已渲染畫面,tile 直接從 framebuffer 切,**繞過 type 0x0001 自訂壓縮**)。
+
+### 環境 / 工具(本輪新增)
+- `docker/Dockerfile.mame`(u1-mame:mame 0.264 + xvfb;mame binary 在 `/usr/games/mame`)。
+- `tools/re/iigs/mame_dump.lua`(SHR dump)、`mame_nav_chargen.lua`(開機+角色創建導航)、`render_shr.py`(SHR→PNG)。
+- BIOS `re_work/iigs/bios/apple2gs.{rom,zip,chr}`(memory `retro-bios-source`);系統碟 `re_work/iigs/sys/`。
 
 ### 建議
-- IIgs 管線就緒,**只差 GS/OS 開機碟**;取得後可完成。
-- 平行可先做 E4 PC-98 / E5 Atari(標準磁區映像、格式單純)。
+- IIgs **就差滑鼠校準過 GS/OS 對話框**(或現成存檔);其餘管線全通。屬可完成但需數輪迭代的收尾。
+- 平行可先做 E4 PC-98 / E5 Atari(標準磁區映像、格式單純,較快)。
 
 ## 工具 / 環境
 - `docker/Dockerfile.a2`(u1-a2:floptool)、`tools/re/iigs/extract_woz.py`(AppleDouble+resource 解析+dump)。
