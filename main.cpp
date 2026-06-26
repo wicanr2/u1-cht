@@ -227,7 +227,8 @@ int main(int argc, char *args[]) {
                                 quitDialogActive = true;
                                 continue;
                             }
-                            if (pressedKey == SDLK_PAGEDOWN) {
+                            // F1 或 PageDown:循環切換顯示用 tileset(EGA/CGA),螢幕顯示中文提示
+                            if (pressedKey == SDLK_PAGEDOWN || pressedKey == SDLK_F1) {
                                 usingEga = !usingEga;
                                 if (usingEga) {
                                     overworldScreen->init(gRenderer,
@@ -237,6 +238,7 @@ int main(int argc, char *args[]) {
                                     overworldScreen->init(gRenderer, make_unique<CGALinearDecodeStrategy>(16, 16).get(),
                                                           cgaTilesPath);
                                 }
+                                CommandDisplay::writeLn(usingEga ? "圖形模式:EGA" : "圖形模式:CGA", false);
                             }
                         }
 

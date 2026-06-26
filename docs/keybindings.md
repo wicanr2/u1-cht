@@ -40,5 +40,5 @@
 - [x] **關窗(SDL_QUIT)也走確認流程**,不直接離開。
 - [x] **ESC = 取消**(關閉對話框/回上層),永不直接離開。
 - [ ] 自動存檔 hook:open_ultima 目前**無存檔系統**;待建立後在「Y 離開」前 autosave(程式碼已留 TODO)。
-- [ ] tileset 熱鍵完善(EGA/CGA/Tandy 循環 + 螢幕提示;目前 PageDown 切 EGA/CGA)。
+- [x] **tileset 熱鍵(F1 / PageDown)循環 EGA/CGA + 螢幕中文提示**(「圖形模式:EGA/CGA」)。驗證 `t07`。Tandy/其他平台美術屬 AssetPack(ADR 0001)後續。
 - [ ] 音樂系統 + 切換熱鍵(需先接 SDL_mixer + 音樂資產)。
