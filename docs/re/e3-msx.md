@@ -1,5 +1,37 @@
 # E3 MSX 素材抽取 — 進展(2026-06-26)
 
+## ★★★ Path B 成功:MSXTILES 格式完全破解(2026-06-26)
+
+反組譯 `OUT.COM`(Z80,`u1-z80` docker 內 z80dasm,origin 0x100)直接給出 file→VRAM 轉換,**不必導航遊戲**。
+
+### loader 結構(OUT.COM)
+- `0x3c00` 區段依序載 4 檔:`sub_8910h(DE=VRAM dest, HL=檔名字串)`
+  → MSXTILES.BIN(dest 0x0000)、SKULL.BIN(0xc0)、MSXTOWN.BIN(0x4000)、MSXDANG.BIN(0x5000)。
+- `sub_8910h`:讀 4-byte 檔頭 word1/word2;`N = word1/2`(每線寫入 byte),`pages = word2`(線數)。
+  雙層迴圈:每寫 N bytes 就 `inc h`(VRAM dest += 0x100,跳下一個 256-byte page)。
+- `sub_8999h`:V9938 VRAM 寫(R14 設 A14-16:`(H&0xC0)>>6`;port 0x99 設位址 + 0x98 寫 data)。
+
+### 轉換公式(關鍵)
+```
+body offset (p*N + i)  →  VRAM (p*256 + i)     p=0..pages-1, i=0..N-1
+```
+每頁尾 (256-N) bytes 留空。顯示模式 **SCREEN 7(GRAPHIC 6,512 寬,stride 256 B/line,chunky 4bpp,高 nibble=左)**
+⇒ 每 page = 1 條掃描線,N=192 bytes = 該線前 384px。
+
+### 結果
+- MSXTILES.BIN(64 線)= **384×64 = 24×4 格 16×16 = 96 tiles**(MSX 原生順序,清晰可辨:水/草/森林/城堡/城鎮/船/山/龍蛇/騎士/骷髏/惡魔/NPC/特效)。
+- MSXTOWN.BIN(16 線)= 24 tiles(城鎮文字字型,解出可讀「JKLM…XYZ 0123…F」)。
+- MSXDANG.BIN(128 線)= 192 tiles(地牢)。
+- 工具:`tools/re/msx/decode_msxtiles.py`(通用,吃任一 MSX*.BIN → tile sheet PNG)。
+
+### ⚠ palette 修正(實測 openMSX VDP palette dump)
+V9938 palette 格式 `0RRR0BBB`/`00000GGG`,實測 8 色 = **index = G<<2 | R<<1 | B**:
+`0黑 1藍 2紅 3洋紅 4綠 5青 6黃 7白`。**先前文件寫「1綠4藍 / index=B<<2|R<<1|G」是反的**(把藍綠對調)。
+以本條為準。`44`=綠=草、`11`=藍=水。
+
+> 卡點(下方 Path A 的導航時序問題)已不影響:Path B 靜態反組譯繞過了「跑到 overworld」的需求。
+> 借用 `docs/re/6502-re-methodology.md` 方法論(換 Z80 / z80dasm)即達標。
+
 ## ✅ 已通
 - 素材:`org_game/msx/…(Pony Canyon)(ja).zip` → `.dsk`(720KB,標準 **FAT12 MSX-DOS**,OEM "CANONFDD")。
 - FAT12 reader 抽出檔案:**`MSXTILES.BIN`(12292)= overworld tileset**、`MSXTOWN`/`MSXDANG`(地牢)/
