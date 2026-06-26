@@ -72,6 +72,33 @@ static void drawQuitDialog(SDL_Renderer *renderer) {
     line("N / ESC — 取消", box.y + 88, SDL_Color{0xC0, 0xC0, 0xC0, 0xFF});
 }
 
+// F6 設定選單:即時調 speed_pct / spawn_pct(置中 modal,640x400 覆蓋層)
+static void drawSettingsMenu(SDL_Renderer *renderer, int row) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xB0);
+    SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &scrim);
+
+    const int bw = 420, bh = 170;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0x40, 0x80, 0xFF, 0xFF);
+    SDL_RenderDrawRect(renderer, &box);
+
+    auto line = [&](const string &s, int x, int y, SDL_Color c) {
+        LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c);
+        t.render(renderer, x, y);
+    };
+    SDL_Color title{0xFF, 0xD0, 0x40, 0xFF}, on{0xFF, 0xFF, 0x60, 0xFF}, off{0xC0, 0xC0, 0xC0, 0xFF};
+    line("設定(F6)", box.x + (bw - 120) / 2, box.y + 16, title);
+    line((row == 0 ? "▶ " : "  ") + ("遊戲速度: " + to_string(Configuration::getSpeedPct()) + "%"),
+         box.x + 40, box.y + 60, row == 0 ? on : off);
+    line((row == 1 ? "▶ " : "  ") + ("怪物生成: " + to_string(Configuration::getSpawnPct()) + "%"),
+         box.x + 40, box.y + 92, row == 1 ? on : off);
+    line("↑↓ 選擇   ←→ 調整   F6/ESC 關閉", box.x + 36, box.y + 132, off);
+}
+
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
 shared_ptr<CommandDisplay> _commandDisplay;
 
@@ -206,9 +233,27 @@ int main(int argc, char *args[]) {
 
             //While application is running
             bool quitDialogActive = false;
+            bool settingsActive = false;
+            int settingsRow = 0;
             while (!quit) {
                 //Handle events on queue
                 while (SDL_PollEvent(&e) != 0) {
+                    // F6 設定選單開啟時:↑↓選列、←→±5%、F6/ESC 關閉,吞掉其他輸入
+                    if (settingsActive) {
+                        if (e.type == SDL_KEYDOWN) {
+                            auto k = e.key.keysym.sym;
+                            if (k == SDLK_F6 || k == SDLK_ESCAPE) settingsActive = false;
+                            else if (k == SDLK_UP) settingsRow = 0;
+                            else if (k == SDLK_DOWN) settingsRow = 1;
+                            else if (k == SDLK_LEFT || k == SDLK_RIGHT) {
+                                int d = (k == SDLK_RIGHT) ? 5 : -5;
+                                if (settingsRow == 0) Configuration::setSpeedPct(Configuration::getSpeedPct() + d);
+                                else Configuration::setSpawnPct(Configuration::getSpawnPct() + d);
+                            }
+                        }
+                        continue;
+                    }
+
                     // 離開語意鐵則:ESC 只取消,F10/Ctrl+Q(及關窗)才彈離開確認
                     if (quitDialogActive) {
                         if (e.type == SDL_KEYDOWN) {
@@ -232,6 +277,10 @@ int main(int argc, char *args[]) {
                             bool ctrl = (e.key.keysym.mod & KMOD_CTRL) != 0;
                             if (pressedKey == SDLK_F10 || (ctrl && pressedKey == SDLK_q)) {
                                 quitDialogActive = true;
+                                continue;
+                            }
+                            if (pressedKey == SDLK_F6) {
+                                settingsActive = true;
                                 continue;
                             }
                             // F1 或 PageDown:循環切換顯示用 tileset(EGA/CGA),螢幕顯示中文提示
@@ -314,7 +363,11 @@ int main(int argc, char *args[]) {
                 SDL_RenderSetViewport(gRenderer, &commandBoxHi);
                 _commandDisplay->draw(gRenderer);
 
-                // 離開確認對話框(覆蓋最上層)
+                // 設定選單 / 離開確認對話框(覆蓋最上層)
+                if (settingsActive) {
+                    SDL_RenderSetViewport(gRenderer, nullptr);
+                    drawSettingsMenu(gRenderer, settingsRow);
+                }
                 if (quitDialogActive) {
                     SDL_RenderSetViewport(gRenderer, nullptr);
                     drawQuitDialog(gRenderer);

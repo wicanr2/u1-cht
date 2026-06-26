@@ -26,14 +26,13 @@ public:
     }
 
     // 時間流速 %(每步 time_accum += speed_pct,滿 100 走一 tick;100=每步一 tick=原行為)
-    static int getSpeedPct() {
-        return _value.value("speed_pct", 100);
-    }
+    // 執行期可由 F6 設定選單調整(初值取自 config.json)
+    static int getSpeedPct() { return _speedPct; }
+    static void setSpeedPct(int v) { _speedPct = clampPct(v); }
 
     // 怪物生成率 %(每步生成機率倍率;參考 u2-cht)
-    static int getSpawnPct() {
-        return _value.value("spawn_pct", 55);
-    }
+    static int getSpawnPct() { return _spawnPct; }
+    static void setSpawnPct(int v) { _spawnPct = clampPct(v); }
 
     static string getEgaOverworldTilesFilePath() {
         return getGameFilesPath() + "EGATILES.BIN";
@@ -61,4 +60,7 @@ public:
 
 private:
     static nlohmann::json _value;
+    static int _speedPct;   // 執行期值(init 時取自 config)
+    static int _spawnPct;
+    static int clampPct(int v) { return v < 10 ? 10 : (v > 200 ? 200 : v); }
 };
