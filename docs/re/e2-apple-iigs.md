@@ -39,15 +39,29 @@
 - 大宗圖像(0x0001/0x8024)為 **Apple PackBytes 壓縮**(從 byte 0 起,`unpackbytes()` 已實作:
   type0 literal / type1 單byte×c / type2 4byte群×c / type3 單byte×4c)。
 
-## 🔄 剩餘(overworld tileset 抽取)
-woz 牆雖破,但 **IIgs 1994 Vitesse 是增強版自訂美術**,tileset 抽取是更深的格式 RE:
-- PackBytes 解壓後,各圖像**維度不一**(非固定 16×16 strip);raw 每 resource header 不同
-  (id1 `007d0100…`、id1a `2c03…`)→ 需逐 resource 定維度。
-- 試 width 320 為橫紋雜訊;width 64/80 出現縱向結構但未成清晰 tileset。
-- 增強美術未必對得上 engine 52-slot overworld 模型(可能是全螢幕場景/portrait)。
-- **下一步候選**:① 精修 PackBytes + 從 header 取每圖維度 → 渲染辨識哪些是 16×16 tile;
-  ② 對照 KEGS/GSplus 模擬器跑 overworld 截圖當 ground truth(同 MSX openMSX 法);
-  ③ 若美術不合 52-slot,改抽「最接近 DOS 風格」的子集或放棄,優先做 E4/E5。
+## 🔄 剩餘(overworld tileset 抽取)— 二級牆:自訂壓縮圖格式
+
+深入嘗試後(2026-06-27),tileset 卡在 **type 0x0001 的自訂壓縮圖格式**,以下為已排除/已確認,避免重蹈:
+
+### 已確認(別再試)
+- **type 0x8024 = 音效,非圖素**:`(size−10)/header[2] = 256` 恆成立 → 10-byte header + N×256-byte page;
+  渲成 8bpp 灰階呈**波形**(Ensoniq DOC 8-bit PCM,256-byte page 對齊)。18 個 = 各音效。
+- **type 0x8001 rIcon = 未壓縮 4bpp**(✅ 渲出城堡+騎士),但只有 4 個 app icon,非 tileset。
+- **type 0x0001 圖像 = 自訂壓縮,非標準 PackBytes**:
+  - 4 種 PackBytes 變體(t2/t3 ×4 或 ×1、skip 0/4 header)解壓,4191B 的 id1 爆增到 90K–200K(荒謬)。
+  - 解壓後自相關**無清晰 row 週期**(峰值單調落在 8/12/16…= packbytes 4-byte group 假象,非真實 stride)。
+  - 渲 width 320 為橫紋雜訊;width 64/80 有縱向結構但不成 tile。
+  - raw header 每 resource 不同(id1 `007d0100`、id1a `2c03…`、id15 `0010e100`)→ 非統一格式。
+
+### 兩條真正可行路(都需額外資源)
+| 路 | 作法 | 阻礙 |
+|---|---|---|
+| **格式 spec** | 找 Vitesse/Heineman IIgs U1 圖格式文件,或反組譯 ULTIMAI data fork(OMF 65816)的繪圖碼 | 無公開 spec;65816 反組譯工程量大 |
+| **模擬器 ground truth** | MAME `apple2gs` / KEGS / GSplus 跑遊戲到 overworld,dump SHR 螢幕($E12000)→ 直接切 16×16 tile(同 MSX openMSX 法) | **MAME 不在 apt、Apple IIgs ROM 不在 archtaurus/RetroPieBIOS** → 需另尋 GS ROM |
+
+### 建議
+- **優先做 E4 PC-98 / E5 Atari**(標準磁區映像、圖格式單純,較可能像 MSX 做出完整 pack)。
+- IIgs 待「取得 GS ROM 跑模擬器」或「找到圖格式 spec」再回攻;woz 牆已永久破除,抽檔管線就緒。
 
 ## 工具 / 環境
 - `docker/Dockerfile.a2`(u1-a2:floptool)、`tools/re/iigs/extract_woz.py`(AppleDouble+resource 解析+dump)。
