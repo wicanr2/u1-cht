@@ -40,3 +40,19 @@
   路徑 A:從 U1 FM Towns 遊戲檔(執行檔/資源)RE 出 palette 暫存器值;
   路徑 B:對 `reference/hg101/imgs/ultima1-FMTOWNS-06.png`(U1 overworld 實機)逐色採樣校準。
 - ground truth 顏色(取自實機 06):草=亮綠、水=藍波紋、森林=深綠叢、山=深色藍邊、玩家=藍衣。
+
+## ★ 解碼破解(2026-06-26):格式 = chunky 4bpp + FillOrder=2 反序 + 亮 RGB-16
+
+- 從 hg101 FMTOWNS-06 實機萃取遊戲區用色:草=`#00FF00`、水=`#0000FF`/`#00FFFF`、黃=`#FFFF00`、白/黑
+  → **U1 用純亮 RGB**(非 EGA 暗色 A8/54)。
+- 正確解碼:**chunky 4bpp(每 byte 2 像素)+ 每 byte bit 反序(FillOrder=2)+ 亮 RGB-16 palette**。
+  (chunky 不反序 → 草地解成紅 index4;反序把 index 2↔4,草地正確變綠。)
+- 工具:`tools/re/fmtowns_u1_decode.py`(輸出 32×32 tile 網格)。成果:`docs/re/img/ut1map_grid.png`。
+- **UT1MAP tile 佈局**(8×8=64 格,32×32):前 ~20 格地形(草/森林/水/城門/磚牆),中段稀疏,
+  末 2 列(~48-63)= **字型 A-Z**。
+- 殘留:草地紋理個別 index 仍偏紅(亮 palette 的 index 4/12 在草紋處應為深綠)→ 微調 palette texture index。
+
+## E1 剩餘(解碼已通,剩組裝)
+1. palette texture index 微調(草紋紅→深綠)。
+2. 52 槽對應:UT1MAP(地形)+ UT1TILE1(物件:城堡/城鎮/馬/車/船/梭/時光機)+ UT1TILE0(怪物)。
+3. 32→16 downscale → 拼 832×16 PNG → `tileset_png` 載入 → 對實機校驗。
