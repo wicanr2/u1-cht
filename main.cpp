@@ -90,7 +90,7 @@ bool init() {
         }
 
         //Create window
-        gWindow = SDL_CreateWindow("(Open)Ultima 1: The First Age of Darkness", SDL_WINDOWPOS_UNDEFINED,
+        gWindow = SDL_CreateWindow("創世紀 I:黑暗紀元 (Ultima I) — 繁中", SDL_WINDOWPOS_UNDEFINED,
                                    SDL_WINDOWPOS_UNDEFINED, Configuration::getScreenWidth(),
                                    Configuration::getScreenHeight(), SDL_WINDOW_SHOWN);
         if (gWindow == NULL) {
