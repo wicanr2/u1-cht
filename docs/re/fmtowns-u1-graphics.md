@@ -70,3 +70,12 @@
   1. 取已知 tile(grass 全綠/water 全藍,對 hg101 實機)→ 找其主要 nibble index →
      建 index→實機色 對照,逐 index 校準完整 16 色 palette。
   2. 52 槽精確對應(water/grass/forest/mountain/物件/怪物各挑對 tile)。
+
+## ★★ E1 地形渲染成功(2026-06-26):8 色 palette(偶數 index)
+
+- **關鍵**:UT1MAP **只用偶數 index**(0,2,4,...,14)= 8 色(同 u2「sprite 只用偶數 nibble」)。
+  PAL[2j]=color[j]。依 hg101 實機 + tile index 分析:
+  `idx2=綠(grass)、idx8=青、idx10=藍(water)、idx12=白(grass紋理)、idx6=棕、idx14=黃`。
+- grass=tile2(idx2+idx12 紋理)、water=tile10(藍 71%)→ 自動分類正確。
+- 成果 `docs/re/img/fmtowns_ingame_v2.png`:**綠草地 + 藍 dither 水 + 森林**,對齊真實 FM Towns 外觀。
+- 剩餘精修:物件(城堡/城鎮/船…)+ 怪物 sprite 的 52 槽精確對應(目前 provisional);palette 微調。

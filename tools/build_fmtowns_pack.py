@@ -5,7 +5,12 @@ UT1MAP=地形(自動分類)+ UT1TILE1=物件 + UT1TILE0=怪物;32×32 → downsc
 用法:build_fmtowns_pack.py <GRAPH目錄> <out.png>"""
 import sys
 from PIL import Image
-PAL=[(0,0,0),(0,0,255),(0,255,0),(0,255,255),(255,0,0),(255,0,255),(255,255,0),(255,255,255)]*2
+# FM Towns U1 只用偶數 index(=8 色)。PAL[2j]=color[j]。
+# 依 hg101 實機色 + tile index 分析推:綠(grass idx2)/青藍(water idx8/10)/白(紋理 idx12)。
+_C8=[(0,0,0),(0,255,0),(255,0,0),(200,120,0),(0,255,255),(0,0,255),(255,255,255),(255,255,0)]
+PAL=[(0,0,0)]*16
+for _j in range(8): PAL[2*_j]=_C8[_j]
+for _j in range(8): PAL[2*_j+1]=_C8[_j]   # 奇數 index 罕用,填同色
 REV=[int(f"{b:08b}"[::-1],2) for b in range(256)]
 
 def tiles(path):

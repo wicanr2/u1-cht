@@ -42,7 +42,7 @@
 ### E1–E5. 逐平台(一個一個做)
 | # | 平台 | 素材 | 格式 / 可複用經驗 | 狀態 |
 |---|---|---|---|---|
-| E1 | **FM Towns** | Trilogy CD(GRAPH 已抽於 u7-cht) | 解碼確認:UT1MAP=地形+字型/UT1TILE0=怪物/UT1TILE1=物件;待 palette 校準+52格對應+32→16(見 docs/re/fmtowns-u1-graphics.md) | 🔄 進行中 |
+| E1 | **FM Towns** | Trilogy CD(GRAPH 已抽於 u7-cht) | ✅ 地形渲染成功(綠草+藍水+森林);8色palette(偶數index)+ chunkyrev 解碼 + 自動分類 + 32→16。物件/怪物 sprite 精修待續 | ✅ 地形完成 |
 | E2 | **Apple IIgs** | `Ultima I IIgs.woz`(1994,3.5" ProDOS,未保護) | ProDOS 抽檔 + IIgs 圖格式解碼 | ⬜ |
 | E3 | **MSX** | `org_game/msx/…Pony Canyon….dsk` | MSX 磁碟 + pattern/VRAM 格式 | ⬜ |
 | E4 | **PC-98** | `org_game/msx/【PC98】….fdi` | PC-98 FDI + planar 圖格式 | ⬜ |
