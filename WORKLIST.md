@@ -27,14 +27,40 @@
   - 掛在 `OverworldScreen::onStep` 與 `DungeonScreen` 的時間 tick;狀態列食物已顯示
 - [~] **跨版本素材包(AssetPack,ADR 0001)**:可換不同平台外觀
   - [x] 第一步:tileset 變體 config 驅動(`tileset: ega/cga`)+ F1/PageDown 循環
-  - [ ] Tandy(T1K):**實測 T1KTILES 雖與 EGA 同大小但格式不同(EGA decoder 解出亂碼)→ 需專屬 T1K decoder**
-  - [ ] 進階:Apple/FMTowns/MSX/PC98 美術 → 拆 sprite → 統一 PNG sprite sheet 載入(大工程)
-  - 素材來源見 `docs/materials.md`;比對截圖 `reference/hg101/`
+  - [ ] 逐平台拆解 + 格式修正 → 見 **§E**
+
+## E. 跨平台素材包 — 逐平台拆解(B3 進階,本批)
+
+> 目標:每平台抽 **overworld tileset(52 格)+ 主要 sprite(主角/怪物)** → 統一 PNG sprite sheet
+> (對齊 engine tile index)→ open_ultima 用 PNG AssetPack 載入,可 config/熱鍵切換不同版本外觀。
+> DOS tile 格式已知(EGA BGRI planar 4bpp、16×16、128B/格、52 格)。素材見 `docs/materials.md`。
+
+### E0. 基礎建設(前置,先做)
+- [ ] **PNG AssetPack 載入器**:open_ultima 加「PNG sprite sheet → overworld tileset」載入路徑
+- [ ] **EGA→PNG 匯出工具**:把現有 DOS tileset 解碼匯出 PNG(參考包 + 驗證 PNG pipeline)
+
+### E1–E5. 逐平台(一個一個做)
+| # | 平台 | 素材 | 格式 / 可複用經驗 | 狀態 |
+|---|---|---|---|---|
+| E1 | **FM Towns** | Trilogy CD(`u7-cht/…FM_TOWNS…zip`) | **可複用 u2-cht**:TIF 容器、FillOrder=2 LSB、4bpp、EGA-16 pal(`fmtowns_decode.py`/`build_fmtowns_tileset.py`) | ⬜ |
+| E2 | **Apple IIgs** | `Ultima I IIgs.woz`(1994,3.5" ProDOS,未保護) | ProDOS 抽檔 + IIgs 圖格式解碼 | ⬜ |
+| E3 | **MSX** | `org_game/msx/…Pony Canyon….dsk` | MSX 磁碟 + pattern/VRAM 格式 | ⬜ |
+| E4 | **PC-98** | `org_game/msx/【PC98】….fdi` | PC-98 FDI + planar 圖格式 | ⬜ |
+| E5 | **Atari** | 1983 ATR(已抽檔)| tile 在 `SET1-5`/`MASTER`?待找;6502 已反組譯 | ⬜ |
+
+### ★ 素材格式需修正 / 校準(實作中發現,逐項修)
+- [ ] **Tandy(T1K)**:`T1KTILES.BIN` 與 EGA **同大小(6656B)但格式不同** → EGA decoder 解出亂碼,
+      **需專屬 T1K decoder**(Tandy 1000 16 色記憶體佈局)。記:同大小≠同格式。
+- [ ] **palette / index 對應校準**:各平台 palette 與 engine tile index 須以**實機截圖**(`reference/hg101/`)校準,
+      否則色彩/對應錯位(u2-cht FM Towns 經驗:sprite 只用偶數 nibble、palette 對齊實機截圖)。
+- [ ] **CGA palette 確認**:open_ultima CGA 為青/洋紅標準盤,確認與原版一致(或提供盤切換)。
+
+> 附帶可複用:FM Towns CD 音樂 `extract_fmtowns_cdda.py` → 對應「FM Towns 真音樂」backlog。
+> 每平台流程:抽 → 轉 PNG(對齊 index)→ 載入驗證(截圖)→ commit。
 
 ## C. 待辦(backlog)⬜
 
 - [ ] **存檔系統**:目前無存檔;F10「Y 離開」前的 autosave 仍是 TODO
-- [ ] Tandy(T1K)tileset 解碼(格式待確認)
 - [ ] i18n 查表層:翻譯目前內聯,遷移到 `assets/strings/zh-Hant/*.json`
 - [ ] `CommandDisplay` 全形寬度感知換行(目前 UTF-8 邊界安全但非全形對齊)
 - [ ] FM Towns 真音樂替換占位 ogg(從 Trilogy CD 映像抽 CD-DA)
