@@ -1,62 +1,62 @@
-# 原版 Ultima I (1981) 怪物 AI 行為考據
+# 原版 Ultima I 怪物 AI 考據(整合)
 
-> 立檔緣由:實作 open_ultima 怪物行為前,先查證**原版 U1 的真實行為**,
-> 避免憑空發明或誤套其他作品(如 U2/U3)的 AI。對齊本專案「反編當 oracle、不照抄、不臆造」原則。
-> 考據日期:2026-06-26。
+> 給 open_ultima 實作怪物行為的權威依據。
+> **每條標出處等級**:`[CODE]`=1983 Atari 原碼反組譯確認;`[BEHAV]`=多來源行為描述一致;`[ARCH]`=RE 架構推得。
+> 過程紀錄見 `docs/re/`;6502 判讀經驗見 `docs/re/6502-re-methodology.md`。考據:2026-06-26。
 
-## 核心結論
+## 1. 核心結論(可直接拿來實作)
 
-| 場景 | 原版 U1 (1981) 怪物行為 |
-|---|---|
-| **地面(overworld)** | **不會移動**。怪物以**隨機遭遇**方式「出現在玩家所在位置並立即攻擊」,沒有接近 / 追擊 / 巡邏。 |
-| **地牢(dungeon)** | **會移動並追蹤玩家**。地牢怪是隨機生成且會跟著玩家走 —— 與地面的靜止遭遇相反。 |
-| **戰鬥節奏** | 回合制,且**有行動時限**(沒在時間內行動就喪失該回合)—— 承襲 Akalabeth。 |
+| 場景 | 怪物行為 | 出處 |
+|---|---|---|
+| **地面 overworld** | **不移動**;以隨機遭遇「出現在玩家位置即攻擊」 | `[BEHAV]` 多來源一致 + `[ARCH]` |
+| **地牢 dungeon** | **逐玩家移動(beeline)**,進攻擊範圍持續攻擊;**怪可對角攻擊,玩家不行** | `[BEHAV]` 多來源一致 |
+| 戰鬥節奏 | 回合制,**有行動時限**(沒在時限內動就喪失該回合);承襲 Akalabeth | `[BEHAV]` |
 
-> 一句話:**原版 U1「會動的怪」在地牢,不在地面。** 地面怪是「出現即打」的隨機遭遇,不追玩家。
+> 一句話:**U1「會動的怪」只在地牢;地面怪不動(出現即打)。** 地牢怪是貪婪逐玩家 + 貼身/對角攻擊,
+> 無路徑規劃。⚠️ **不可套 u2-cht 的 U2 追擊 AI**(那是另一作品反組譯)。
 
-## 對 open_ultima 實作的意涵(忠於原版)
+## 2. RE 確認的引擎架構(`[CODE]` / `[ARCH]`,1983 Atari SierraVenture)
 
-| 場景 | open_ultima 現況 | 忠於原版的補法 | 不該做 |
+從 Side A 反組譯確認的事實(支撐上面結論、也是日後續追的地圖):
+
+- **鏈載入器** `[CODE]`:`ULTIMA` 檔內嵌字串 `D:INITLOAD`,逐檔鏈載。
+- **情境式 MOVE overlay** `[CODE]`:`OUTMOVE`/`DNGMOVE`/`TWNMOVE`/`CASMOVE`/`SPAMOVE` ——
+  各情境一個檔,載到 `$6A00`+`$8000`;**內容大半是資料**(地牢 3D 線框頂點 + graphics mask),
+  程式碼只有少量 helper。
+- **地牢牆 = 1-bit/cell 點陣圖** `[CODE]`:`$6A00`/`$6C28` 是「座標→byte 位址 + bit」存取器,
+  用單位元遮罩表 `$6C6E = 80 40 20 10 08 04 02 01`;牆/通道用一個 bit 表示。
+- **常駐引擎 + callback 註冊** `[CODE]`:overlay 用 `$6C45`(`sta $3019/$301A`)把自己的資料指標
+  寫進常駐引擎($3000 區)的向量;**通用回合迴圈(含怪物移動)在常駐引擎,各情境共用**。
+  → 這解釋為何「地牢怪會動、地面怪不動」可由**同一套移動碼 + 不同情境旗標**達成。
+
+## 3. 尚未由原碼隔離的部分(誠實揭露)
+
+- **怪物移動的確切 6502 演算法(逐步軸序、是否含亂數、攻擊命中公式)尚未從原碼逐行確認。**
+  原因:移動邏輯在**常駐引擎**,而常駐引擎由鏈載入器多檔組成 + 疑似從 $8000 暫存區**重定位**到 $3000,
+  且 overlay 無獨立入口點(入口在常駐調度表)。要逐行確認 = 反組譯整個常駐引擎(多日工程)。
+  **這是真實架構牆,非略過**;續追路徑見 `docs/re/README.md`(抽常駐引擎 → $3000 調度 → 回合迴圈)。
+- 因此上面「地牢 beeline + 對角攻擊」是 `[BEHAV]`(行為多來源一致),架構 `[ARCH]` 支持其合理,
+  但**逐行 6502 尚待 `[CODE]` 補強**。
+
+## 4. open_ultima 實作對照(忠於原版)
+
+| 場景 | 原版 | open_ultima 現況 | 忠於原版補法 |
 |---|---|---|---|
-| 地面 | 怪生成後**完全不攻擊**(只當靶子) | 怪**相鄰時反擊玩家**(無移動) | ❌ 加地面追擊 AI(那是 U2 行為,非 U1) |
-| 地牢 | 有 Thief / GiantRat | 地牢怪**移動 / 追蹤玩家** | — |
+| 地面 | 怪不移動,出現即攻擊 | 怪生成不還手(已補相鄰反擊,見 d6edb74) | ✅ 維持「不移動、相鄰才攻擊」 |
+| 地牢 | 怪逐玩家移動 + 對角攻擊 | 怪有座標但**無移動**(靜止) | 加「每回合 beeline 逐玩家一格 + 8 向相鄰攻擊」 |
 
-⚠️ **誤區記錄**:u2-cht 的「逐玩家貼身追擊」AI 是從**《創世紀 2》反組譯 oracle** 推導的,
-**不適用 U1 地面**。U1 地面怪不移動,套 U2 模型 = 偏離原版。
+實作要點(依架構,beeline 貪婪逐近):
+- 每回合每隻地牢怪:若與玩家相鄰(Chebyshev=1,含對角)→ 攻擊;否則朝玩家走一格
+  (取 X/Y 距離較大軸前進,目標格非牆且未被佔)。
+- 對角攻擊是 U1 特色(玩家只能正面攻擊)。
+- 牆判定對應原版的 1-bit/cell 點陣圖(open_ultima 用 `DungeonFeature` per cell,語意等價)。
 
-> 註:open_ultima 目前是把地面怪做成「持續存在於地圖、可走近砍」的形式(已與原版的
-> 「隨機遭遇、出現即打」有出入)。在此前提下,**最小忠於原版**的增量是讓地面怪
-> 「相鄰會反擊」而非「主動追擊」;真正的「移動追擊」留給地牢。
+## 5. 來源
 
-## 來源
-
-- [Ultima I monster data — The Codex of Ultima Wisdom](https://wiki.ultimacodex.com/wiki/Ultima_I_monster_data)
+行為 `[BEHAV]`:
+- [Ultima I monster data — Codex of Ultima Wisdom](https://wiki.ultimacodex.com/wiki/Ultima_I_monster_data)
 - [The CRPG Addict — Game 4: Ultima (1981)](http://crpgaddict.blogspot.com/2010/02/game-4-ultima-i.html)
-- [How to Make an RPG — Ultima I: The First Age of Darkness](https://howtomakeanrpg.com/r/l/g/ultima-1/)
-- [Ultima I: The First Age of Darkness — Wikipedia](https://en.wikipedia.org/wiki/Ultima_I:_The_First_Age_of_Darkness)
-
-## 地牢怪移動(Part 2,實作前考據中)
-
-> ⚠️ **待 C64 原版 oracle 校正**:以下為網路二手摘要,使用者將提供 **Ultima C64 原版**作權威依據,
-> 屆時以反組譯/原版行為為準修正本節,再動手實作。
-
-初步線索(網路來源,未經 oracle 確認):
-- 地牢怪**朝玩家直線接近**(beeline),進入攻擊範圍就持續攻擊。
-- 怪可**對角線攻擊**,玩家不行 → 玩家較吃虧。
-- 地牢怪機制與地面/他處「明顯不同」(有玩家社群推測是原版 bug)。
-
-open_ultima 地牢現況:
-- 敵人有 `_x/_y` 但**無位置 setter → 目前不會移動**(靜止)。
-- 已有 `doCombatRound`(玩家攻擊 + 相鄰怪反擊),但無「怪主動接近」。
-- 實作需:① `Enemy` 加位置可變 ② 每回合怪在地牢格上朝玩家移動(避牆)③ 回合觸發。
-
-來源(地牢,待 oracle 取代):
-- [Dino's Complete Guide to Ultima 1 — Walkthrough](https://gigi.nullneuron.net/ultima/u1/walkthrough.php)
+- [Dino's Complete Guide to Ultima 1](https://gigi.nullneuron.net/ultima/u1/walkthrough.php)
 - [Tips & Tricks — Ultima I (gamercorner)](https://guides.gamercorner.net/ultimai/tips-and-tricks/)
-- [Data Driven Gamer — The Basic mechanics of Ultima](https://datadrivengamer.blogspot.com/2019/09/the-basic-mechanics-of-ultima.html)
 
-## 待考據(若日後要更精準)
-
-- 地面隨機遭遇的**觸發機率 / 地形相依**(原版是否依地形決定遇敵率)。
-- 地牢怪的**移動規則**(每回合一格?純貪婪逐玩家?對角?有無亂數?)— **以使用者提供的 C64 原版為準**。
-- 各怪種 HP / 攻擊力(見 Codex monster data 表)。
+原碼 `[CODE]`:1983 Atari SierraVenture(`org_game/Ultima I …Atari…`),反組譯流程見 `docs/re/`。
