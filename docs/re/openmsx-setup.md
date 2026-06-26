@@ -66,3 +66,7 @@ proc dump_vram {} {
 - [ ] 自訂機器 config
 - [ ] headless 開機 + dump VRAM
 - [ ] 解 MSXTILES → PNG 包
+
+## ★ 實機 ground truth(2026-06-26,openMSX dump)
+- 模式 **SCREEN 7**;palette **8 色 GRB**:0黑 1綠 2紅 3黃 4藍 5青 6洋紅 7白(index=B<<2|R<<1|G)。
+- 這是 MSXTILES 解碼的正確 palette(先前靜態猜測全錯)。剩:到 overworld dump VRAM 比對佈局。

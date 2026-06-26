@@ -153,8 +153,8 @@
           </rom>
           <rom>
             <filename>DISK.ROM</filename>
-            <sha1>032cb1c1c75b9a191fa1230978971698d9d2a17f</sha1> <!-- archtaurus RetroPieBIOS generic disk -->
-            <window base="0xC000" size="0x4000"/>
+            <sha1>032cb1c1c75b9a191fa1230978971698d9d2a17f</sha1> <!-- archtaurus RetroPieBIOS generic disk (standalone 16K, code @0) -->
+            <window base="0x0000" size="0x4000"/>
           </rom>
         </WD2793>
       </secondary>

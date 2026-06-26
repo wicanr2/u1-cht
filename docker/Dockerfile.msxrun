@@ -1,0 +1,7 @@
+FROM u1-cht
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libtcl8.6 libsdl2-2.0-0 libsdl2-ttf-2.0-0 \
+    libtheora0 libvorbisfile3 libglew2.2 libpng16-16t64 \
+    && rm -rf /var/lib/apt/lists/*
+CMD ["/bin/bash"]
