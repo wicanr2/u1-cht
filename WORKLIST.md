@@ -48,6 +48,11 @@
 | E4 | **PC-98** | `org_game/msx/【PC98】….fdi` | PC-98 FDI + planar 圖格式 | ⬜ |
 | E5 | **Atari** | 1983 ATR(已抽檔)| tile 在 `SET1-5`/`MASTER`?待找;6502 已反組譯 | ⬜ |
 
+### E1 FM Towns 續作(已解碼,剩 palette+對應)
+- [ ] U1 專屬 16 色 palette(RE U1 FM Towns 執行檔 / 對 hg101 FMTOWNS-06 實機採樣)— header 無內嵌 ColorMap
+- [ ] 52 格對應(UT1MAP 地形 + UT1TILE1 物件 + UT1TILE0 怪物 → engine 槽)
+- [ ] 32→16 downscale 拼 832×16 → 載入校驗(對實機)
+
 ### ★ 素材格式需修正 / 校準(實作中發現,逐項修)
 - [ ] **Tandy(T1K)**:`T1KTILES.BIN` 與 EGA **同大小(6656B)但格式不同** → EGA decoder 解出亂碼,
       **需專屬 T1K decoder**(Tandy 1000 16 色記憶體佈局)。記:同大小≠同格式。
