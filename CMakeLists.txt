@@ -12,6 +12,7 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_GFX REQUIRED SDL2_gfx)
+pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
 find_package(nlohmann_json 3 REQUIRED)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
@@ -20,12 +21,12 @@ add_executable(u1_cht main.cpp ${SOURCES})
 
 target_include_directories(u1_cht PRIVATE
         ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
-        ${SDL2_TTF_INCLUDE_DIRS} ${SDL2_GFX_INCLUDE_DIRS}
+        ${SDL2_TTF_INCLUDE_DIRS} ${SDL2_GFX_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS}
         src)
 
 target_link_libraries(u1_cht PRIVATE
         ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_TTF_LIBRARIES} ${SDL2_GFX_LIBRARIES}
+        ${SDL2_TTF_LIBRARIES} ${SDL2_GFX_LIBRARIES} ${SDL2_MIXER_LIBRARIES}
         nlohmann_json::nlohmann_json)
 
 # 資源(含 CJK 字型與字串表)複製到執行檔旁

@@ -8,6 +8,7 @@
 #include "src/common/LTimer.h"
 #include "src/overworld/OverworldScreen.h"
 #include "src/common/Fonts.h"
+#include "src/common/Audio.h"
 #include "src/common/graphics/LTexture.h"
 #include "src/Constants.h"
 #include "src/CommandDisplay.h"
@@ -142,6 +143,7 @@ void close() {
     gRenderer = NULL;
 
     //Quit SDL subsystems
+    Audio::shutdown();
     IMG_Quit();
     SDL_Quit();
 }
@@ -185,6 +187,8 @@ int main(int argc, char *args[]) {
             //Keeps track of time between steps
             LTimer stepTimer;
             Fonts::init(gRenderer);
+            Audio::init();
+            Audio::playMusic("./assets/music/theme.ogg");
 
             _playerStatusDisplay = make_shared<PlayerStatusDisplay>(gRenderer, player);
             _commandDisplay = make_shared<CommandDisplay>(gRenderer);
@@ -239,6 +243,15 @@ int main(int argc, char *args[]) {
                                                           cgaTilesPath);
                                 }
                                 CommandDisplay::writeLn(usingEga ? "圖形模式:EGA" : "圖形模式:CGA", false);
+                            }
+                            // M:切換背景音樂
+                            if (pressedKey == SDLK_m) {
+                                if (Audio::available()) {
+                                    bool on = Audio::toggleMute();
+                                    CommandDisplay::writeLn(on ? "音樂:開" : "音樂:關", false);
+                                } else {
+                                    CommandDisplay::writeLn("音樂:無音訊裝置", false);
+                                }
                             }
                         }
 

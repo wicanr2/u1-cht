@@ -14,7 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsdl2-image-dev \
     libsdl2-ttf-dev \
     libsdl2-gfx-dev \
+    libsdl2-mixer-dev \
     nlohmann-json3-dev \
+    ffmpeg \
     fonts-noto-cjk \
     ca-certificates \
     xvfb \
