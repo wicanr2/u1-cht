@@ -43,7 +43,7 @@
 | # | 平台 | 素材 | 格式 / 可複用經驗 | 狀態 |
 |---|---|---|---|---|
 | E1 | **FM Towns** | Trilogy CD(GRAPH 已抽於 u7-cht) | ✅ 地形渲染成功(綠草+藍水+森林);8色palette(偶數index)+ chunkyrev 解碼 + 自動分類 + 32→16。物件/怪物 sprite 精修待續 | ✅ 地形完成 |
-| E2 | **Apple IIgs** | woz(1994) | 🔄 **woz 牆已破**(floptool woz→ProDOS,免寫 GCR)+ 資源全盤點;0x8001 icon=城堡/騎士、0x8024=音效(非圖)、0x8015=文字。**二級牆**:tileset 在 type 0x0001 自訂壓縮圖(非標準 PackBytes,靜態解抗拒),需 GS ROM 跑模擬器 dump SHR 或找格式 spec。詳見 docs/re/e2-apple-iigs.md。工具 `extract_woz.py` | 🔄 二級牆 |
+| E2 | **Apple IIgs** | woz(1994) | 🔄 **woz 牆破 + MAME 管線就緒**:floptool 抽檔、資源盤點、MAME apple2gs(ROM 通過/開機/SHR dump+渲染 `render_shr.py` 全 OK)。**只差 GS/OS 系統碟**:遊戲碟非自我開機(無 PRODOS),需 System 6.0.1 .2mg 放 `re_work/iigs/sys/` 開機後啟動 ULTIMAI→overworld→切 tile。詳見 docs/re/e2-apple-iigs.md | 🔄 待系統碟 |
 | E3 | **MSX** | .dsk(FAT12) | ✅ **完成**(Path B 反組譯 OUT.COM 破解格式):body `p*192+i`→VRAM `p*256+i`,SCREEN7 chunky 4bpp。MSXTILES=96 tiles。已建 `assets/tilesets/msx.png`(52槽,`build_msx_pack.py`)+ game tester 驗證 overworld 渲染(水/草/森林/玩家/中文狀態列正常)。工具:`decode_msxtiles.py`/`build_msx_pack.py` | ✅ 完成 |
 | E4 | **PC-98** | `org_game/msx/【PC98】….fdi` | PC-98 FDI + planar 圖格式 | ⬜ |
 | E5 | **Atari** | 1983 ATR(已抽檔)| tile 在 `SET1-5`/`MASTER`?待找;6502 已反組譯 | ⬜ |

@@ -53,15 +53,33 @@
   - 渲 width 320 為橫紋雜訊;width 64/80 有縱向結構但不成 tile。
   - raw header 每 resource 不同(id1 `007d0100`、id1a `2c03…`、id15 `0010e100`)→ 非統一格式。
 
-### 兩條真正可行路(都需額外資源)
-| 路 | 作法 | 阻礙 |
-|---|---|---|
-| **格式 spec** | 找 Vitesse/Heineman IIgs U1 圖格式文件,或反組譯 ULTIMAI data fork(OMF 65816)的繪圖碼 | 無公開 spec;65816 反組譯工程量大 |
-| **模擬器 ground truth** | MAME `apple2gs` / KEGS / GSplus 跑遊戲到 overworld,dump SHR 螢幕($E12000)→ 直接切 16×16 tile(同 MSX openMSX 法) | **MAME 不在 apt、Apple IIgs ROM 不在 archtaurus/RetroPieBIOS** → 需另尋 GS ROM |
+## ★★ MAME 模擬器路:管線已建好(2026-06-27)
+
+GS ROM 取得後(memory `retro-bios-source`,Abdess/retrobios `apple2gs.rom/.zip`),改走模擬器 ground truth:
+- **MAME 在 apt**(0.264,先前漏 `apt-get update` 才看不到)→ `docker/Dockerfile.mame`(u1-a2 + mame + xvfb)。
+  binary 在 `/usr/games/mame`(412MB)。`apple2gs.zip`(放 `re_work/iigs/bios/`)`-verifyroms` = good。
+- **跑**:`mame -rompath <bios> apple2gs -flop3 <woz> -autoboot_script <lua> -video none -seconds_to_run N`。
+  woz = 3.5"(flop3/flop4 吃 .woz)。lua dump bank $E1 `$2000–$9FFF`(`0xE12000–0xE19FFF`)= SHR 螢幕。
+- ✅ **SHR dump + 渲染管線完成**:`tools/re/iigs/mame_dump.lua`(dump)+ `render_shr.py`(SCB+16 palette 正確解 12-bit $0RGB)。
+- ✅ MAME 開機正常(顯示 IIgs ROM 開機畫面)。
+
+### ⛔ 卡點:遊戲碟非自我開機 → 需 GS/OS 系統碟
+- MAME 開機畫面顯示 **「UNABLE TO LOAD PRODOS」**:woz volume `ULTIMA.I` **只有 `FINDER.DATA` + `ULTIMAI`,
+  無 PRODOS / System 系統檔** → 是 GS/OS **應用程式碟**,不能單碟自我開機。
+- 需 **GS/OS System 6.0.1 開機碟(.2mg/.po)** 放 flop3、Ultima woz 放 flop4,開機 GS/OS 後從 Finder 啟動 ULTIMAI
+  (Finder 啟動 app 需**滑鼠**注入或設 startup app)→ 進遊戲 → 建角 → overworld → dump SHR → 切 16×16 tile。
+- 本 session 快速下載 GS/OS 系統碟未果(asimov/archive.org 多為錯誤頁或限流)。**待使用者提供系統碟**
+  (放 `re_work/iigs/sys/`),管線即可一路跑完。
+
+### 剩餘步驟(系統碟到位後)
+1. GS/OS 開機 + 啟動 ULTIMAI(滑鼠注入,或改造開機碟設 ULTIMAI 為 startup app 免 Finder)。
+2. lua 注入鍵盤/滑鼠導航到 overworld(同 MSX openMSX 法,event-driven)。
+3. dump overworld SHR → 切 16×16 tile → 對映 engine 52 槽 → `build_*_pack.py` 出 PNG。
+   (SHR 是已渲染畫面;tile 直接從 framebuffer 切,繞過 type 0x0001 自訂壓縮)。
 
 ### 建議
-- **優先做 E4 PC-98 / E5 Atari**(標準磁區映像、圖格式單純,較可能像 MSX 做出完整 pack)。
-- IIgs 待「取得 GS ROM 跑模擬器」或「找到圖格式 spec」再回攻;woz 牆已永久破除,抽檔管線就緒。
+- IIgs 管線就緒,**只差 GS/OS 開機碟**;取得後可完成。
+- 平行可先做 E4 PC-98 / E5 Atari(標準磁區映像、格式單純)。
 
 ## 工具 / 環境
 - `docker/Dockerfile.a2`(u1-a2:floptool)、`tools/re/iigs/extract_woz.py`(AppleDouble+resource 解析+dump)。
