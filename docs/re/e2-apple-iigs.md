@@ -1,5 +1,21 @@
 # E2 Apple IIgs 素材抽取 — woz 牆已破(2026-06-27)
 
+## ★★★★ 最終解:用 hg101 實機截圖直接切 tile(2026-06-27)
+
+**繞過全部難題**(模擬器導航 + 自訂壓縮格式):hg101 的 Apple IIgs 截圖是 **320×200 原生 SHR、PNG 無損**
+(`reference/hg101/imgs/ultima1-appleIIgs-{07,12,10}.png`),每 tile 正好 16×16,直接切。
+- overworld tile 網格相位 **offset (8,8)**(玩家居中推得)。
+- 截圖 07(overworld)→ 水/草/森林/城堡/玩家;12(overworld)→ 山/城鎮/馬;10 = 城鎮內裝(另用)。
+- 取得 **8 個真實 IIgs overworld tile**:水、草、森林、山、城堡、城鎮、玩家、馬。
+- `tools/build_iigs_pack.py`:切 tile + 以 EGA 補未涵蓋槽(signpost/dungeon/載具/怪物)→ `assets/tilesets/iigs.png`
+  (player/horse 去草地背景轉透明)。**game tester 驗證 overworld 渲染正常**(藍波水/綠草/森林/紅衣玩家)。
+- ⇒ E2 主要 overworld tile **完成**。完整 52 槽(載具/怪物截圖未涵蓋)需 MAME 跑到 overworld dump(下方),
+  或找更多實機截圖。
+
+> 教訓:卡在模擬器導航/格式 RE 時,**先看有沒有現成實機參考圖**(原生解析度 PNG = 可直接切 tile),
+> 往往比硬解格式或自動化模擬器快得多。同 retro 重寫「反編當 oracle 不照抄」「先建可驗證訊號」。
+
+
 ## ★★ 突破:woz 牆用 floptool 破解(不必自寫 GCR 解碼器)
 
 素材:`re_work/Ultima I IIgs.woz`(WOZ2,3.5" 800K,2 面,Applesauce v2.01,sync=1/cleaned=1)。
