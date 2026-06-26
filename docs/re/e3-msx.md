@@ -18,3 +18,15 @@ MSXTILES 的實際 pattern/color/palette 佈局(同 FM Towns 需對實機校 pal
 ## 與其他平台一致的觀察
 每個非 DOS 平台(MSX/PC98/IIgs)都是**獨立硬體格式 + 可程式 palette**,需逐版 RE + 實機/模擬器校準。
 E1 FM Towns 是已完成的完整範例(`docs/re/fmtowns-u1-graphics.md`),流程可參考但格式各異。
+
+## 追加(2026-06-26):靜態解碼 5 種皆雜訊 + openMSX 不可裝
+- 再試 4bpp linear 16×16 tile 網格 → 仍雜訊。累計 5 種佈局假設皆失敗。
+- head `80 01 40 00 10 10 10 10 50 10 50 00 50 50 00 05 44 44...` 看似 outline+fill(像 tile),
+  但無一佈局解出可辨圖 → 可能 tile/palette 經非顯然重排,或需動態 ground truth。
+- **openMSX 不在 Ubuntu 24.04 apt**(需源碼編譯 + C-BIOS + 腳本跑到 overworld + VRAM dump + 找 tile)。
+- ⇒ E3 屬 focused 多輪子任務:① 源碼編 openMSX 或 ② 找 MSX U1 反組譯/格式文件。
+
+## 跨平台素材包整體結論(逐平台 RE 工程量)
+- E1 FM Towns ✅ 完整(有 u7-cht 既抽 GRAPH + u2 解碼經驗才較快)。
+- E2 IIgs / E3 MSX / E4 PC98 / E5 Atari:各需獨立格式 RE + palette 校準,**無現成工具**,
+  每個都是 focused 子 session。基礎建設(E0 PNG AssetPack)已就緒,任何平台做出 832×16 PNG 即可載入。
