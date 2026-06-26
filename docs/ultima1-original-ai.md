@@ -35,8 +35,28 @@
 - [How to Make an RPG — Ultima I: The First Age of Darkness](https://howtomakeanrpg.com/r/l/g/ultima-1/)
 - [Ultima I: The First Age of Darkness — Wikipedia](https://en.wikipedia.org/wiki/Ultima_I:_The_First_Age_of_Darkness)
 
+## 地牢怪移動(Part 2,實作前考據中)
+
+> ⚠️ **待 C64 原版 oracle 校正**:以下為網路二手摘要,使用者將提供 **Ultima C64 原版**作權威依據,
+> 屆時以反組譯/原版行為為準修正本節,再動手實作。
+
+初步線索(網路來源,未經 oracle 確認):
+- 地牢怪**朝玩家直線接近**(beeline),進入攻擊範圍就持續攻擊。
+- 怪可**對角線攻擊**,玩家不行 → 玩家較吃虧。
+- 地牢怪機制與地面/他處「明顯不同」(有玩家社群推測是原版 bug)。
+
+open_ultima 地牢現況:
+- 敵人有 `_x/_y` 但**無位置 setter → 目前不會移動**(靜止)。
+- 已有 `doCombatRound`(玩家攻擊 + 相鄰怪反擊),但無「怪主動接近」。
+- 實作需:① `Enemy` 加位置可變 ② 每回合怪在地牢格上朝玩家移動(避牆)③ 回合觸發。
+
+來源(地牢,待 oracle 取代):
+- [Dino's Complete Guide to Ultima 1 — Walkthrough](https://gigi.nullneuron.net/ultima/u1/walkthrough.php)
+- [Tips & Tricks — Ultima I (gamercorner)](https://guides.gamercorner.net/ultimai/tips-and-tricks/)
+- [Data Driven Gamer — The Basic mechanics of Ultima](https://datadrivengamer.blogspot.com/2019/09/the-basic-mechanics-of-ultima.html)
+
 ## 待考據(若日後要更精準)
 
 - 地面隨機遭遇的**觸發機率 / 地形相依**(原版是否依地形決定遇敵率)。
-- 地牢怪的**移動規則**(每回合一格?是否純貪婪逐玩家?有無亂數?)— 實作地牢移動前再查 U1 反組譯 / Codex。
+- 地牢怪的**移動規則**(每回合一格?純貪婪逐玩家?對角?有無亂數?)— **以使用者提供的 C64 原版為準**。
 - 各怪種 HP / 攻擊力(見 Codex monster data 表)。
