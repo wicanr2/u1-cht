@@ -52,6 +52,11 @@ public:
 
     void receiveDamage(int damage) { _hp -= damage; };
 
+    // 食物消耗(隨時間 tick);耗盡回傳 true 代表飢餓
+    void consumeFood(int n) { _food -= n; if (_food < 0) _food = 0; }
+
+    bool isStarving() const { return _food <= 0; }
+
     bool isDead() { return _hp <= 0; }
 
 private:

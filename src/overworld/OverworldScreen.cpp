@@ -397,7 +397,15 @@ void OverworldScreen::onStep() {
     while (_timeAccum >= 100) {
         _timeAccum -= 100;
         overworldMonsterTurn();
-        // TODO: 食物 -= 1 等隨時間 tick 的回合制邏輯
+
+        // 食物消耗 / 飢餓(每時間 tick;參考 u2-cht)
+        auto pl = _gameContext->getPlayer();
+        pl->consumeFood(1);
+        if (pl->isStarving()) {
+            pl->receiveDamage(2);
+            CommandDisplay::writeLn("飢餓!損失 2 點生命", false);
+            if (pl->isDead()) CommandDisplay::writeLn("你已餓死!", false);
+        }
     }
 }
 

@@ -36,6 +36,7 @@ private:
 
     shared_ptr<Dungeon> _dungeon;
     vector<VisibleDungeonSpace> _vision;
+    int _timeAccum = 0;   // 時間累加器(speed_pct;滿 100 走一 tick → 食物消耗)
     float _drawCounter = 0;
     int _drawEnabled = true;
     unique_ptr<LTexture> _orientationLabel = make_unique<LTexture>();

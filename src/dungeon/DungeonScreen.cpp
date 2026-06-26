@@ -1,5 +1,6 @@
 #include "DungeonScreen.h"
 #include "../CommandDisplay.h"
+#include "../Configuration.h"
 #include "Door.h"
 #include "Ladder.h"
 #include "../common/ShapeUtils.h"
@@ -276,6 +277,18 @@ void DungeonScreen::dungeonMonsterTurn() {
     auto player = _gameContext->getPlayer();
     moveEnemiesToward(player->getDungeonX(), player->getDungeonY());
     doMonsterAttacks();
+
+    // 時間 tick:食物消耗 / 飢餓(與地面一致,參考 u2-cht)
+    _timeAccum += Configuration::getSpeedPct();
+    while (_timeAccum >= 100) {
+        _timeAccum -= 100;
+        player->consumeFood(1);
+        if (player->isStarving()) {
+            player->receiveDamage(2);
+            CommandDisplay::writeLn("飢餓!損失 2 點生命", false);
+            if (player->isDead()) { CommandDisplay::writeLn("你已餓死!", false); break; }
+        }
+    }
 }
 
 // 目標格可否讓怪進入:可走且未被玩家或其他怪佔據
