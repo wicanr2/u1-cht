@@ -1,0 +1,22 @@
+# 上游唯讀 clone(只作 diff / 取資產 oracle,不入庫;隨時可重新 clone)
+/open_ultima/
+
+# 建置產物
+/build/
+/dist/
+cmake-build-*/
+*.o
+*.obj
+*.exe
+
+# 原始遊戲資料檔(版權,使用者自備,不入庫)
+/gamedata/
+*.BIN
+config.json
+
+# 編輯器 / 暫存
+*.swp
+.DS_Store
+
+# 截圖測試輸出(基準快照另存 tests/snapshots/baseline)
+/tests/snapshots/out/

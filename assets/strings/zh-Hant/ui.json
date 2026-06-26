@@ -1,0 +1,27 @@
+{
+  "_comment": "Ultima I 中文化 UI 字串表 (zh-Hant)。key 對應原始碼硬編碼英文,Phase 2 接上 i18n 查表後生效。含 {name} 佔位符。",
+  "_status": "草稿骨架 — 待 Phase 2 從原始碼完整抽取後逐句校訂",
+
+  "dir.west": "西",
+  "dir.east": "東",
+  "dir.north": "北",
+  "dir.south": "南",
+
+  "cmd.forward": "前進",
+  "cmd.turn_around": "向後轉",
+  "cmd.turn_left": "向左轉",
+  "cmd.turn_right": "向右轉",
+  "cmd.bare_hands": "徒手攻擊",
+
+  "combat.blocked_by": "被{name}擋住!",
+  "combat.killed": "擊殺了{name}!",
+  "combat.attacked_by": "遭{name}攻擊!",
+
+  "dungeon.level": "第 {n} 層",
+
+  "enemy.wandering_warlock": "遊蕩術士",
+  "enemy.thief": "盜賊",
+  "enemy.giant_rat": "巨鼠",
+
+  "err.config_parse": "解析設定檔時發生錯誤"
+}
