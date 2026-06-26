@@ -19,6 +19,9 @@ public:
 
     int getY() { return _y; }
 
+    // 地牢怪移動用(忠於原版 U1:地牢怪逐玩家移動)
+    void setPosition(int x, int y) { _x = x; _y = y; }
+
     int getHP() { return _hp; }
 
     int getDamage() { return 1; }

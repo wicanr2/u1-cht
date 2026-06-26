@@ -55,6 +55,13 @@ private:
 
     void doMonsterAttack(const shared_ptr<Enemy>& enemy);
 
+    // 地牢回合:怪逐玩家移動(beeline)後,相鄰者攻擊(忠於原版 U1 地牢怪會動)
+    void dungeonMonsterTurn();
+
+    void moveEnemiesToward(int px, int py);
+
+    bool dungeonCellFree(int x, int y, const shared_ptr<Enemy>& self);
+
     void climbLadder();
 };
 

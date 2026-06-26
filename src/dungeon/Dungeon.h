@@ -21,6 +21,13 @@ public:
 
     vector<shared_ptr<Enemy>> getLevelEnemies(int level) { return _enemiesPerLevel[level]; }
 
+    // 地牢怪移動用:格是否可走(界內且非牆;門/None 可走)。對應原版地牢 1-bit/cell 牆點陣圖。
+    bool isMonsterWalkable(int level, int x, int y) {
+        if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return false;
+        auto f = _levels[level][x][y];
+        return f == DungeonFeature::None || f == DungeonFeature::Door;
+    }
+
     vector<LadderInfo> getLevelLadders(int level) { return _laddersPerLevel[level]; }
 
 private:

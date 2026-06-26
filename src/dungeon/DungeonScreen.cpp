@@ -7,6 +7,8 @@
 #include "../common/Colors.h"
 #include "enemies/Thief.h"
 #include <iostream>
+#include <algorithm>
+#include <cstdlib>
 
 using namespace std;
 
@@ -220,6 +222,11 @@ void DungeonScreen::handle(const SDL_Event &e) {
                 return;
         }
 
+        // 玩家走一步 = 一回合 → 地牢怪行動(逐玩家移動 + 相鄰攻擊)
+        if (!player->isDead()) {
+            dungeonMonsterTurn();
+        }
+
         _vision = _dungeon->getVisible(player->getDungeonLevel(), player->getDungeonX(), player->getDungeonY(),
                                        player->getDungeonOrientation());
 
@@ -260,8 +267,53 @@ void DungeonScreen::drawRightWalls(SDL_Renderer *renderer) {
 }
 
 void DungeonScreen::doCombatRound(bool playerAttacks) {
+    // 玩家攻擊;怪物的移動與反擊由 dungeonMonsterTurn() 在回合結束統一處理
     if (playerAttacks) doPlayerAttack();
+}
+
+// 地牢一回合:怪先逐玩家移動,再對相鄰玩家攻擊(忠於原版 U1)
+void DungeonScreen::dungeonMonsterTurn() {
+    auto player = _gameContext->getPlayer();
+    moveEnemiesToward(player->getDungeonX(), player->getDungeonY());
     doMonsterAttacks();
+}
+
+// 目標格可否讓怪進入:可走且未被玩家或其他怪佔據
+bool DungeonScreen::dungeonCellFree(int x, int y, const shared_ptr<Enemy> &self) {
+    auto player = _gameContext->getPlayer();
+    int level = player->getDungeonLevel();
+    if (!_dungeon->isMonsterWalkable(level, x, y)) return false;
+    if (x == player->getDungeonX() && y == player->getDungeonY()) return false;
+    for (const auto &e : _dungeon->getLevelEnemies(level)) {
+        if (e != self && !e->isDead() && e->getX() == x && e->getY() == y) return false;
+    }
+    return true;
+}
+
+// beeline 貪婪逐玩家:相鄰(含對角)不動(交給攻擊),否則朝玩家走一格,
+// 取 X/Y 距離較大軸優先;被擋則退而求其次走另一軸。
+void DungeonScreen::moveEnemiesToward(int px, int py) {
+    int level = _gameContext->getPlayer()->getDungeonLevel();
+    for (const auto &e : _dungeon->getLevelEnemies(level)) {
+        if (e->isDead()) continue;
+        int dx = px - e->getX();
+        int dy = py - e->getY();
+        if (std::max(std::abs(dx), std::abs(dy)) <= 1) continue;  // 已相鄰 → 不移動,等攻擊
+
+        int sx = (dx > 0) - (dx < 0);   // -1/0/+1
+        int sy = (dy > 0) - (dy < 0);
+
+        // 候選步序:距離大的軸優先,失敗再試另一軸
+        int cand[2][2];
+        if (std::abs(dx) >= std::abs(dy)) { cand[0][0]=sx; cand[0][1]=0; cand[1][0]=0; cand[1][1]=sy; }
+        else                              { cand[0][0]=0; cand[0][1]=sy; cand[1][0]=sx; cand[1][1]=0; }
+
+        for (auto &c : cand) {
+            if (c[0] == 0 && c[1] == 0) continue;
+            int nx = e->getX() + c[0], ny = e->getY() + c[1];
+            if (dungeonCellFree(nx, ny, e)) { e->setPosition(nx, ny); break; }
+        }
+    }
 }
 
 void DungeonScreen::doPlayerAttack() {
@@ -292,9 +344,13 @@ void DungeonScreen::doMonsterAttacks() {
     auto player = _gameContext->getPlayer();
 
     for (const auto &enemy: _dungeon->getLevelEnemies(player->getDungeonLevel())) {
-        if ((enemy->getX() == player->getDungeonX() - 1 || enemy->getX() == player->getDungeonX() + 1) &&
-            (enemy->getY() == player->getDungeonY() - 1 || enemy->getY() == player->getDungeonY() + 1)) {
+        if (enemy->isDead()) continue;
+        int dx = std::abs(enemy->getX() - player->getDungeonX());
+        int dy = std::abs(enemy->getY() - player->getDungeonY());
+        // 相鄰即攻擊(含對角;原版 U1 怪可對角攻擊,玩家不行)
+        if (std::max(dx, dy) == 1) {
             doMonsterAttack(enemy);
+            if (player->isDead()) break;
         }
     }
 }

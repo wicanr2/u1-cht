@@ -18,6 +18,7 @@
 #include "src/town/TownSpriteTypeLoader.h"
 #include <iostream>
 #include <stdexcept>
+#include <cstdlib>
 #include "src/Configuration.h"
 
 using namespace std;
@@ -168,6 +169,8 @@ int main(int argc, char *args[]) {
 
             auto player = make_shared<Player>(20, 20);
             auto gameContext = make_shared<GameContext>(player);
+            // 測試 hook(env-gated,正常遊玩不啟用):直接進地牢驗證怪物移動
+            if (getenv("U1_TEST_DUNGEON")) gameContext->setScreen(ScreenType::Dungeon);
             auto overworldScreen = make_shared<OverworldScreen>(gameContext, 19, 9);
             auto dungeonScreen = make_shared<DungeonScreen>(gameContext);
 
