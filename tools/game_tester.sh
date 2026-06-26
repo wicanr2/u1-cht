@@ -32,6 +32,8 @@ key Up;    shot t05_move_up        # 「北」
 key Up;    key Up; shot t06_move_more
 key Next;  shot t07_tileset_toggle # PageDown 切 EGA/CGA tileset
 key e;     shot t08_enter          # 嘗試進入(視位置而定)
+key F10;   shot t09_quit_dialog    # F10 → 離開確認對話框(中文)
+key Escape; shot t10_quit_cancel   # ESC → 取消,回遊戲(不可離開)
 
 kill -9 "$GPID" 2>/dev/null
 kill -9 "$XPID" 2>/dev/null

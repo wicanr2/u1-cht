@@ -8,6 +8,7 @@
 #include "src/common/LTimer.h"
 #include "src/overworld/OverworldScreen.h"
 #include "src/common/Fonts.h"
+#include "src/common/graphics/LTexture.h"
 #include "src/Constants.h"
 #include "src/CommandDisplay.h"
 #include "src/dungeon/DungeonScreen.h"
@@ -42,6 +43,32 @@ constexpr int GAME_W = 320, GAME_H = 200;
 constexpr int CANVAS_SCALE = 2;
 constexpr int CANVAS_W = GAME_W * CANVAS_SCALE, CANVAS_H = GAME_H * CANVAS_SCALE;
 SDL_Texture *gWorldTarget = nullptr;
+
+// 離開確認對話框:置中 modal + 半透明 scrim(640x400 覆蓋層空間繪製)
+static void drawQuitDialog(SDL_Renderer *renderer) {
+    // 暗化背景
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xB0);
+    SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &scrim);
+
+    // 對話框
+    const int bw = 360, bh = 130;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0x40, 0x80, 0xFF, 0xFF);  // 藍邊
+    SDL_RenderDrawRect(renderer, &box);
+
+    auto line = [&](const string &s, int y, SDL_Color c) {
+        LTexture t;
+        t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c);
+        t.render(renderer, box.x + (bw - t.getWidth()) / 2, y);
+    };
+    line("確定要離開遊戲嗎?", box.y + 22, SDL_Color{0xFF, 0xD0, 0x40, 0xFF});   // accent 標題
+    line("Y / Enter — 離開", box.y + 60, SDL_Color{0xFF, 0xFF, 0xFF, 0xFF});
+    line("N / ESC — 取消", box.y + 88, SDL_Color{0xC0, 0xC0, 0xC0, 0xFF});
+}
 
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
 shared_ptr<CommandDisplay> _commandDisplay;
@@ -171,15 +198,35 @@ int main(int argc, char *args[]) {
             shared_ptr<Screen> currentScreen = static_pointer_cast<Screen>(overworldScreen);
 
             //While application is running
+            bool quitDialogActive = false;
             while (!quit) {
                 //Handle events on queue
                 while (SDL_PollEvent(&e) != 0) {
+                    // 離開語意鐵則:ESC 只取消,F10/Ctrl+Q(及關窗)才彈離開確認
+                    if (quitDialogActive) {
+                        if (e.type == SDL_KEYDOWN) {
+                            auto k = e.key.keysym.sym;
+                            if (k == SDLK_y || k == SDLK_RETURN) {
+                                // TODO: 存檔系統建立後在此 autosave 再離開
+                                quit = true;
+                            } else if (k == SDLK_n || k == SDLK_ESCAPE) {
+                                quitDialogActive = false;
+                            }
+                        }
+                        continue;  // dialog 開啟時吞掉其他輸入
+                    }
+
                     //User requests quit
                     if (e.type == SDL_QUIT) {
-                        quit = true;
+                        quitDialogActive = true;  // 關窗也走確認流程
                     } else {
                         if (e.type == SDL_KEYDOWN) {
                             auto pressedKey = e.key.keysym.sym;
+                            bool ctrl = (e.key.keysym.mod & KMOD_CTRL) != 0;
+                            if (pressedKey == SDLK_F10 || (ctrl && pressedKey == SDLK_q)) {
+                                quitDialogActive = true;
+                                continue;
+                            }
                             if (pressedKey == SDLK_PAGEDOWN) {
                                 usingEga = !usingEga;
                                 if (usingEga) {
@@ -248,6 +295,12 @@ int main(int argc, char *args[]) {
                                          commandDisplayBox.w * CANVAS_SCALE, commandDisplayBox.h * CANVAS_SCALE};
                 SDL_RenderSetViewport(gRenderer, &commandBoxHi);
                 _commandDisplay->draw(gRenderer);
+
+                // 離開確認對話框(覆蓋最上層)
+                if (quitDialogActive) {
+                    SDL_RenderSetViewport(gRenderer, nullptr);
+                    drawQuitDialog(gRenderer);
+                }
 
                 //Update screen
                 SDL_RenderPresent(gRenderer);

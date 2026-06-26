@@ -34,8 +34,11 @@
 | `F5` | 手動存檔(可選) |
 | `+` / `-` | 視窗整數倍縮放(可選) |
 
-## 4. 待辦
+## 4. 進度
 
-- [ ] 在事件迴圈集中處理 ESC/F10 語意(目前 `PAGEDOWN` 等散落,需收斂)。
-- [ ] quit 確認對話框(自繪 UI,中文)。
-- [ ] 自動存檔 hook(U1 存檔格式待研究 / open 版自有存檔)。
+- [x] **F10 / Ctrl+Q → 離開確認對話框**(置中 modal + scrim + 中文 是/否),Y/Enter 離開、N/ESC 取消。已實作驗證(`tests/snapshots/out/t09_quit_dialog.png`)。
+- [x] **關窗(SDL_QUIT)也走確認流程**,不直接離開。
+- [x] **ESC = 取消**(關閉對話框/回上層),永不直接離開。
+- [ ] 自動存檔 hook:open_ultima 目前**無存檔系統**;待建立後在「Y 離開」前 autosave(程式碼已留 TODO)。
+- [ ] tileset 熱鍵完善(EGA/CGA/Tandy 循環 + 螢幕提示;目前 PageDown 切 EGA/CGA)。
+- [ ] 音樂系統 + 切換熱鍵(需先接 SDL_mixer + 音樂資產)。
