@@ -13,6 +13,17 @@ vector<shared_ptr<OverworldSpriteType>> TileTypeLoader::loadOverworldSprites(con
 
     SDL_RWclose(file);
 
+    return buildSprites(overworldTexture);
+}
+
+// PNG AssetPack:從 832×16 PNG sprite sheet 載入(排列同 BIN 解碼的 overworldTexture)
+vector<shared_ptr<OverworldSpriteType>>
+TileTypeLoader::loadOverworldSpritesFromPng(const string &pngPath, SDL_Renderer *renderer) {
+    auto overworldTexture = SpriteSheetLoader::loadTextureFromPng(pngPath, renderer);
+    return buildSprites(overworldTexture);
+}
+
+vector<shared_ptr<OverworldSpriteType>> TileTypeLoader::buildSprites(shared_ptr<LTexture> overworldTexture) {
     vector<shared_ptr<OverworldSpriteType>> result;
 
     int spriteOffset = OverworldSpriteType::SPRITE_SIZE;

@@ -1,4 +1,18 @@
 #include "SpriteSheetLoader.h"
+#include <SDL_image.h>
+#include <cstdio>
+
+shared_ptr<LTexture> SpriteSheetLoader::loadTextureFromPng(const string &path, SDL_Renderer *renderer) {
+    SDL_Surface *surface = IMG_Load(path.c_str());
+    if (!surface) {
+        printf("[SpriteSheet] PNG load failed (%s): %s\n", path.c_str(), IMG_GetError());
+        return nullptr;
+    }
+    int w = surface->w, h = surface->h;
+    SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    return make_shared<LTexture>(tex, w, h);
+}
 
 shared_ptr<LTexture> SpriteSheetLoader::loadTexture(SDL_RWops *file, PixelDecodeStrategy *pixelDecodeStrategy,
                                                     SDL_Renderer *renderer,

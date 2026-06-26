@@ -47,9 +47,14 @@ public:
         return getGameFilesPath() + "T1KTILES.BIN";
     }
 
-    // 初始 tileset:"ega" / "cga" / "tandy"(AssetPack 第一步,可換 DOS 平台變體)
+    // 初始 tileset:"ega" / "cga" / "png"(AssetPack:png 用 PNG sprite sheet 包)
     static string getTileset() {
         return _value.value("tileset", string("ega"));
+    }
+
+    // PNG AssetPack 路徑(跨平台素材包;tileset="png" 或循環到 PNG 時用)
+    static string getTilesetPng() {
+        return _value.value("tileset_png", string("assets/tilesets/ega.png"));
     }
 
     static string getEgaTownFilePath() {

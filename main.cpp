@@ -203,21 +203,22 @@ int main(int argc, char *args[]) {
 
             auto egaTilesPath = Configuration::getEgaOverworldTilesFilePath();
             auto cgaTilesPath = Configuration::getCgaOverworldTilesFilePath();
-            auto tandyTilesPath = Configuration::getTandyOverworldTilesFilePath();
 
-            // tileset 變體(AssetPack 第一步):0=EGA,1=CGA,2=Tandy。Tandy 與 EGA 同 RowPlanar 格式。
-            const char *kTilesetNames[] = {"EGA", "CGA", "Tandy"};
+            // tileset 變體:0=EGA(BIN),1=CGA(BIN),2=PNG AssetPack(跨平台素材包)。
+            const char *kTilesetNames[] = {"EGA", "CGA", "PNG"};
+            auto pngPackPath = Configuration::getTilesetPng();
             int tilesetIdx = 0;
             {
                 auto ts = Configuration::getTileset();
-                if (ts == "cga") tilesetIdx = 1;   // "tandy" 需專屬 decoder,暫回退 EGA(0)
+                if (ts == "cga") tilesetIdx = 1; else if (ts == "png") tilesetIdx = 2;
             }
             auto applyTileset = [&](int idx) {
-                if (idx == 1)
+                if (idx == 2)
+                    overworldScreen->initFromPng(gRenderer, pngPackPath);
+                else if (idx == 1)
                     overworldScreen->init(gRenderer, make_unique<CGALinearDecodeStrategy>(16, 16).get(), cgaTilesPath);
                 else
-                    overworldScreen->init(gRenderer, make_unique<EGARowPlanarDecodeStrategy>(16, 16).get(),
-                                          idx == 2 ? tandyTilesPath : egaTilesPath);
+                    overworldScreen->init(gRenderer, make_unique<EGARowPlanarDecodeStrategy>(16, 16).get(), egaTilesPath);
             };
 
             auto townScreen = make_shared<TownScreen>(gameContext, gRenderer);
@@ -298,10 +299,9 @@ int main(int argc, char *args[]) {
                                 settingsActive = true;
                                 continue;
                             }
-                            // F1 或 PageDown:循環切換 tileset(EGA↔CGA)+ 中文提示。
-                            // Tandy(T1K)雖檔案同大小但格式不同於 EGA(實測亂碼),需專屬 decoder → 暫不入循環。
+                            // F1 或 PageDown:循環切換 tileset(EGA→CGA→PNG包)+ 中文提示。
                             if (pressedKey == SDLK_PAGEDOWN || pressedKey == SDLK_F1) {
-                                tilesetIdx = (tilesetIdx == 1) ? 0 : 1;   // EGA(0) ↔ CGA(1)
+                                tilesetIdx = (tilesetIdx + 1) % 3;
                                 applyTileset(tilesetIdx);
                                 CommandDisplay::writeLn(string("圖形模式:") + kTilesetNames[tilesetIdx], false);
                             }

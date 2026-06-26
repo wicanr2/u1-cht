@@ -13,12 +13,21 @@
 
 void OverworldScreen::init(SDL_Renderer *renderer,
                            PixelDecodeStrategy *pixelDecodeStrategy, const string &tilesFsPath) {
+    // load all sprite types (BIN-decode 路徑).
+    auto spriteTypes = TileTypeLoader::loadOverworldSprites(tilesFsPath, pixelDecodeStrategy, renderer);
+    buildFromSprites(spriteTypes, renderer);
+}
+
+// PNG AssetPack 路徑:從 PNG sprite sheet 載入 tileset(跨平台素材包)
+void OverworldScreen::initFromPng(SDL_Renderer *renderer, const string &pngPath) {
+    auto spriteTypes = TileTypeLoader::loadOverworldSpritesFromPng(pngPath, renderer);
+    buildFromSprites(spriteTypes, renderer);
+}
+
+void OverworldScreen::buildFromSprites(const vector<shared_ptr<OverworldSpriteType>> &spriteTypes,
+                                       SDL_Renderer *renderer) {
     _tiles.clear();
     _spritesMap.clear();
-
-    // load all sprite types.
-    auto spriteLoader = make_unique<TileTypeLoader>();
-    auto spriteTypes = spriteLoader->loadOverworldSprites(tilesFsPath, pixelDecodeStrategy, renderer);
 
     // write to map so it's easier to find the sprite type by type name.
     for (const auto &spriteType : spriteTypes) {

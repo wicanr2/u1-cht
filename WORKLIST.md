@@ -36,8 +36,8 @@
 > DOS tile 格式已知(EGA BGRI planar 4bpp、16×16、128B/格、52 格)。素材見 `docs/materials.md`。
 
 ### E0. 基礎建設(前置,先做)
-- [ ] **PNG AssetPack 載入器**:open_ultima 加「PNG sprite sheet → overworld tileset」載入路徑
-- [ ] **EGA→PNG 匯出工具**:把現有 DOS tileset 解碼匯出 PNG(參考包 + 驗證 PNG pipeline)
+- [x] **PNG AssetPack 載入器**:open_ultima 加「PNG sprite sheet → overworld tileset」載入路徑
+- [x] **EGA→PNG 匯出工具**:把現有 DOS tileset 解碼匯出 PNG(參考包 + 驗證 PNG pipeline)
 
 ### E1–E5. 逐平台(一個一個做)
 | # | 平台 | 素材 | 格式 / 可複用經驗 | 狀態 |

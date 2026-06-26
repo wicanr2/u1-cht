@@ -32,6 +32,9 @@ public:
 
     void init(SDL_Renderer *renderer, PixelDecodeStrategy *pixelDecodeStrategy, const string &tilesFsPath);
 
+    // PNG AssetPack:從 PNG sprite sheet 載入 tileset(跨平台素材包)
+    void initFromPng(SDL_Renderer *renderer, const string &pngPath);
+
     void update(float elapsed) override;
 
     void draw(SDL_Renderer *renderer) override;
@@ -49,6 +52,8 @@ private:
     int _timeAccum = 0;
 
     static OverworldSpriteType::SpriteType getSpriteType(int tileTypeId);
+
+    void buildFromSprites(const vector<shared_ptr<OverworldSpriteType>> &spriteTypes, SDL_Renderer *renderer);
 
     shared_ptr<OverworldTile> _playerTile;
     vector<shared_ptr<OverworldTile>> _tiles;
