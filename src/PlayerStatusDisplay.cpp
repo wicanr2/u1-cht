@@ -22,13 +22,13 @@ void PlayerStatusDisplay::draw(SDL_Renderer *renderer) {
 
     _background->render(renderer, 0, 0);
 
-    _textureLine1->loadFromRenderedText(Fonts::standard(), renderer, "Hits: " + to_string(_player->getHP()),
+    _textureLine1->loadFromRenderedText(Fonts::cjk(), renderer, "生命: " + to_string(_player->getHP()),
                                         Colors::TEXT_COLOR);
-    _textureLine2->loadFromRenderedText(Fonts::standard(), renderer, "Food: " + to_string(_player->getFood()),
+    _textureLine2->loadFromRenderedText(Fonts::cjk(), renderer, "食物: " + to_string(_player->getFood()),
                                         Colors::TEXT_COLOR);
-    _textureXP->loadFromRenderedText(Fonts::standard(), renderer, "Exp.: " + to_string(_player->getXP()),
+    _textureXP->loadFromRenderedText(Fonts::cjk(), renderer, "經驗: " + to_string(_player->getXP()),
                                      Colors::TEXT_COLOR);
-    _textureMoney->loadFromRenderedText(Fonts::standard(), renderer, "Coin: " + to_string(_player->getMoney()),
+    _textureMoney->loadFromRenderedText(Fonts::cjk(), renderer, "金幣: " + to_string(_player->getMoney()),
                                         Colors::TEXT_COLOR);
 
     constexpr int LINE_HEIGHT = 8;

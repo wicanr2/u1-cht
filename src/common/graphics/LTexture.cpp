@@ -91,8 +91,8 @@ bool LTexture::loadFromRenderedText(TTF_Font *font, SDL_Renderer *renderer, cons
     //Get rid of preexisting texture
     free();
 
-    //Render text surface
-    SDL_Surface *textSurface = TTF_RenderText_Solid(font, textureText.c_str(), textColor);
+    //Render text surface (UTF-8: ASCII 不受影響,額外支援中文碼點)
+    SDL_Surface *textSurface = TTF_RenderUTF8_Solid(font, textureText.c_str(), textColor);
     if (textSurface == nullptr) {
         printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
     } else {
