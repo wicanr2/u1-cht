@@ -63,6 +63,37 @@
 > 附帶可複用:FM Towns CD 音樂 `extract_fmtowns_cdda.py` → 對應「FM Towns 真音樂」backlog。
 > 每平台流程:抽 → 轉 PNG(對齊 index)→ 載入驗證(截圖)→ commit。
 
+### ★ E3 MSX openMSX — compact-safe 接續指南
+> 文件:`docs/re/openmsx-{setup,build-experience}.md`、`docs/re/e3-msx.md`。工具:`tools/re/msx/`。
+> 版權檔(BIOS/dsk/openMSX binary)在 `re_work/`(gitignore),repo clone 後需重建。
+
+**已完成(可複用,別重做)**
+- [x] openMSX 在 docker **編成**:`re_work/openMSX/derived/x86_64-linux-opt/bin/openmsx`(build-to-mount)。
+- [x] 執行 image `docker/Dockerfile.msxrun`(含 runtime libs)。
+- [x] BIOS:`archtaurus/RetroPieBIOS`/BIOS 抓 `MSX2/MSX2EXT/DISK/KANJI.ROM` → `re_work/msxbios/`
+      + `re_work/omsx_share/systemroms/`(memory `retro-bios-source`)。sha1 對上 NMS8245。
+- [x] 機器 config `tools/re/msx/U1MSX2.xml`(disk ROM window 修 0x0000)。
+- [x] MSX .dsk = FAT12,抽出 `MSXTILES.BIN`(12292)等 → `re_work/msx/`。
+- [x] **VDP 破解**:SCREEN 7 + palette **8 色 GRB**(`0黑1綠2紅3黃4藍5青6洋紅7白`,index=B<<2|R<<1|G)。
+- [x] **遊戲流程摸清**:`OUT`→片頭→選單(a建角/b開始)→建角(左右增減/SPACE)→**雙磁碟存檔**(需空白角色碟,已建 `re_work/msx/CHARDISK.dsk`)。
+
+**跑 openMSX(指令範本)**
+```
+docker run --rm -v "$PWD":/work -w /work u1-msxrun bash -c '
+  export OPENMSX_SYSTEM_DATA=/work/re_work/openMSX/share OPENMSX_USER_DATA=/work/re_work/omsx_share
+  xvfb-run -a /work/re_work/openMSX/derived/x86_64-linux-opt/bin/openmsx \
+    -machine U1MSX2 -diska "/work/re_work/msx/<U1.dsk>" -script /work/re_work/<script>.tcl'
+# Tcl: set throttle off; debug read_block "physical VRAM" 0 0x20000; screenshot -raw; type "..."; keymatrixdown/up
+```
+
+**待續(擇一,建議 B)**
+- [ ] **A. 事件驅動 emulator 導航**:Tcl 偵測畫面(VRAM signature)→ 狀態機跑完建角+雙碟swap→overworld
+      dump VRAM → 找 MSXTILES → 用 8色GRB palette + SCREEN7 佈局解碼 → 832×16 PNG。
+      (卡點:絕對時間腳本不可靠,片頭長度飄移。)
+- [ ] **B.(建議)反組譯 `OUT.COM`(Z80)**:它是 MSXTILES→VRAM 的 loader;借 `docs/re/6502-re-methodology.md`
+      方法論(換 Z80,工具 `da65`→`z80dasm`/自寫遞迴下降)反追「檔→VRAM 搬運/轉換格式」。
+      palette/mode 已知,只差佈局轉換 → 寫解碼器 → 套 E0 PNG AssetPack(`tools/build_fmtowns_pack.py` 為範本)。
+
 ## C. 待辦(backlog)⬜
 
 - [ ] **存檔系統**:目前無存檔;F10「Y 離開」前的 autosave 仍是 TODO
