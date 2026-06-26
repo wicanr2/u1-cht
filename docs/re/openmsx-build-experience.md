@@ -75,3 +75,16 @@ xvfb-run -a openmsx \
 - **截圖**:`screenshot -raw out.png`。
 - **敲鍵**:`type "OUT\r"`(ASCII + \r);特殊鍵 `keymatrixdown/up`。
 - **定時**:`after time <秒> { ... }`(emulated time)。
+
+## 8. 遊戲流程(導航,2026-06-26)
+- `OUT` → 片頭 credits 序列(Ultima I / ORIGIN / Lord British,很長,連敲 space 推進)→ **主選單**:
+  - `*** Ultima I ***`、`a) キャラクターさくせい`(建角)、`b) ゲームスタート`(開始)、`どちらにしますか?`
+- ⚠ space/return 不選;要敲 **`a`**(建角,多步驟日文:名/能力/種族/職業)→ 回選單敲 **`b`** 開始 → overworld。
+- 敲 `b` 未建角無效(停選單)。**MSXTILES 在 overworld 才載入 VRAM** → 需先建角。
+- throttle:`set throttle off` 讓模擬全速(否則 xvfb 下模擬時間 << 真實,長序列超時)。
+- 截圖證據:`docs/re/img/msx_dos.png`(MSX-DOS 開機)、`msx_menu.png`(主選單)。
+
+## 9. 續作(MSXTILES 解碼,剩最後一哩)
+1. 腳本敲 `a` → 走完建角(名+能力配點+種族+職業)→ 回選單敲 `b` → overworld。
+2. dump VRAM(此時 MSXTILES 已載入)→ 自動搜尋 MSXTILES.BIN 內容定位 → 讀出 SCREEN 7 佈局。
+3. 用已知 palette(8色GRB)+ 實際佈局寫解碼器 → 832×16 PNG(同 E1 流程)。
