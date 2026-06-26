@@ -36,6 +36,13 @@ SDL_Window *gWindow = nullptr;
 //The window renderer
 SDL_Renderer *gRenderer = nullptr;
 
+// 拉高內部畫布:世界(tile/sprite)先畫進原生 320x200 離屏 target,
+// 整張用 nearest 放大到 640x400,讓中文 UI 有 2x 空間清晰繪製(retro-cjk-hires-canvas)。
+constexpr int GAME_W = 320, GAME_H = 200;
+constexpr int CANVAS_SCALE = 2;
+constexpr int CANVAS_W = GAME_W * CANVAS_SCALE, CANVAS_H = GAME_H * CANVAS_SCALE;
+SDL_Texture *gWorldTarget = nullptr;
+
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
 shared_ptr<CommandDisplay> _commandDisplay;
 
@@ -143,7 +150,10 @@ int main(int argc, char *args[]) {
 
             overworldScreen->init(gRenderer, make_unique<EGARowPlanarDecodeStrategy>(16, 16).get(), egaTilesPath);
 
-            SDL_RenderSetLogicalSize(gRenderer, 320, 200);
+            // 螢幕邏輯畫布 = 放大後 640x400;世界另畫進 320x200 離屏 target。
+            SDL_RenderSetLogicalSize(gRenderer, CANVAS_W, CANVAS_H);
+            gWorldTarget = SDL_CreateTexture(gRenderer, SDL_PIXELFORMAT_RGBA8888,
+                                             SDL_TEXTUREACCESS_TARGET, GAME_W, GAME_H);
 
             //Keeps track of time between steps
             LTimer stepTimer;
@@ -193,7 +203,9 @@ int main(int argc, char *args[]) {
                 //Restart step timer
                 stepTimer.start();
 
-                //Clear screen
+                // === 世界繪製:畫進原生 320x200 離屏 target ===
+                SDL_SetRenderTarget(gRenderer, gWorldTarget);
+                SDL_RenderSetLogicalSize(gRenderer, GAME_W, GAME_H);
                 SDL_SetRenderDrawColor(gRenderer, 0, 0, 0xAF, 0);
                 SDL_RenderClear(gRenderer);
 
@@ -216,14 +228,25 @@ int main(int argc, char *args[]) {
 
                 currentScreen->update(timeStep);
 
-                SDL_Rect defaultViewport = {0, 0, 320, 200};
+                SDL_Rect defaultViewport = {0, 0, GAME_W, GAME_H};
                 SDL_RenderSetViewport(gRenderer, &defaultViewport);
 
                 currentScreen->draw(gRenderer);
 
+                // === 放大世界 target 到螢幕 640x400 (nearest, crisp) ===
+                SDL_SetRenderTarget(gRenderer, nullptr);
+                SDL_RenderSetLogicalSize(gRenderer, CANVAS_W, CANVAS_H);
+                SDL_RenderSetViewport(gRenderer, nullptr);
+                SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0xFF);
+                SDL_RenderClear(gRenderer);
+                SDL_RenderCopy(gRenderer, gWorldTarget, nullptr, nullptr);
+
+                // === UI(中文)在 640x400 高解析空間繪製,座標 x2 ===
                 _playerStatusDisplay->draw(gRenderer);
 
-                SDL_RenderSetViewport(gRenderer, &commandDisplayBox);
+                SDL_Rect commandBoxHi = {commandDisplayBox.x * CANVAS_SCALE, commandDisplayBox.y * CANVAS_SCALE,
+                                         commandDisplayBox.w * CANVAS_SCALE, commandDisplayBox.h * CANVAS_SCALE};
+                SDL_RenderSetViewport(gRenderer, &commandBoxHi);
                 _commandDisplay->draw(gRenderer);
 
                 //Update screen

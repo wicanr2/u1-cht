@@ -60,20 +60,24 @@ void CommandDisplay::write(const string &str) {
 }
 
 void CommandDisplay::draw(SDL_Renderer *renderer) {
-    _background->render(renderer, 0, 0);
+    // 黑底面板填滿 x2 viewport(取代未縮放的 _background 貼圖)
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_Rect bg = {0, 0, WIDTH * 2, HEIGHT * 2};
+    SDL_RenderFillRect(renderer, &bg);
 
     int lineIndex = _text.size() - 1;
 
-    constexpr int LINE_HEIGHT = 8;
-    constexpr int PADDING_LEFT = 8;
+    // 640 高解析覆蓋層:行高/邊距 x2,字型 16px(viewport 已於 main x2)
+    constexpr int LINE_HEIGHT = 18;
+    constexpr int PADDING_LEFT = 16;
     constexpr int PADDING_TOP = 6;
-    constexpr int PADDING_FONT = 2;
+    constexpr int PADDING_FONT = 4;
 
     int offset = LINE_HEIGHT * 2;
 
     if (lineIndex >= 0) {
         auto[line, playerAction] = _text.at(lineIndex--);
-        _line3->loadFromRenderedText(Fonts::cjk(), renderer, line, Colors::TEXT_COLOR);
+        _line3->loadFromRenderedText(Fonts::cjkUi(), renderer, line, Colors::TEXT_COLOR);
         if (playerAction) {
             _actionIcon->render(renderer, 0, offset + PADDING_TOP + PADDING_FONT);
         }
@@ -83,7 +87,7 @@ void CommandDisplay::draw(SDL_Renderer *renderer) {
 
     if (lineIndex >= 0) {
         auto[line, playerAction] = _text.at(lineIndex--);
-        _line2->loadFromRenderedText(Fonts::cjk(), renderer, line, Colors::TEXT_COLOR);
+        _line2->loadFromRenderedText(Fonts::cjkUi(), renderer, line, Colors::TEXT_COLOR);
         if (playerAction) {
             _actionIcon->render(renderer, 0, offset + PADDING_TOP + PADDING_FONT);
         }
@@ -93,7 +97,7 @@ void CommandDisplay::draw(SDL_Renderer *renderer) {
 
     if (lineIndex >= 0) {
         auto[line, playerAction] = _text.at(lineIndex--);
-        _line1->loadFromRenderedText(Fonts::cjk(), renderer, line, Colors::TEXT_COLOR);
+        _line1->loadFromRenderedText(Fonts::cjkUi(), renderer, line, Colors::TEXT_COLOR);
         if (playerAction) {
             _actionIcon->render(renderer, 0, offset + PADDING_TOP + PADDING_FONT);
         }
@@ -102,7 +106,7 @@ void CommandDisplay::draw(SDL_Renderer *renderer) {
 
     _actionIcon->render(renderer, 0, PADDING_TOP + LINE_HEIGHT * 3 + PADDING_FONT);
     if (!_promptText.empty()) {
-        _promptLine->loadFromRenderedText(Fonts::cjk(), renderer, _promptText, Colors::TEXT_COLOR);
+        _promptLine->loadFromRenderedText(Fonts::cjkUi(), renderer, _promptText, Colors::TEXT_COLOR);
         _promptLine->render(renderer, PADDING_LEFT, PADDING_TOP + LINE_HEIGHT * 3);
     }
 }

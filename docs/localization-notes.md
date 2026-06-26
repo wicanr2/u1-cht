@@ -17,7 +17,16 @@
 - **UTF-8 換行暫行修正**:`CommandDisplay` 切行時對齊 UTF-8 字元邊界(避免切壞中文);
   全形寬度感知換行於拉畫布階段完整處理。
 
-## 關鍵決策:拉高內部畫布,不縮字(實證)
+## 關鍵決策:拉高內部畫布,不縮字(✅ 已實作)
+**已完成**(`tests/snapshots/out/phaseA-canvas2.png`):中文狀態列清晰可讀,世界 crisp。
+- `main.cpp`:世界畫進 320×200 離屏 target(`gWorldTarget`,世界座標完全不動)→
+  nearest 放大到 640×400 邏輯畫布。UI(狀態列/指令列)在 640 空間以 **2× 座標 + 16px CJK** 繪製。
+- `Fonts`:`cjk()`=12px(in-target 320,地牢標籤用)、`cjkUi()`=16px(640 覆蓋層)。
+- 面板改 `SDL_RenderFillRect` 黑底(取代未縮放的 _background 貼圖)。
+- 待續:**地牢標籤**(方位/層數)仍在 target 內 12px,需比照搬到 640 覆蓋層;
+  `CommandDisplay` 全形寬度換行(`MAX_LINE_CHARS`)精修。
+
+### 原始決策脈絡(實證)
 - 現況:`main.cpp` `SDL_RenderSetLogicalSize(gRenderer, 320, 200)` + nearest 放大到視窗
   (config `960×600` = 3×)。所有繪製(含文字)都在 320×200 邏輯空間,整體放大。
 - **實測**(`tests/snapshots/out/phase2-cjk.png`):12px 中文畫在 320×200 內、再放大 3×

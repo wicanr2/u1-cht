@@ -16,24 +16,28 @@ PlayerStatusDisplay::PlayerStatusDisplay(SDL_Renderer *renderer, shared_ptr<Play
 }
 
 void PlayerStatusDisplay::draw(SDL_Renderer *renderer) {
-    SDL_Rect viewport = {PlayerStatusDisplay::POSITION_X, PlayerStatusDisplay::POSITION_Y,
-                         PlayerStatusDisplay::WIDTH, PlayerStatusDisplay::HEIGHT};
+    // 640 高解析覆蓋層:viewport 與座標 x2,字型 16px
+    constexpr int S = 2;
+    SDL_Rect viewport = {POSITION_X * S, POSITION_Y * S, WIDTH * S, HEIGHT * S};
     SDL_RenderSetViewport(renderer, &viewport);
 
-    _background->render(renderer, 0, 0);
+    // 黑底面板
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_Rect bg = {0, 0, WIDTH * S, HEIGHT * S};
+    SDL_RenderFillRect(renderer, &bg);
 
-    _textureLine1->loadFromRenderedText(Fonts::cjk(), renderer, "生命: " + to_string(_player->getHP()),
+    _textureLine1->loadFromRenderedText(Fonts::cjkUi(), renderer, "生命: " + to_string(_player->getHP()),
                                         Colors::TEXT_COLOR);
-    _textureLine2->loadFromRenderedText(Fonts::cjk(), renderer, "食物: " + to_string(_player->getFood()),
+    _textureLine2->loadFromRenderedText(Fonts::cjkUi(), renderer, "食物: " + to_string(_player->getFood()),
                                         Colors::TEXT_COLOR);
-    _textureXP->loadFromRenderedText(Fonts::cjk(), renderer, "經驗: " + to_string(_player->getXP()),
+    _textureXP->loadFromRenderedText(Fonts::cjkUi(), renderer, "經驗: " + to_string(_player->getXP()),
                                      Colors::TEXT_COLOR);
-    _textureMoney->loadFromRenderedText(Fonts::cjk(), renderer, "金幣: " + to_string(_player->getMoney()),
+    _textureMoney->loadFromRenderedText(Fonts::cjkUi(), renderer, "金幣: " + to_string(_player->getMoney()),
                                         Colors::TEXT_COLOR);
 
-    constexpr int LINE_HEIGHT = 8;
-    constexpr int PADDING_LEFT = 1;
-    constexpr int PADDING_TOP = 6;
+    constexpr int LINE_HEIGHT = 18;
+    constexpr int PADDING_LEFT = 2;
+    constexpr int PADDING_TOP = 4;
 
     int offset = 0;
     _textureLine1->render(renderer, PADDING_LEFT, PADDING_TOP);
