@@ -27,6 +27,12 @@ void CommandDisplay::writeLn(const string &str, bool isPlayerAction) {
             int index = 0;
             while (remainingLength > 0) {
                 auto substrLength = min(MAX_LINE_CHARS - 1, remainingLength);
+                // UTF-8 安全:切點落在 continuation byte (0b10xxxxxx) 時往前退到字元邊界,
+                // 避免把多位元組中文字切壞成無效 UTF-8(暫行;全形換行於拉畫布階段完整處理)
+                while (substrLength < remainingLength &&
+                       (static_cast<unsigned char>(str[index + substrLength]) & 0xC0) == 0x80) {
+                    substrLength--;
+                }
                 auto substr = str.substr(index, substrLength);
                 substrs.push_back(" " + substr);
                 remainingLength -= substrLength;
@@ -67,7 +73,7 @@ void CommandDisplay::draw(SDL_Renderer *renderer) {
 
     if (lineIndex >= 0) {
         auto[line, playerAction] = _text.at(lineIndex--);
-        _line3->loadFromRenderedText(Fonts::standard(), renderer, line, Colors::TEXT_COLOR);
+        _line3->loadFromRenderedText(Fonts::cjk(), renderer, line, Colors::TEXT_COLOR);
         if (playerAction) {
             _actionIcon->render(renderer, 0, offset + PADDING_TOP + PADDING_FONT);
         }
@@ -77,7 +83,7 @@ void CommandDisplay::draw(SDL_Renderer *renderer) {
 
     if (lineIndex >= 0) {
         auto[line, playerAction] = _text.at(lineIndex--);
-        _line2->loadFromRenderedText(Fonts::standard(), renderer, line, Colors::TEXT_COLOR);
+        _line2->loadFromRenderedText(Fonts::cjk(), renderer, line, Colors::TEXT_COLOR);
         if (playerAction) {
             _actionIcon->render(renderer, 0, offset + PADDING_TOP + PADDING_FONT);
         }
@@ -87,7 +93,7 @@ void CommandDisplay::draw(SDL_Renderer *renderer) {
 
     if (lineIndex >= 0) {
         auto[line, playerAction] = _text.at(lineIndex--);
-        _line1->loadFromRenderedText(Fonts::standard(), renderer, line, Colors::TEXT_COLOR);
+        _line1->loadFromRenderedText(Fonts::cjk(), renderer, line, Colors::TEXT_COLOR);
         if (playerAction) {
             _actionIcon->render(renderer, 0, offset + PADDING_TOP + PADDING_FONT);
         }
@@ -96,7 +102,7 @@ void CommandDisplay::draw(SDL_Renderer *renderer) {
 
     _actionIcon->render(renderer, 0, PADDING_TOP + LINE_HEIGHT * 3 + PADDING_FONT);
     if (!_promptText.empty()) {
-        _promptLine->loadFromRenderedText(Fonts::standard(), renderer, _promptText, Colors::TEXT_COLOR);
+        _promptLine->loadFromRenderedText(Fonts::cjk(), renderer, _promptText, Colors::TEXT_COLOR);
         _promptLine->render(renderer, PADDING_LEFT, PADDING_TOP + LINE_HEIGHT * 3);
     }
 }

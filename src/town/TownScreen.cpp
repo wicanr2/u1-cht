@@ -117,7 +117,7 @@ void TownScreen::playerMove(CardinalPoint direction) {
     }
 
     if (blocked) {
-        CommandDisplay::writeLn("Blocked!", true);
+        CommandDisplay::writeLn("受阻!", true);
         return;
     }
 

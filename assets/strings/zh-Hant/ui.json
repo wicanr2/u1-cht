@@ -1,27 +1,41 @@
 {
-  "_comment": "Ultima I 中文化 UI 字串表 (zh-Hant)。key 對應原始碼硬編碼英文,Phase 2 接上 i18n 查表後生效。含 {name} 佔位符。",
-  "_status": "草稿骨架 — 待 Phase 2 從原始碼完整抽取後逐句校訂",
+  "_comment": "Ultima I 中文化字串對照表 (zh-Hant)。目前翻譯為原始碼內聯 (inline);本表為對照/未來 i18n 查表層遷移用。{name}/{n} 為動態片段。",
 
   "dir.west": "西",
   "dir.east": "東",
   "dir.north": "北",
   "dir.south": "南",
 
-  "cmd.forward": "前進",
-  "cmd.turn_around": "向後轉",
-  "cmd.turn_left": "向左轉",
-  "cmd.turn_right": "向右轉",
-  "cmd.bare_hands": "徒手攻擊",
+  "status.hits": "生命",
+  "status.food": "食物",
+  "status.exp": "經驗",
+  "status.coin": "金幣",
 
-  "combat.blocked_by": "被{name}擋住!",
-  "combat.killed": "擊殺了{name}!",
-  "combat.attacked_by": "遭{name}攻擊!",
+  "overworld.mountains": "山脈無法通行!",
+  "overworld.water": "無法在水上行走!",
+  "overworld.blocked_by": "被{name}擋住!",
+  "overworld.killed": "擊殺了{name}!",
+  "overworld.attack_dagger": "用匕首攻擊:",
+  "overworld.nothing": "沒有目標!",
+  "town.blocked": "受阻!",
 
   "dungeon.level": "第 {n} 層",
+  "dungeon.turn_around": "向後轉",
+  "dungeon.turn_left": "向左轉",
+  "dungeon.turn_right": "向右轉",
+  "dungeon.forward": "前進",
+  "dungeon.forward_blocked": "前進—前方受阻!",
+  "dungeon.bare_hands": "徒手攻擊",
+  "dungeon.hit_killed": "命中!擊殺{name}!",
+  "dungeon.hit_1dmg": "命中!造成 1 點傷害",
+  "dungeon.attacked_by": "遭{name}攻擊!",
+  "dungeon.hit_dmg": "命中!造成 {n} 點傷害!",
+  "dungeon.dead": "你已死亡!",
+  "dungeon.klimb_what": "攀爬什麼?",
+  "dungeon.klimb_up": "向上攀爬至第 {n} 層",
+  "dungeon.klimb_down": "向下攀爬至第 {n} 層",
 
   "enemy.wandering_warlock": "遊蕩術士",
   "enemy.thief": "盜賊",
-  "enemy.giant_rat": "巨鼠",
-
-  "err.config_parse": "解析設定檔時發生錯誤"
+  "enemy.giant_rat": "巨鼠"
 }

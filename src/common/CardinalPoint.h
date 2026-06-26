@@ -13,13 +13,13 @@ public:
     static string toString(CardinalPoint cardinalPoint) {
         switch (cardinalPoint) {
             case CardinalPoint::East:
-                return "East";
+                return "東";
             case CardinalPoint::West:
-                return "West";
+                return "西";
             case CardinalPoint::North:
-                return "North";
+                return "北";
             case CardinalPoint::South:
-                return "South";
+                return "南";
         }
     }
 };

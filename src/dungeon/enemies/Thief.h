@@ -11,7 +11,7 @@ public:
 
     void update(float elapsed) override;
 
-    string getName() override { return "Thief"; };
+    string getName() override { return "盜賊"; };
 };
 
 

@@ -24,12 +24,12 @@ void DungeonScreen::draw(SDL_Renderer *renderer) {
     ShapeUtils::drawRoundedCorners(renderer);
     ShapeUtils::drawDungeonBorders(renderer);
 
-    _orientationLabel->loadFromRenderedText(Fonts::standard(), renderer, CardinalPointUtils::toString(
+    _orientationLabel->loadFromRenderedText(Fonts::cjk(), renderer, CardinalPointUtils::toString(
             _gameContext->getPlayer()->getDungeonOrientation()), Colors::TEXT_COLOR);
     _orientationLabel->render(renderer, 144, 150);
 
-    _levelLabel->loadFromRenderedText(Fonts::standard(), renderer,
-                                      "Level  " + to_string(_gameContext->getPlayer()->getDungeonLevel() + 1),
+    _levelLabel->loadFromRenderedText(Fonts::cjk(), renderer,
+                                      "第 " + to_string(_gameContext->getPlayer()->getDungeonLevel() + 1) + " 層",
                                       Colors::TEXT_COLOR);
     _levelLabel->render(renderer, 272 / 2, -2);
 
@@ -200,15 +200,15 @@ void DungeonScreen::handle(const SDL_Event &e) {
             case SDLK_DOWN:
                 player->dungeonTurn(Direction::Right);
                 player->dungeonTurn(Direction::Right);
-                CommandDisplay::writeLn("Turn around", true);
+                CommandDisplay::writeLn("向後轉", true);
                 break;
             case SDLK_LEFT:
                 player->dungeonTurn(Direction::Left);
-                CommandDisplay::writeLn("Turn left", true);
+                CommandDisplay::writeLn("向左轉", true);
                 break;
             case SDLK_RIGHT:
                 player->dungeonTurn(Direction::Right);
-                CommandDisplay::writeLn("Turn right", true);
+                CommandDisplay::writeLn("向右轉", true);
                 break;
             case SDLK_a:
                 doCombatRound(true);
@@ -238,13 +238,13 @@ void DungeonScreen::handle(const SDL_Event &e) {
 void DungeonScreen::moveForward() {
     auto player = _gameContext->getPlayer();
     if (_vision[1].feature == DungeonFeature::Wall || _vision[1].enemy != nullptr) {
-        CommandDisplay::writeLn("Forward - path blocked!", true);
+        CommandDisplay::writeLn("前進—前方受阻!", true);
         return;
     }
 
     // If we arrive to this point, we're either inside a door, or in a hallway and can move forward.
     player->dungeonMoveForward();
-    CommandDisplay::writeLn("Forward", true);
+    CommandDisplay::writeLn("前進", true);
 
     cout << "Moved to: " << player->getDungeonX() << ", " << player->getDungeonY() << "\n";
 }
@@ -277,13 +277,13 @@ void DungeonScreen::doPlayerAttack() {
     }
 
     if (enemy != nullptr) {
-        CommandDisplay::writeLn("Attack with your bare hands", true);
+        CommandDisplay::writeLn("徒手攻擊", true);
 
         enemy->receiveDamage(1);
         if (enemy->isDead()) {
-            CommandDisplay::writeLn("Hit! " + enemy->getName() + " killed!", false);
+            CommandDisplay::writeLn("命中!擊殺" + enemy->getName() + "!", false);
         } else {
-            CommandDisplay::writeLn("Hit! 1 damage", false);
+            CommandDisplay::writeLn("命中!造成 1 點傷害", false);
         }
     }
 }
@@ -302,19 +302,19 @@ void DungeonScreen::doMonsterAttacks() {
 void DungeonScreen::doMonsterAttack(const shared_ptr<Enemy> &enemy) {
     auto player = _gameContext->getPlayer();
 
-    CommandDisplay::writeLn("Attacked by " + enemy->getName() + "!", false);
-    CommandDisplay::writeLn("Hit! " + to_string(enemy->getDamage()) + " damage!", false);
+    CommandDisplay::writeLn("遭" + enemy->getName() + "攻擊!", false);
+    CommandDisplay::writeLn("命中!造成 " + to_string(enemy->getDamage()) + " 點傷害!", false);
 
     player->receiveDamage(enemy->getDamage());
 
     if (player->isDead()) {
-        CommandDisplay::writeLn("You are dead, nothing happens for now! :)", false);
+        CommandDisplay::writeLn("你已死亡!", false);
     }
 }
 
 void DungeonScreen::climbLadder() {
     if (_vision[0].ladder == nullptr) {
-        CommandDisplay::writeLn("K-Limb what?", true);
+        CommandDisplay::writeLn("攀爬什麼?", true);
         return;
     }
 
@@ -324,14 +324,14 @@ void DungeonScreen::climbLadder() {
     if (ladder->goingUp) {
         if (currentLevel == 0) {
             _gameContext->setScreen(ScreenType::Overworld);
-            CommandDisplay::writeLn("K-Limb up to level " + to_string(currentLevel), true);
+            CommandDisplay::writeLn("向上攀爬至第 " + to_string(currentLevel) + " 層", true);
         } else {
             player->setDungeonLevel(--currentLevel);
-            CommandDisplay::writeLn("K-Limb up to level " + to_string(currentLevel + 1), true);
+            CommandDisplay::writeLn("向上攀爬至第 " + to_string(currentLevel + 1) + " 層", true);
         }
     } else {
         player->setDungeonLevel(++currentLevel);
-        CommandDisplay::writeLn("K-Limb down to level " + to_string(currentLevel + 1), true);
+        CommandDisplay::writeLn("向下攀爬至第 " + to_string(currentLevel + 1) + " 層", true);
     }
 
     player->setDungeonX(ladder->toX);

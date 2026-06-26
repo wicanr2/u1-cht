@@ -6,7 +6,16 @@
 - **字型分流**:`Fonts::standard()`(8px PC_Senior,ASCII/數字)與 `Fonts::cjk()`
   (Noto CJK,中文)。`cjk()` 載入失敗時回退 standard。候選路徑見 `Fonts.cpp`
   (repo `assets/fonts/` 優先 → 系統 `/usr/share/fonts/.../NotoSansCJK-Regular.ttc`)。
-- 首批翻譯:狀態列 `生命/食物/經驗/金幣`(`PlayerStatusDisplay.cpp`)。
+- **翻譯方式(現階段)**:**原始碼內聯**(直接把英文字面換中文),非 JSON 查表。
+  完整 i18n 查表層(`I18n::t(key)`)留待後續重構;`assets/strings/zh-Hant/ui.json`
+  為對照表 / 未來遷移來源。
+- **已翻譯字串**(現有畫面全覆蓋):
+  - 狀態列:生命/食物/經驗/金幣(`PlayerStatusDisplay`)
+  - 世界地圖:山脈/水域/受阻/擊殺/匕首攻擊/方向(`OverworldScreen`、`CardinalPoint`)
+  - 地牢:前進/轉向/攀爬(K-Limb)/層數/戰鬥命中傷害/死亡(`DungeonScreen`)
+  - 敵人名:遊蕩術士/盜賊/巨鼠
+- **UTF-8 換行暫行修正**:`CommandDisplay` 切行時對齊 UTF-8 字元邊界(避免切壞中文);
+  全形寬度感知換行於拉畫布階段完整處理。
 
 ## 關鍵決策:拉高內部畫布,不縮字(實證)
 - 現況:`main.cpp` `SDL_RenderSetLogicalSize(gRenderer, 320, 200)` + nearest 放大到視窗

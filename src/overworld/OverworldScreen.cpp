@@ -155,19 +155,19 @@ void OverworldScreen::move(int deltaX, int deltaY) {
     // Don't allow player to walk across mountains or through water.
     OverworldSpriteType::SpriteType typeTypeSteppedOn = _tiles[getTileOffset(playerX, playerY)]->getSpriteType();
     if (typeTypeSteppedOn == OverworldSpriteType::SpriteType::MOUNTAIN) {
-        CommandDisplay::writeLn("Mountains are impassable!", true);
+        CommandDisplay::writeLn("山脈無法通行!", true);
         return;
     }
 
     if (typeTypeSteppedOn == OverworldSpriteType::SpriteType::WATER) {
-        CommandDisplay::writeLn("You can't walk on water!", true);
+        CommandDisplay::writeLn("無法在水上行走!", true);
         return;
     }
 
     // Don't allow player to walk past an enemy
     for (const auto &enemy: _enemies) {
         if (enemy->getX() == playerX && enemy->getY() == playerY) {
-            CommandDisplay::writeLn("Blocked by " + enemy->getName() + "!", true);
+            CommandDisplay::writeLn("被" + enemy->getName() + "擋住!", true);
             return;
         }
     }
@@ -202,7 +202,7 @@ void OverworldScreen::attack(int deltaX, int deltaY) {
     //target->receiveDamage(1);
     CommandDisplay::writeLn(getCardinalPointFromDeltas(deltaX, deltaY), true);
 
-    CommandDisplay::writeLn("Killed the " + target->getName() + "!", false);
+    CommandDisplay::writeLn("擊殺了" + target->getName() + "!", false);
     _enemies.erase(_enemies.begin() + index, _enemies.begin() + index + 1);
 
     _attackMode = false;
@@ -385,7 +385,7 @@ void OverworldScreen::spawnNpcs() {
         auto spriteType = _spritesMap.find(OverworldSpriteType::SpriteType::WANDERING_WARLOCK)->second;
         auto animation = make_shared<TileAnimation>();
         auto tile = make_shared<OverworldTile>(x, y, spriteType, animation);
-        auto enemy = make_shared<OverworldEnemy>(10, x, y, "Wandering Warlock", tile);
+        auto enemy = make_shared<OverworldEnemy>(10, x, y, "遊蕩術士", tile);
 
         _enemies.push_back(enemy);
     }
@@ -394,23 +394,23 @@ void OverworldScreen::spawnNpcs() {
 void OverworldScreen::setAttackMode(bool set) {
     if (set) {
         _attackMode = true;
-        CommandDisplay::write("Attack with dagger: ");
+        CommandDisplay::write("用匕首攻擊:");
     } else {
         if (_attackMode) {
             _attackMode = false;
-            CommandDisplay::writeLn("Nothing!", true);
+            CommandDisplay::writeLn("沒有目標!", true);
         }
     }
 }
 
 string OverworldScreen::getCardinalPointFromDeltas(int deltaX, int deltaY) {
     if (deltaX < 0) {
-        return "West";
+        return "西";
     } else if (deltaX > 0) {
-        return "East";
+        return "東";
     } else if (deltaY > 0) {
-        return "North";
+        return "北";
     } else if (deltaY < 0) {
-        return "South";
+        return "南";
     }
 }

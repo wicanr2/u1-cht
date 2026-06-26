@@ -11,7 +11,7 @@ public:
 
     void update(float elapsed) override;
 
-    string getName() override { return "Giant Rat"; };
+    string getName() override { return "巨鼠"; };
 };
 
 
