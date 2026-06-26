@@ -7,6 +7,7 @@
 #include "../CommandDisplay.h"
 #include <iostream>
 #include <stdexcept>
+#include <cstdlib>
 #include "../common/ShapeUtils.h"
 #include "../Configuration.h"
 
@@ -390,16 +391,48 @@ bool OverworldScreen::isPassable(int x, int y) {
 void OverworldScreen::onStep() {
     spawnNpcs();
 
-    // 時間累加器:滿 100 走一個時間 tick(目前 open_ultima 尚無怪物移動/食物消耗,
-    // 先建立 turn-based 節奏,後續 step_mobs / 食物 掛此處)。
+    // 時間累加器:滿 100 走一個時間 tick。地面怪「相鄰反擊」掛在 tick 上
+    // (忠於原版 U1:地面怪不移動;移動追擊是地牢的行為,見 docs/ultima1-original-ai.md)。
     _timeAccum += Configuration::getSpeedPct();
     while (_timeAccum >= 100) {
         _timeAccum -= 100;
-        // TODO: step_mobs(); 食物 -= 1; 等隨時間 tick 的回合制邏輯
+        overworldMonsterTurn();
+        // TODO: 食物 -= 1 等隨時間 tick 的回合制邏輯
+    }
+}
+
+// 地面怪行動:不移動(忠於原版 U1),僅在與玩家相鄰(曼哈頓距離=1)時攻擊。
+void OverworldScreen::overworldMonsterTurn() {
+    auto player = _gameContext->getPlayer();
+    if (player->isDead()) return;
+
+    int px = player->getOverworldX();
+    int py = player->getOverworldY();
+
+    for (const auto &e : _enemies) {
+        if (abs(e->getX() - px) + abs(e->getY() - py) == 1) {
+            int dmg = 2 + rand() % 5;   // 2–6 點
+            player->receiveDamage(dmg);
+            CommandDisplay::writeLn("遭" + e->getName() + "攻擊!損失 " + to_string(dmg) + " 點生命", false);
+            if (player->isDead()) {
+                CommandDisplay::writeLn("你已死亡!", false);
+                break;
+            }
+        }
     }
 }
 
 void OverworldScreen::spawnNpcs() {
+    // 測試 hook(env-gated,正常遊玩不啟用):在玩家右側強制生一隻怪以驗證相鄰反擊。
+    if (getenv("U1_TEST_ADJ_SPAWN") && _enemies.empty()) {
+        auto pl = _gameContext->getPlayer();
+        int ax = pl->getOverworldX() + 1, ay = pl->getOverworldY();
+        auto st = _spritesMap.find(OverworldSpriteType::SpriteType::WANDERING_WARLOCK)->second;
+        auto tl = make_shared<OverworldTile>(ax, ay, st, make_shared<TileAnimation>());
+        _enemies.push_back(make_shared<OverworldEnemy>(10, ax, ay, "遊蕩術士", tl));
+        return;
+    }
+
     if ((int) _enemies.size() >= MOB_MAX) return;
 
     // 機率閘門:spawn_pct 倍率 + 基礎 ~87.5%/步(對齊 u2-cht / oracle)

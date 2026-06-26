@@ -82,6 +82,9 @@ private:
 
     void onStep();      // 每走一步:推進時間 tick(speed_pct)+ 嘗試生怪(spawn_pct)
 
+    // 地面怪「相鄰時反擊玩家」(忠於原版 U1:地面怪不移動,只在相鄰時攻擊)
+    void overworldMonsterTurn();
+
     void spawnNpcs();
 
     bool isPassable(int x, int y);
