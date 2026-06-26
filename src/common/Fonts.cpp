@@ -5,10 +5,10 @@ TTF_Font* Fonts::_standard = nullptr;
 TTF_Font* Fonts::_cjk = nullptr;
 TTF_Font* Fonts::_cjkUi = nullptr;
 
-// CJK 字型候選路徑:優先用 repo 內重建字庫,否則回退系統 Noto CJK。
+// CJK 字型候選路徑:優先用 repo 內重建字庫,否則回退系統 Noto Serif CJK(宋體/明體,古典風)。
 static const char* kCjkFontCandidates[] = {
-    "./assets/fonts/NotoSansCJK-Regular.ttc",
     "./assets/fonts/u1-cjk.ttf",
+    "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
 };
 
