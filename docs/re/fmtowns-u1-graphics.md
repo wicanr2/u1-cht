@@ -56,3 +56,17 @@
 1. palette texture index 微調(草紋紅→深綠)。
 2. 52 槽對應:UT1MAP(地形)+ UT1TILE1(物件:城堡/城鎮/馬/車/船/梭/時光機)+ UT1TILE0(怪物)。
 3. 32→16 downscale → 拼 832×16 PNG → `tileset_png` 載入 → 對實機校驗。
+
+## ★ 里程碑(2026-06-26):FM Towns 素材包載入遊戲成功(provisional)
+
+- `tools/build_fmtowns_pack.py` 組出 832×16 FM Towns 包(地形自動分類 + 物件/怪物 + 32→16 downscale)。
+- `config tileset="png" / tileset_png="assets/tilesets/fmtowns.png"` → **FM Towns 亮綠草地渲染在 open_ultima**
+  (見 `docs/re/img/fmtowns_ingame.png`)。**跨平台 PNG AssetPack pipeline 端到端打通。**
+- **provisional 待修**:
+  - **water 顯紅**:UT1MAP 前 24 格用我的近似 palette 解不出純藍(`water blue%=0`)→ 水的 index 對到非藍。
+  - grass 紅雜點:texture index 對應。
+  - 根因:**缺 U1 精確 palette**。「依 nibble bit 推亮色」讓 grass=綠對,但 water 等不對。
+- **續作(精確 palette 推導)**:
+  1. 取已知 tile(grass 全綠/water 全藍,對 hg101 實機)→ 找其主要 nibble index →
+     建 index→實機色 對照,逐 index 校準完整 16 色 palette。
+  2. 52 槽精確對應(water/grass/forest/mountain/物件/怪物各挑對 tile)。

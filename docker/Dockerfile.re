@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xxd unzip curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# wozardry:woz <-> dsk 轉換 + 檔系統工具
-RUN pipx install wozardry || pip3 install --break-system-packages wozardry || true
+# Python 影像處理(FM Towns/各平台 tile 解碼匯出 PNG)
+RUN pip3 install --break-system-packages pillow || true
 
 # AppleCommander:讀 Apple DOS 3.3 / ProDOS、Applesoft BASIC detokenize
 RUN curl -fsSL -o /opt/ac.jar \
