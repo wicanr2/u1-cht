@@ -21,6 +21,30 @@
   原版 Apple U1(1981/1986)歷史上以 **Applesoft BASIC + 少量 assembly** 寫成 →
   若 BASIC 在,detokenize 後**最好讀**,是首選 oracle。**(待 Step 3 抽檔驗證)**
 
+## Step 3 — woz 身分鑑定(重要更正,已驗證)
+
+解析 `Ultima I IIgs.woz` 的 INFO/META chunk:
+- `disk_type=2`(**3.5"**,非 5.25")、`requires_machine: 2gs`、`requires_rom: IIgs ROM1+3`、`write_protected=0`。
+- META:`developer: Richard Garriott | **Rebecca Heineman** | Scott Everts…`、`publisher: **Vitesse**`、
+  `copyright: **1994**`、`title: Ultima I / The First Age of Darkness`。
+
+⇒ **這片是 1994 年 Rebecca Heineman / Vitesse 的 Apple IIgs 移植版**(65816 組語),**不是 1981 原版**。
+當「原版怪物 AI oracle」不理想(差 13 年、不同作者與架構)。**教訓**:差點因檔名「IIgs / woz-a-day」
+就誤當原版 Apple——META 一驗就翻案(對齊 `62` 鐵則:描述/採信前先驗證)。
+
+> 註:此 IIgs 片 `write_protected=0`、3.5" ProDOS,理論上可讀,但版本不對,**降優先**。
+> AppleCommander `-l` 回 null(可能需 woz→2mg;因版本不對暫不深追)。
+
+## 候選 oracle 重排(Step 3 後)
+
+| 映像 | 年代/作者 | 與 1981 原版距離 | 可讀性 | 結論 |
+|---|---|---|---|---|
+| Atari `.atr`(SierraVenture) | **1983** | **最近**(早期港) | 標準 ATR sector,可讀 | ✅ **改用這個當主 oracle** |
+| Apple `Ultima I IIgs.woz` | 1994 Heineman/Vitesse | 遠(13 年後重寫) | 3.5" ProDOS(woz) | ⏸ 版本不對,備用 |
+| IBM PC / Trilogy | 1987+ 編譯 | 中 | 編譯檔 | ❌ |
+
+> 1981 Apple 原版**不在** `org_game/`;手上最早是 1983 Atari。以它為主 oracle(6502 asm 反組譯)。
+
 ## 下一步(計畫,未執行)
 
 - **Step 3**:抽 Apple woz 檔系統 → 列檔 → 確認 BASIC/binary 組成。
@@ -28,6 +52,35 @@
 - **Step 4**:若有 BASIC 主程式 → detokenize → 定位怪物移動/攻擊段落(grep `MONSTER`/座標運算)。
 - **Step 5**:逐句反追怪物移動規則(每回合幾格?貪婪逐玩家?對角?亂數?),內容對齊驗證。
 - **Step 6**:把驗證後的規則寫進 `docs/ultima1-original-ai.md`,再據以實作 open_ultima 地牢移動。
+
+## Step 4 — Atari 檔系統(大突破,已驗證)
+
+Atari Side A(Program Master)是**標準 Atari DOS 2 檔系統**(非自訂 boot),且**程式碼按功能模組分檔、檔名自帶語意**:
+
+| 檔案 | 推測 | sectors |
+|---|---|---|
+| `OUTMOVE` | 地面(outworld)移動 | 75 |
+| **`DNGMOVE`** | **地牢移動(怪物 AI 應在此)** | 86 |
+| `TWNMOVE` / `CASMOVE` / `SPAMOVE` | 城鎮/城堡/太空移動 | — |
+| `DNGOBJ` | 地牢物件/資料 | 10 |
+| `ULTIMA` / `INITDSP` / `INITLOAD` / `MASTER` | 主程式 / 初始化 | — |
+| `SET1`–`SET5` | 資料集 | — |
+
+提取工具:`tools/re/atari_extract.py`(Atari DOS 2 sector chain + binary-load 分段解析,可重跑)。
+抽出檔皆 **Atari binary load 格式**(`FFFF` 標頭)。
+
+## Step 5 — DNGMOVE 反組譯(進行中)
+
+- 分段:bootstrap `$6A00-$6C75` + 主碼 **`$8000-$A68E`(~9.9KB)** + RUNAD 向量。
+- `da65 --start-addr 0x8000` → **5937 行 6502**(`re_work/atari/DNGMOVE_main.s`)。
+- **錨點嘗試**:抽 DNGMOVE/DNGOBJ 字串,多為 Atari DOS 訊息(`ERROR/FILE/WRITE PROTECT`)
+  與狀態列(`H.P.= FOOD= EXP.= GOLD=`、`INVENTORY/PLAYER/LEVEL`、寶石名);**無直接怪名/移動訊息**可錨。
+- ⇒ 真正錨點在 **zero-page 的玩家/怪座標變數 + 地牢資料結構**;需在 5937 行內逐段認出
+  「比對怪座標 vs 玩家座標 → INC/DEC 怪座標」的子程式。**深度互動式 6502 追蹤,多輪工程。**
+
+### 狀態:已定位到「正確的模組與反組譯」,尚未追出確切 AI 子程式
+> 依 `62` 紀律:**未宣告受阻**——已知下一步在哪(DNGMOVE_main.s 內找座標逐近子程式),
+> 只是工程量大。下輪可繼續:認 zero-page 座標變數 → 反追怪移動 routine。
 
 ## 待驗 / 未決(不下結論)
 
