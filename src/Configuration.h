@@ -42,6 +42,16 @@ public:
         return getGameFilesPath() + "CGATILES.BIN";
     }
 
+    // Tandy 1000(16 色,與 EGA 同 RowPlanar 格式;T1KTILES.BIN 與 EGATILES.BIN 同大小)
+    static string getTandyOverworldTilesFilePath() {
+        return getGameFilesPath() + "T1KTILES.BIN";
+    }
+
+    // 初始 tileset:"ega" / "cga" / "tandy"(AssetPack 第一步,可換 DOS 平台變體)
+    static string getTileset() {
+        return _value.value("tileset", string("ega"));
+    }
+
     static string getEgaTownFilePath() {
         return getGameFilesPath() + "EGATOWN.BIN";
     }

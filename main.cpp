@@ -203,11 +203,26 @@ int main(int argc, char *args[]) {
 
             auto egaTilesPath = Configuration::getEgaOverworldTilesFilePath();
             auto cgaTilesPath = Configuration::getCgaOverworldTilesFilePath();
-            auto usingEga = true;
+            auto tandyTilesPath = Configuration::getTandyOverworldTilesFilePath();
+
+            // tileset 變體(AssetPack 第一步):0=EGA,1=CGA,2=Tandy。Tandy 與 EGA 同 RowPlanar 格式。
+            const char *kTilesetNames[] = {"EGA", "CGA", "Tandy"};
+            int tilesetIdx = 0;
+            {
+                auto ts = Configuration::getTileset();
+                if (ts == "cga") tilesetIdx = 1;   // "tandy" 需專屬 decoder,暫回退 EGA(0)
+            }
+            auto applyTileset = [&](int idx) {
+                if (idx == 1)
+                    overworldScreen->init(gRenderer, make_unique<CGALinearDecodeStrategy>(16, 16).get(), cgaTilesPath);
+                else
+                    overworldScreen->init(gRenderer, make_unique<EGARowPlanarDecodeStrategy>(16, 16).get(),
+                                          idx == 2 ? tandyTilesPath : egaTilesPath);
+            };
 
             auto townScreen = make_shared<TownScreen>(gameContext, gRenderer);
 
-            overworldScreen->init(gRenderer, make_unique<EGARowPlanarDecodeStrategy>(16, 16).get(), egaTilesPath);
+            applyTileset(tilesetIdx);
 
             // 螢幕邏輯畫布 = 放大後 640x400;世界另畫進 320x200 離屏 target。
             SDL_RenderSetLogicalSize(gRenderer, CANVAS_W, CANVAS_H);
@@ -283,18 +298,12 @@ int main(int argc, char *args[]) {
                                 settingsActive = true;
                                 continue;
                             }
-                            // F1 或 PageDown:循環切換顯示用 tileset(EGA/CGA),螢幕顯示中文提示
+                            // F1 或 PageDown:循環切換 tileset(EGA↔CGA)+ 中文提示。
+                            // Tandy(T1K)雖檔案同大小但格式不同於 EGA(實測亂碼),需專屬 decoder → 暫不入循環。
                             if (pressedKey == SDLK_PAGEDOWN || pressedKey == SDLK_F1) {
-                                usingEga = !usingEga;
-                                if (usingEga) {
-                                    overworldScreen->init(gRenderer,
-                                                          make_unique<EGARowPlanarDecodeStrategy>(16, 16).get(),
-                                                          egaTilesPath);
-                                } else {
-                                    overworldScreen->init(gRenderer, make_unique<CGALinearDecodeStrategy>(16, 16).get(),
-                                                          cgaTilesPath);
-                                }
-                                CommandDisplay::writeLn(usingEga ? "圖形模式:EGA" : "圖形模式:CGA", false);
+                                tilesetIdx = (tilesetIdx == 1) ? 0 : 1;   // EGA(0) ↔ CGA(1)
+                                applyTileset(tilesetIdx);
+                                CommandDisplay::writeLn(string("圖形模式:") + kTilesetNames[tilesetIdx], false);
                             }
                             // M:切換背景音樂
                             if (pressedKey == SDLK_m) {

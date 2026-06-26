@@ -30,6 +30,13 @@ overworld tiles / town tiles / sprites,來源可為:
 - 新增 `AssetPack` 介面 + 兩種實作(BIN-decode / PNG-sheet)為後續工作。
 - 非 DOS 平台美術為版權素材,**不入庫**;轉檔流程與來源另記。
 
+## 實測發現(2026-06-26)
+
+- **Tandy(T1KTILES.BIN)≠ EGA 格式**:雖與 EGATILES.BIN 同為 6656 bytes,用 EGARowPlanar decoder
+  解出來是亂碼 → Tandy 1000 16 色記憶體佈局不同於 EGA planar,需專屬 T1K decoder(待 RE 格式)。
+  → 教訓:**檔案同大小不代表同格式**,加 tileset 變體前先實測渲染。
+- 已落地:`tileset` config(ega/cga)+ F1/PageDown EGA↔CGA 循環。
+
 ## 未決
 - 各平台原始圖檔的取得與解碼(Apple woz / FM Towns 等)工程量,待逐版評估。
 - 統一 PNG sprite sheet 的切版規格(tile 尺寸、索引、遮罩)需定義。

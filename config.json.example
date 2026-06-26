@@ -4,5 +4,6 @@
   "game_files_path": "./gamedata/",
   "language": "zh-Hant",
   "speed_pct": 100,
-  "spawn_pct": 55
+  "spawn_pct": 55,
+  "tileset": "ega"
 }

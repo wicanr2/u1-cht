@@ -25,9 +25,10 @@
   - 自繪中文 modal、↑↓選列、←→±5%、F6/ESC 關閉;沿用離開鐵則的 modal 風格
 - [x] **食物 / 飢餓 tick**:每時間 tick 食物 −1;食物=0 時每回合扣 HP(參考 u2-cht 機制)
   - 掛在 `OverworldScreen::onStep` 與 `DungeonScreen` 的時間 tick;狀態列食物已顯示
-- [ ] **跨版本素材包(AssetPack,ADR 0001)**:可換不同平台外觀
-  - 第一步:tileset 變體 config 驅動(`ega`/`cga`/`tandy`,皆現成 BIN)
-  - 進階:Apple/FMTowns/MSX/PC98 美術 → 拆 sprite → 統一 PNG sprite sheet 載入
+- [~] **跨版本素材包(AssetPack,ADR 0001)**:可換不同平台外觀
+  - [x] 第一步:tileset 變體 config 驅動(`tileset: ega/cga`)+ F1/PageDown 循環
+  - [ ] Tandy(T1K):**實測 T1KTILES 雖與 EGA 同大小但格式不同(EGA decoder 解出亂碼)→ 需專屬 T1K decoder**
+  - [ ] 進階:Apple/FMTowns/MSX/PC98 美術 → 拆 sprite → 統一 PNG sprite sheet 載入(大工程)
   - 素材來源見 `docs/materials.md`;比對截圖 `reference/hg101/`
 
 ## C. 待辦(backlog)⬜
