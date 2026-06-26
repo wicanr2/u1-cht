@@ -25,6 +25,16 @@ public:
         return _value.value("language", string("zh-Hant"));
     }
 
+    // 時間流速 %(每步 time_accum += speed_pct,滿 100 走一 tick;100=每步一 tick=原行為)
+    static int getSpeedPct() {
+        return _value.value("speed_pct", 100);
+    }
+
+    // 怪物生成率 %(每步生成機率倍率;參考 u2-cht)
+    static int getSpawnPct() {
+        return _value.value("spawn_pct", 55);
+    }
+
     static string getEgaOverworldTilesFilePath() {
         return getGameFilesPath() + "EGATILES.BIN";
     }

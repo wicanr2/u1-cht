@@ -44,9 +44,9 @@ private:
     static constexpr int MAP_FILE_SIZE = 13103;
     static constexpr int TILES_PER_ROW = 168;
 
-    static constexpr int NPC_SPAWN_PERIOD = 10.000;
-
-    float npcSpawnCounter = 0;
+    // 怪物上限(同時在場);turn-based 時間 tick 累加器(參考 u2-cht)
+    static constexpr int MOB_MAX = 8;
+    int _timeAccum = 0;
 
     static OverworldSpriteType::SpriteType getSpriteType(int tileTypeId);
 
@@ -80,7 +80,11 @@ private:
 
     void activateNpcs();
 
+    void onStep();      // 每走一步:推進時間 tick(speed_pct)+ 嘗試生怪(spawn_pct)
+
     void spawnNpcs();
+
+    bool isPassable(int x, int y);
 
     void setAttackMode(bool set);
 

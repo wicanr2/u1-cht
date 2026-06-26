@@ -27,6 +27,8 @@ public:
     void update(float elapsed);
     void draw(SDL_Renderer *renderer, SDL_Rect camera);
 
+    shared_ptr<OverworldTile> getTile() { return _tile; }
+
 private:
     int _x;
     int _y;

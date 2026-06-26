@@ -93,6 +93,15 @@ void OverworldScreen::init(SDL_Renderer *renderer,
                                              _spritesMap.find(OverworldSpriteType::SpriteType::PLAYER)->second,
                                              defaultSharedAnimation);
 
+    // 切換 tileset 後:把現存 NPC 的 sprite 重新指向新 tileset 的同型 sprite。
+    // 否則 NPC 會保留舊 tileset 外觀(palette 不一致),且一旦 sprite 來源失效就會消失。
+    for (const auto &enemy : _enemies) {
+        auto it = _spritesMap.find(enemy->getTile()->getSpriteType());
+        if (it != _spritesMap.end()) {
+            enemy->getTile()->setSprite(it->second);
+        }
+    }
+
     delete[] buffer;
 }
 
@@ -105,12 +114,7 @@ void OverworldScreen::update(float elapsed) {
     for (const auto &enemy: _enemies) {
         enemy->update(elapsed);
     }
-
-    npcSpawnCounter += elapsed;
-    if (npcSpawnCounter >= NPC_SPAWN_PERIOD) {
-        npcSpawnCounter = 0;
-        spawnNpcs();
-    }
+    // 生怪改為 turn-based(每步觸發,見 onStep),不再用 real-time 計時。
 }
 
 void OverworldScreen::draw(SDL_Renderer *renderer) {
@@ -183,6 +187,9 @@ void OverworldScreen::move(int deltaX, int deltaY) {
 
     // re-center camera on player if possible
     setCamera();
+
+    // 成功走一步 → 推進 turn-based 時間 tick + 嘗試生怪
+    onStep();
 }
 
 void OverworldScreen::attack(int deltaX, int deltaY) {
@@ -371,23 +378,56 @@ void OverworldScreen::activateNpcs() {
     }
 }
 
+// 地面格可否生怪/通行(界內、非山非水)
+bool OverworldScreen::isPassable(int x, int y) {
+    if (x < 0 || x > BOUND_X_TILES || y < 0 || y > BOUND_Y_TILES) return false;
+    auto t = _tiles[getTileOffset(x, y)]->getSpriteType();
+    return t != OverworldSpriteType::SpriteType::MOUNTAIN &&
+           t != OverworldSpriteType::SpriteType::WATER;
+}
+
+// 每走一步:嘗試生怪(spawn_pct)+ 推進時間 tick(speed_pct)。參考 u2-cht。
+void OverworldScreen::onStep() {
+    spawnNpcs();
+
+    // 時間累加器:滿 100 走一個時間 tick(目前 open_ultima 尚無怪物移動/食物消耗,
+    // 先建立 turn-based 節奏,後續 step_mobs / 食物 掛此處)。
+    _timeAccum += Configuration::getSpeedPct();
+    while (_timeAccum >= 100) {
+        _timeAccum -= 100;
+        // TODO: step_mobs(); 食物 -= 1; 等隨時間 tick 的回合制邏輯
+    }
+}
+
 void OverworldScreen::spawnNpcs() {
+    if ((int) _enemies.size() >= MOB_MAX) return;
+
+    // 機率閘門:spawn_pct 倍率 + 基礎 ~87.5%/步(對齊 u2-cht / oracle)
+    int spawnPct = Configuration::getSpawnPct();
+    if (spawnPct < 100 && rand() % 100 >= spawnPct) return;
+    if (rand() % 8 >= 7) return;
+
     auto player = _gameContext->getPlayer();
-    auto playerX = player->getOverworldX();
-    auto playerY = player->getOverworldY();
+    int px = player->getOverworldX();
+    int py = player->getOverworldY();
 
-    if (_enemies.size() < 5) {
-        // Spawn some more NPCs until we have at least 5.
-        auto x = playerX + OverworldScreen::DISPLAY_SIZE_TILES_WIDTH + rand() % 5;
-        auto y = playerY + OverworldScreen::DISPLAY_SIZE_TILES_HEIGHT + rand() % 5;
+    // 視野內隨機可通行空格(離玩家至少 3 格,避免貼臉生成)
+    constexpr int HALF_W = DISPLAY_SIZE_TILES_WIDTH / 2;
+    constexpr int HALF_H = DISPLAY_SIZE_TILES_HEIGHT / 2;
+    for (int attempt = 0; attempt < 12; attempt++) {
+        int x = px + (rand() % (2 * HALF_W + 1)) - HALF_W;
+        int y = py + (rand() % (2 * HALF_H + 1)) - HALF_H;
+        if (abs(x - px) + abs(y - py) < 3) continue;        // 太近
+        if (!isPassable(x, y)) continue;
+        if (x == px && y == py) continue;
+        bool occupied = false;
+        for (const auto &e : _enemies) if (e->getX() == x && e->getY() == y) { occupied = true; break; }
+        if (occupied) continue;
 
-        // Ignore terrain types for now.
         auto spriteType = _spritesMap.find(OverworldSpriteType::SpriteType::WANDERING_WARLOCK)->second;
-        auto animation = make_shared<TileAnimation>();
-        auto tile = make_shared<OverworldTile>(x, y, spriteType, animation);
-        auto enemy = make_shared<OverworldEnemy>(10, x, y, "遊蕩術士", tile);
-
-        _enemies.push_back(enemy);
+        auto tile = make_shared<OverworldTile>(x, y, spriteType, make_shared<TileAnimation>());
+        _enemies.push_back(make_shared<OverworldEnemy>(10, x, y, "遊蕩術士", tile));
+        return;
     }
 }
 
