@@ -28,3 +28,15 @@
 ## 流程(E1 續)
 解 3 個 TIF → 校 palette → 逐格挑 sprite 對 engine 52 槽 → downscale → 拼 832×16 PNG →
 `config tileset_png=assets/tilesets/fmtowns.png` 載入 → 對實機截圖校驗 → commit。
+
+## palette 校準進展(2026-06-26)
+
+- TIF 開頭 `00 00 00 00`(非標準 TIFF header)→ **無內嵌 ColorMap**,palette 須外求。
+- u2 的 `fmtowns_pal.json` / `derived_palette.json` 是 **U2 專屬**(每遊戲執行期自設 palette),套 U1 不準。
+- **進展**:改用**完整 16 色 RGBI palette + bit 反序(FillOrder=2)**重解 `UT1MAP` →
+  地形結構認得出(樹/城門/磚牆/水/**草地變綠**),但仍有紅/洋紅雜點 → 部分 index 對應未中。
+  工具 `tools/re/fmtowns_dec16.py`。
+- **剩餘**:取得 **U1 專屬 16 色 palette** ——
+  路徑 A:從 U1 FM Towns 遊戲檔(執行檔/資源)RE 出 palette 暫存器值;
+  路徑 B:對 `reference/hg101/imgs/ultima1-FMTOWNS-06.png`(U1 overworld 實機)逐色採樣校準。
+- ground truth 顏色(取自實機 06):草=亮綠、水=藍波紋、森林=深綠叢、山=深色藍邊、玩家=藍衣。
