@@ -11,6 +11,8 @@ shared_ptr<LTexture> SpriteSheetLoader::loadTextureFromPng(const string &path, S
     int w = surface->w, h = surface->h;
     SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
+    // PNG 含 alpha(sprite 黑底→透明)→ 用 BLEND,讓玩家/怪物正確疊在地形上
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
     return make_shared<LTexture>(tex, w, h);
 }
 

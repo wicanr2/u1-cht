@@ -48,15 +48,43 @@ def main():
     terr['mountain']=max(cand, key=lambda i:(frac(mp[i],BLACK) if 0.3<frac(mp[i],BLACK)<0.85 else 0))
     print("terrain tile idx:",terr,
           "  water blue%=", round(frac(mp[terr['water']],BLUE),2))
-    # 組 52 槽:0water 1grass 2forest 3mountain;4+ 用 t1 物件;player+怪用 t0
-    pick=[mp[terr['water']],mp[terr['grass']],mp[terr['forest']],mp[terr['mountain']]]
-    # 4-9: castle,castle,signpost,town,town,dungeon → 從 t1 取前幾個物件(provisional)
-    obj=[t for t in t1[:48]]
-    mon=[t for t in t0[:48]]
-    seq=pick + obj[:6] + [t0[0]] + obj[6:6+6] + mon[:48]  # 對齊 52
-    grid=Image.new("RGB",(16*52,16),(0,0,0))
+    # === 52 槽明確對應(engine 順序見 TileTypeLoader)===
+    # 來源:W/G/F/M=UT1MAP(自動);物件/載具=UT1TILE1;玩家/怪物=UT1TILE0(視覺辨識)
+    # UT1TILE1:24-25城堡 0招牌 26-29馬 30-33車 34-37筏 38-43船 44-47列車 48-51梭
+    # UT1TILE0:0玩家,8+各種怪
+    W={'w':mp[terr['water']],'g':mp[terr['grass']],'f':mp[terr['forest']],'m':mp[terr['mountain']]}
+    def T1(i): return t1[i] if i<len(t1) else t1[0]
+    def T0(i): return t0[i] if i<len(t0) else t0[0]
+    seq=[
+        W['w'],W['g'],W['f'],W['m'],          # 0-3 water grass forest mountain
+        T1(24),T1(25),                         # 4-5 castle(2幀)
+        T1(0),                                 # 6 signpost(招牌/星)
+        mp[6],mp[6],                           # 7-8 town(2幀)= UT1MAP 城門
+        T1(13),                                # 9 dungeon entrance(暫用建築)
+        T0(0),                                 # 10 player
+        T1(26),                                # 11 horse
+        T1(30),                                # 12 cart
+        T1(34),                                # 13 raft
+        T1(40),T1(41),                         # 14-15 frigate(2幀)
+        T1(44),                                # 16 aircar
+        T1(48),                                # 17 shuttle
+        T1(52),                                # 18 time machine
+    ]
+    # 19-51 怪物(33 槽,多為2幀)→ UT1TILE0 怪物序列(跳過 player tile0)
+    mi=8
+    while len(seq)<52:
+        seq.append(T0(mi)); mi=(mi+1)% len(t0)
+        if mi==0: mi=8
+    # RGBA:slot>=10(玩家/載具/怪物=疊在地形上的)黑底→透明;0-9 地形/結構保持不透明
+    grid=Image.new("RGBA",(16*52,16),(0,0,0,0))   # 全透明底,透明 sprite 像素不被蓋黑
     for i in range(52):
-        src=seq[i] if i<len(seq) else pick[1]
-        grid.paste(src.resize((16,16),Image.NEAREST),(i*16,0))
-    grid.save(out); print("wrote",out)
+        tile=seq[i].resize((16,16),Image.NEAREST).convert("RGBA")
+        if i>=10:
+            px=tile.load()
+            for y in range(16):
+                for x in range(16):
+                    r,g,b,a=px[x,y]
+                    if r==0 and g==0 and b==0: px[x,y]=(0,0,0,0)
+        grid.paste(tile,(i*16,0),tile)
+    grid.save(out); print("wrote",out,"slots",len(seq))
 if __name__=="__main__": main()
