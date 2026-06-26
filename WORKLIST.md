@@ -44,7 +44,7 @@
 |---|---|---|---|---|
 | E1 | **FM Towns** | Trilogy CD(GRAPH 已抽於 u7-cht) | ✅ 地形渲染成功(綠草+藍水+森林);8色palette(偶數index)+ chunkyrev 解碼 + 自動分類 + 32→16。物件/怪物 sprite 精修待續 | ✅ 地形完成 |
 | E2 | **Apple IIgs** | woz(1994) | 🧱 **woz 解碼牆**:需自寫 3.5" GCR 解碼器(見 docs/re/e2-apple-iigs.md) | 🧱 |
-| E3 | **MSX** | .dsk(FAT12) | 🔄 openMSX 編成+跑起遊戲+抓到 VDP模式(SCREEN7)+正確palette(8色GRB);剩到 overworld dump VRAM 解 MSXTILES | 🔄 進展大 |
+| E3 | **MSX** | .dsk(FAT12) | 🔄 openMSX編成+跑起+VDP破解(SCREEN7/8色GRB)+發現雙磁碟存檔;卡導航時序→續作走 OUT.COM Z80反組譯(docs/re/e3-msx.md) | 🔄 |
 | E4 | **PC-98** | `org_game/msx/【PC98】….fdi` | PC-98 FDI + planar 圖格式 | ⬜ |
 | E5 | **Atari** | 1983 ATR(已抽檔)| tile 在 `SET1-5`/`MASTER`?待找;6502 已反組譯 | ⬜ |
 
