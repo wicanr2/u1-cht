@@ -1,64 +1,102 @@
-# 各版本背景音樂(音樂跟隨平台)
+# 各版本背景音樂 — 逆向、原生還原與歷史紀錄
 
-切換 tileset(`F1` / `PageDown`)時,背景音樂會**一併換成該平台原版的 BGM** —— 看哪一版的畫面,
-就聽哪一版的音樂。實作見 `main.cpp`(`pngPacks[].music` + `applyMusic()`)與 `src/common/Audio.cpp`。
+本檔記錄《Ultima I》各平台版本背景音樂(BGM)的**格式逆向查證**與**原生還原步驟**,作為歷史保存紀錄。
+方法依 L.CY 指示:**不錄模擬器**,而是「找到音樂資料檔 → 確認格式 → 理解發聲機制 → 自寫合成器原生 render 回 ogg」。
 
-## 版權與檔案放置
+> 設計:遊戲內切 tileset(`F1` / `PageDown`)時,背景音樂**一併換成該平台原版 BGM**(看哪版畫面、聽哪版音樂)。
+> 實作見 `main.cpp`(`pngPacks[].music` + `applyMusic()`)、`src/common/Audio.cpp`;缺檔自動退回占位曲 `theme.ogg`。
 
-各平台原版 BGM 為**版權內容,不隨 repo 散布**(同遊戲資料)。引擎按下表路徑載入;
-**缺檔則自動退回占位曲 `theme.ogg`**,不中斷遊戲。使用者自備、放入 `assets/music/`:
+## 總表
 
-| 平台 | 檔案 | 來源 / 轉換方式 | 狀態 |
-|---|---|---|---|
-| **PC-98** | `assets/music/pc98.ogg` | `.fdi` 的 `SCORE.DAT`+`VOICE.DAT`(YM2608 FM)→ **自包含 2-op FM 合成器原生 render**(`render_pc98_music.py`,不跑模擬器) | ✅ **可用**(52.9s,RMS 9462) |
-| **FM Towns** | `assets/music/fmtowns.ogg` | Trilogy CD 的 `MAP.EUP`(EUPHONY)→ **自寫 EUP→2-op FM 渲染**(`render_eup_music.py`) | ✅ **可用**(49.9s,RMS 3624;原 u7-cht ogg 為靜音,已重做) |
-| **MSX** | `assets/music/msx.ogg` | `.dsk` 的 `ULT*.MCP`(Pony Canyon 音樂格式)→ **自寫 MCP→FM 渲染**(`render_mcp_music.py`) | ✅ **可用**(`ULT1`="LORD BRITISH'S THEME" overworld,41.4s RMS 5952) |
-| Apple IIgs | `assets/music/iigs.ogg` | woz 的 synthLAB / Ensoniq 5503 取樣合成 | ⬜ 待解格式 |
-| Atari | `assets/music/atari.ogg` | POKEY,OUTMOVE/SPAMOVE 內 | ⬜ 待定位 |
-| EGA / CGA / VGA(DOS) | `theme.ogg`(占位) | DOS 原版僅 PC speaker,無獨立 BGM | — 占位 |
-
-> `assets/music/*.ogg` 與 `assets/music/**/*.ogg` 已 gitignore(僅占位 `theme.ogg` 入庫)。
-
-## ★ PC-98 音樂(已完成,native FM 合成)
-
-`SCORE.DAT` 序列格式 RE(`render_pc98_music.py`):
-- 開頭 16-bit LE offset 表 → **10 首歌**。每首開頭 **6 個 channel 指標**(YM2608 6 FM 聲道)。
-- channel 資料 = 控制碼(byte ≥ 0xe0)+ **(note, dur)** 兩 byte 事件(note=MIDI 音高、dur=tick 24 倍數)。
-- 控制碼參數長度(暴力求解):`e0`/`e2`/`f4`/`fa`=1 參數、`fb`/`fc`=0 參數、`fe`=結束。
-  (這是破解關鍵:參數長度不一造成對齊漂移,修正後 note 全落合理音域。)
-- **發聲 = FM**:用自包含 2-op FM(modulator→carrier)+ ADSR 包絡渲染,保留 chiptune FM 質感,**不跑模擬器**。
-- 10 首全渲(`assets/music/pc98/song0-9.ogg`);overworld 暫用 **song1**(三聲部、旋律完整,piano-roll 驗證為連貫音樂)。
-  ⚠ 哪一首是 overworld 需聽感確認(FM Towns 參考曲為靜音,無法自動比對)。
-
-## ★ MSX 音樂(已完成,native MCP→FM)
-
-MSX 版(Pony Canyon 1986)BGM 在 `.dsk` 的 **`ULT*.MCP`** 檔(9 首,各帶標題,如 `ULT1`="LORD BRITISH'S THEME")。
-MCP 與 PC-98 SCORE / FM Towns EUP **同作曲團隊**(共用 `e0`/`e2`/`fa` 控制碼)。`render_mcp_music.py`:
-- `fe fe fe fe` = 音軌分隔;**4 byte/事件**:控制碼(byte0 ≥ 0xe0 或 0xfd)或音符 `[note, gate, step, vel]`。
-- step = delta tick;3 軌(MELODY / BASS / CHORD)。沿用 2-op FM 合成。overworld = `ULT1`。
-
-## ★ FM Towns 音樂(已完成,native EUP→FM 渲染)
-
-FM Towns 版 BGM 是 **EUPHONY(.EUP)** 格式(`MAP.EUP` overworld、`TOWN`/`DUNGEON`/`OSIRO` 等)。
-u7-cht 既有 `sound_extract/eup_*.ogg` 經驗證為**靜音**(原轉檔失敗),已用自寫渲染重做。
-
-`render_eup_music.py` 解 EUP:
-- 檔頭(標題 + 固定音名表)後有 `"EUPHONY "` 簽章 → 其後 **6 byte/事件**。
-- 事件:`byte0`=status(0x9n note-on / 0x8n note-off,ch=status&0xF)、`byte1`=**step delta tick**
-  (全曲累積,sum≈4930 對上 ~53s)、`byte4`=note、`byte5`=velocity;note-off 結束該聲道音符。
-- 用同 PC-98 的 2-op FM 合成渲染,**不跑模擬器**。map/town/dungeon/castle 全渲於 `assets/music/fmtowns/`。
-
-## 其餘平台:逐平台找檔 → 確認格式 → 原生轉回(不跑模擬器)
-
-方法依 L.CY 指示:不錄模擬器,**找到音樂資料檔、確認格式、理解發聲機制、原生 render 回 ogg**。
-各平台格式調查(進行中):
-
-| 平台 | 音樂檔 | 格式 / 發聲機制 | 轉換路徑 | 狀態 |
+| 平台 | 音樂源 | 發聲晶片 / 格式 | 還原方式 | 狀態 |
 |---|---|---|---|---|
-| **PC-98** | `SCORE.DAT`(5433B)+ `VOICE.DAT`(1024B) | **YM2608(OPNA)FM**。SCORE.DAT 開頭是 ~10 首歌的 16-bit offset 表(`$0028 $00e2 $02e0 $052e…`)+ 序列資料;VOICE.DAT = FM 音色(operator 參數) | RE 序列格式 → 轉 VGM / 用 OPNA 合成器 render | 🟡 檔+格式已定位 |
-| **Apple IIgs** | woz resource(`id12`/`id13` ~3KB 等)+ Ensoniq 取樣 | **synthLAB / Ensoniq 5503 DOC**(32 振盪器取樣合成) | RE 樂曲序列 + 取樣 → 用 5503 合成器 render | 🟡 resource 已抽,格式待解 |
-| **MSX** | `.dsk` 內音樂資料 / OUT.COM | **PSG(AY-3-8910)** 或 SCC | 定位序列 → PSG 暫存器 log → render | ⬜ 待定位檔案 |
-| **Atari** | `OUTMOVE`/`SPAMOVE.bin` 內 | **POKEY** | 反組譯找音樂常式 + 序列 → POKEY render | ⬜ 待定位 |
+| **MSX** | `.dsk` 的 `ULT*.MCP`(9 首) | PSG/FM,Pony Canyon **MCP** 序列 | `render_mcp_music.py` 自寫 FM 合成 | ✅ `ULT1`="LORD BRITISH'S THEME"(41.4s) |
+| **PC-98** | `.fdi` 的 `SCORE.DAT`+`VOICE.DAT` | YM2608(OPNA)FM,自訂序列 | `render_pc98_music.py` 自寫 FM 合成 | ✅ 10 首,overworld=song1(52.9s) |
+| **FM Towns** | Trilogy CD 的 `*.EUP`+`ULTIMA.FMB` | YM2612 FM,**EUPHONY** 序列 | `render_eup_music.py` 自寫 FM 合成 | ✅ `MAP`=overworld(49.9s);原 ogg 為靜音已重做 |
+| **Apple IIgs** | woz resource type `0x8024`(18 個) | Ensoniq 5503 DOC 8-bit 取樣 | 直接解 8-bit PCM | 🟡 **全是 0.1–2.1s 音效(SFX),非 overworld BGM**(見下) |
+| **Atari 8-bit** | — | POKEY | — | ❌ **原版無 overworld BGM**(反組譯證據,見下) |
+| **DOS(EGA/CGA/VGA)** | — | PC speaker | — | ❌ 原版無獨立 BGM → 占位曲 |
 
-> 每個 chiptune 格式都是一份獨立 RE(序列格式 + 音色 + 合成器),工程量與 tileset 相當。逐平台推進。
-> FM Towns 之所以最快,是因為 EUPHONY(.EUP)是有現成播放器/轉檔工具的成熟格式。
+> 三版有完整地圖 BGM(MSX/PC-98/FM Towns),且為**同一作曲團隊** —— 三種格式都共用 `e0`/`e2`/`fa` 控制碼,
+> 破解一個就懂下一個。版權音檔不入庫:`assets/music/*.ogg`、`assets/music/**/*.ogg` 已 gitignore(僅占位 `theme.ogg` 入庫)。
+
+---
+
+## 還原步驟(逐平台,可重跑)
+
+前置:版權的原始資料自備並抽出到 `re_work/`(磁碟用 docker mtools 抽,見下),工具在 `tools/`,需 `python3 + numpy + ffmpeg`。
+
+### MSX(`.MCP` → ogg)
+```bash
+# 1) 從 .dsk(FAT12)抽 ULT*.MCP(docker mtools)
+#    mcopy -n -o "z:/ULT1.MCP" ./ULT1.MCP  (drive z = Ultima I MSX .dsk)
+# 2) 渲染(ULT1 = Lord British's Theme = overworld)
+python3 tools/render_mcp_music.py re_work/msx/mcp/ULT1.MCP /tmp/msx.wav
+ffmpeg -y -i /tmp/msx.wav -ac 1 -q:a 5 assets/music/msx.ogg
+```
+
+### PC-98(`SCORE.DAT` → ogg)
+```bash
+# SCORE.DAT/VOICE.DAT 從 .fdi(FAT12,去 4096 header)→ docker mtools 抽
+python3 tools/render_pc98_music.py re_work/pc98/SCORE.DAT 1 /tmp/pc98.wav   # 1 = overworld(song index)
+ffmpeg -y -i /tmp/pc98.wav -ac 1 -q:a 5 assets/music/pc98.ogg
+```
+
+### FM Towns(`.EUP` → ogg)
+```bash
+# *.EUP + ULTIMA.FMB 來自 Trilogy CD 的 sound 區(u7-cht/fmtowns_work/sound_extract)
+python3 tools/render_eup_music.py re_work/fmtowns/MAP.EUP /tmp/fmt.wav      # MAP = overworld
+ffmpeg -y -i /tmp/fmt.wav -ac 1 -q:a 5 assets/music/fmtowns.ogg
+```
+
+### Apple IIgs(SFX 取樣 → ogg,僅音效)
+```bash
+# type 0x8024 resource = 8-bit DOC 取樣;header 8 byte 後為 unsigned 8-bit PCM,~26kHz
+python3 - <<'PY'
+import numpy as np, wave
+d=open('re_work/iigs/res/t8024_id10_55562.bin','rb').read()
+a=np.frombuffer(d[8:],dtype=np.uint8).astype(float)-128
+pcm=np.clip(a*180,-32767,32767).astype('<i2')
+w=wave.open('/tmp/iigs.wav','wb'); w.setnchannels(1);w.setsampwidth(2);w.setframerate(26000); w.writeframes(pcm.tobytes()); w.close()
+PY
+```
+
+---
+
+## 格式逆向查證(歷史紀錄)
+
+### 共通:作曲團隊與控制碼家族
+MSX(MCP)、PC-98(SCORE)、FM Towns(EUP)三版音樂出自同一日本團隊,序列格式同源:
+皆以 **`e0`/`e2`/`fa` 等控制碼(byte ≥ 0xe0)+ 音符事件**構成,差別只在事件欄位排列與長度。
+發聲晶片不同(MSX PSG / PC-98 OPNA / FM Towns OPN2),但本專案統一用**自寫 2-op FM 合成器**
+(modulator→carrier + ADSR,`render_pc98_music.py:fm_note`)還原 chiptune FM 質感,完全不跑模擬器。
+
+### MSX `.MCP`(Pony Canyon)
+- 檔頭 `M1` magic + 標題(`ULT1.MCP` = `"ULTIMA M1 LORD BRITISH'S THEME"`)+ track 名(`BASS/CHORD`、`MELODY`)。
+- 事件區 **4 byte/事件**;`fe fe fe fe` = 音軌分隔。控制碼 byte0 ≥ 0xe0 或 0xfd(4 byte);
+  音符 = `[note, gate, step, velocity]`(note=MIDI 音高、step=到下一事件 tick)。3 軌(旋律/低音/和弦)。
+
+### PC-98 `SCORE.DAT`
+- 開頭 16-bit LE offset 表 → **10 首歌**;每首開頭 **6 個 channel 指標**(YM2608 6 FM 聲道)。
+- 事件 = 控制碼(byte ≥ 0xe0)+ **(note, dur)** 兩 byte。**破解關鍵**:控制碼參數長度不一
+  (`e0`/`e2`/`f4`/`fa`=1 參數、`fb`/`fc`=0 參數、`fe`=結束)造成對齊漂移,暴力求出長度表後音高全落合理音域。
+- `VOICE.DAT`(1024B)= 32 個 FM 音色(前段名字如 `"piano"` + operator 參數)。
+
+### FM Towns `.EUP`(EUPHONY)
+- 檔頭(標題 + 固定音名表)後有 `"EUPHONY "` 簽章 → 其後 **6 byte/事件**。
+- `byte0`=status(0x9n note-on / 0x8n note-off,ch=status&0xF)、`byte1`=**step delta tick**
+  (全曲累積,sum≈4930 對上 ~53s,**這是破解關鍵**:byte1 是 delta 不是絕對時間)、`byte4`=note、`byte5`=velocity。
+- ⚠ 雷:u7-cht 既有 `eup_*.ogg` 經實測解碼為**靜音**(RMS=0,原轉檔失敗),已用自寫渲染重做。
+
+### Apple IIgs(查證:音效而非音樂)
+- 資源型別盤點:type `0x0001`×79(壓縮圖)、`0x8024`×18(**rSoundSample**)、`0x8015`×2(文字)、其餘為版權字串/小表。
+- `0x8024` 全 18 個解 8-bit DOC PCM(header 8 byte 後),時長 **0.1–2.1s** → 是**音效(SFX)**,非地圖 BGM。
+- 反組譯 `ULTIMAI` 程式:toolbox 用 **Sound Toolset(tool 0x08)**,**無 Note Sequencer(0x19)/ Note Synth(0x1d)呼叫**
+  → 不走 synthLAB 音序;音樂機制為「程式觸發取樣音」。**未在資源中找到連續 overworld 音樂軌**。
+- 結論:overworld BGM 不像 FM 三版有現成序列檔可還原;若存在則需追程式的觸發序列(`0x8013` 疑似 sound 對照表)或在他碟。
+  18 個 SFX 已解於 `assets/music/iigs/iigs_idXX.ogg`(參考,未接入為 BGM)。
+
+### Atari 8-bit(查證:原版無 BGM)
+- 反組譯各 `.bin`(Atari binary load):掃 POKEY audio 暫存器寫入 `STA $D200–$D208`。
+- `OUTMOVE`(overworld)= **0 次** POKEY audio 寫入;僅 `SPAMOVE`(太空戰)7 次(音效)、`DOS`/`DUP`(開機聲)。
+- ⇒ Atari U1 overworld **無背景音樂**,符合 1983 原版(Sierra/Origin)「音效為主、無 BGM」史實 → 退回占位曲。

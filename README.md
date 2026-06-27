@@ -92,7 +92,7 @@
 - **宋體抗鋸齒**:Noto Serif CJK，1280×800 乾淨 2× 縮放。
 - **離開鐵則**:`F10` / `Ctrl+Q` 跳置中中文確認框，`ESC` 永遠是取消——不會手滑噴掉進度。
 - **多版素材包熱鍵切換**:見上一章;`F1` 逐一循環全部平台包,切換不再讓 NPC 消失(這個雷 u4-cht 踩過)。
-- **音樂跟隨平台**:`F1` 切到哪一版畫面，背景音樂就換成那一版的原版 BGM。**PC-98 已以自寫 2-op FM 合成器原生 render**(解 `SCORE.DAT` 序列，不跑模擬器）；其餘平台逐一進行中，缺檔自動退回占位曲。`M` 鍵開關。詳見 [`docs/music.md`](docs/music.md)。
+- **音樂跟隨平台**:`F1` 切到哪一版畫面，背景音樂就換成那一版的原版 BGM。**MSX / PC-98 / FM Towns 三版已原生還原**——逆向各自的音樂序列格式(MCP / SCORE / EUPHONY，同一作曲團隊)，用自寫 2-op FM 合成器轉回 ogg，**完全不跑模擬器**。Atari/DOS 原版無地圖 BGM、IIgs 僅音效(考證見下)。缺檔自動退回占位曲，`M` 鍵開關。完整逆向與還原步驟見 [`docs/music.md`](docs/music.md)。
 - **回合制生怪 + 地面戰鬥**:`speed_pct` / `spawn_pct` 可調;地面怪相鄰反擊、不移動，忠於 1981 原版。
 - **跨平台逆向考據**:MSX(openMSX dump VRAM + Z80 反組譯)、Apple IIgs(MAME + GS/OS 導航 + SHR dump)
   的完整經驗都寫進了 `docs/re/`，不只是結果，是可重跑的方法。
@@ -163,7 +163,7 @@ docker run --rm -v "$PWD":/work -w /work u1-cht bash tools/game_tester.sh
 | [`docs/ultima1-original-ai.md`](docs/ultima1-original-ai.md) | 原版 U1(1981)怪物 AI 考據 + 出處 |
 | [`docs/localization-notes.md`](docs/localization-notes.md) | 中文化技術筆記(字型管線、拉畫布決策) |
 | [`docs/materials.md`](docs/materials.md) | 各平台素材來源清單(DOS／MSX／PC98／FM Towns／IIgs…) |
-| [`docs/music.md`](docs/music.md) | 各版本背景音樂(音樂跟隨平台、版權與取得方式) |
+| [**`docs/music.md`**](docs/music.md) | **★ 各版本音樂逆向與原生還原**(MCP/SCORE/EUPHONY 格式破解、還原步驟、IIgs/Atari 考證) |
 | [**`docs/re/apple-iigs-reverse-engineering.md`**](docs/re/apple-iigs-reverse-engineering.md) | **★ Apple IIgs 逆向工程全紀錄**(woz 抽檔 → 反組譯 65816 → 破解 LZSS 圖格式) |
 | [`docs/re/`](docs/re/) | 逆向工程經驗:MSX openMSX、Apple IIgs MAME/GS-OS、6502 方法論等 |
 | [`docs/adr/0001-pluggable-asset-packs.md`](docs/adr/0001-pluggable-asset-packs.md) | 可替換素材包架構決策 |
