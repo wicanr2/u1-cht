@@ -6,6 +6,29 @@
 vector<tuple<string, bool>> CommandDisplay::_text;
 string CommandDisplay::_promptText = "";
 
+// 解一個 UTF-8 字元 → (codepoint, byte 長度)
+static pair<unsigned, int> decodeUtf8(const string &s, size_t i) {
+    unsigned char c = s[i];
+    if (c < 0x80) return {c, 1};
+    if ((c & 0xE0) == 0xC0 && i + 1 < s.size())
+        return {((c & 0x1Fu) << 6) | (s[i + 1] & 0x3Fu), 2};
+    if ((c & 0xF0) == 0xE0 && i + 2 < s.size())
+        return {((c & 0x0Fu) << 12) | ((s[i + 1] & 0x3Fu) << 6) | (s[i + 2] & 0x3Fu), 3};
+    if ((c & 0xF8) == 0xF0 && i + 3 < s.size())
+        return {0xFFFFu, 4};   // 視為全形(BMP 外,罕用)
+    return {c, 1};
+}
+
+// 顯示寬度:全形(CJK/假名/全形標點與英數/Hangul)= 2,其餘 = 1
+static int charWidth(unsigned cp) {
+    if ((cp >= 0x1100 && cp <= 0x115F) || (cp >= 0x2E80 && cp <= 0xA4CF) ||
+        (cp >= 0xAC00 && cp <= 0xD7A3) || (cp >= 0xF900 && cp <= 0xFAFF) ||
+        (cp >= 0xFE30 && cp <= 0xFE4F) || (cp >= 0xFF00 && cp <= 0xFF60) ||
+        (cp >= 0xFFE0 && cp <= 0xFFE6) || cp == 0xFFFF)
+        return 2;
+    return 1;
+}
+
 CommandDisplay::CommandDisplay(SDL_Renderer *renderer) {
     _background = make_unique<LTexture>();
     _background->loadFromColor(renderer, WIDTH, HEIGHT, 0, 0, 0, 0);
@@ -20,29 +43,26 @@ CommandDisplay::CommandDisplay(SDL_Renderer *renderer) {
 
 void CommandDisplay::writeLn(const string &str, bool isPlayerAction) {
     if (_promptText.empty()) {
+        // 依「顯示寬度」斷行(全形 2、半形 1),且只在 UTF-8 字元邊界切,中文不被切壞。
         vector<string> substrs;
-
-        int remainingLength = str.length();
-        if (remainingLength > MAX_LINE_CHARS) {
-            int index = 0;
-            while (remainingLength > 0) {
-                auto substrLength = min(MAX_LINE_CHARS - 1, remainingLength);
-                // UTF-8 安全:切點落在 continuation byte (0b10xxxxxx) 時往前退到字元邊界,
-                // 避免把多位元組中文字切壞成無效 UTF-8(暫行;全形換行於拉畫布階段完整處理)
-                while (substrLength < remainingLength &&
-                       (static_cast<unsigned char>(str[index + substrLength]) & 0xC0) == 0x80) {
-                    substrLength--;
-                }
-                auto substr = str.substr(index, substrLength);
-                substrs.push_back(" " + substr);
-                remainingLength -= substrLength;
-                index += substrLength;
+        size_t i = 0;
+        int lineWidth = 0;
+        size_t lineStart = 0;
+        while (i < str.size()) {
+            auto [cp, len] = decodeUtf8(str, i);
+            int w = charWidth(cp);
+            if (lineWidth + w > MAX_LINE_WIDTH && i > lineStart) {
+                substrs.push_back(str.substr(lineStart, i - lineStart));
+                lineStart = i;
+                lineWidth = 0;
             }
-        } else {
-            substrs.push_back(str);
+            lineWidth += w;
+            i += len;
         }
+        if (lineStart < str.size() || substrs.empty())
+            substrs.push_back(str.substr(lineStart));
 
-        for (const auto &substr: substrs) {
+        for (const auto &substr : substrs) {
             _text.emplace_back(substr, isPlayerAction);
         }
     } else {

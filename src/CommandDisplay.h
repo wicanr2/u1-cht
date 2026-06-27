@@ -14,7 +14,9 @@ public:
     static constexpr int POSITION_Y = 160;
     static constexpr int WIDTH = 241;
     static constexpr int HEIGHT = 40;
-    static constexpr int MAX_LINE_CHARS = 29;
+    // 換行以「顯示寬度」計:全形(中文/假名/全形標點)= 2 單位、半形 = 1 單位。
+    // panel 約可容 28 個全形字 → 上限 ~54 半形單位(留邊距取 52)。
+    static constexpr int MAX_LINE_WIDTH = 52;
 
     static void writeLn(const string &str, bool isPlayerAction);
 

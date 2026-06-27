@@ -118,7 +118,7 @@ docker run --rm -v "$PWD":/work -w /work u1-msxrun bash -c '
 
 - [x] **存檔系統**(`SaveGame` → `save.json`):序列化玩家位置/數值 + F6 設定;F10「Y 離開」autosave、F5 手動存檔、啟動自動載入。截圖驗證載入還原生命/食物/經驗/金幣/位置/設定。**F6 設定持久化隨此完成**。
 - [ ] i18n 查表層:翻譯目前內聯,遷移到 `assets/strings/zh-Hant/*.json`
-- [ ] `CommandDisplay` 全形寬度感知換行(目前 UTF-8 邊界安全但非全形對齊)
+- [x] **`CommandDisplay` 全形寬度感知換行**:依顯示寬度斷行(全形 2 / 半形 1 單位,上限 52),只在 UTF-8 字元邊界切。取代原 byte 數換行(中文行被切太短)。
 - [x] **各版本音樂原生還原**(MSX/PC-98/FM Towns 三版,自寫合成器、零模擬器;見 `docs/music.md`)。
       Atari/DOS 原版無 BGM、IIgs 僅音效(已考證)。剩:overworld 曲目聽感確認(哪首是 overworld)。
 - [ ] Town / Castle 內容(open_ultima 上游為空殼)
