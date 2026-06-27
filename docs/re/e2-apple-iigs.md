@@ -125,3 +125,18 @@ ULTIMA I IIgs 的存檔/讀檔走 **GS/OS 標準檔案對話框**(SFPutFile / SF
 
 ## 替代順序
 - E4 PC-98(`.fdi`)、E5 Atari(ATR,6502 已反組譯)是標準磁區映像,抽檔較直接,圖格式較單純 → 可優先。
+
+## ★ 載具/怪物 authentic tile:窮盡後的牆(2026-06-27)
+
+地形/玩家/馬已 authentic(hg101 截圖切),但**載具/怪物 hg101 沒拍到** → 想補真實 IIgs 載具/怪物,試遍以下全卡:
+1. **Rosetta Stone(用已知 tile 反推壓縮)**:hg101 截圖**色彩非精確 IIgs palette**(grass 色 `(18,82,0)` 非 ×17 倍數)
+   → 無法把截圖色映射到 palette index → 無法當 Rosetta key。MAME SHR dump 雖精確 palette,但拍到的是文字選單非 tile。
+2. **未壓縮 tile 搜尋**:type 0x0001 各 resource 當 raw 4bpp 渲染全雜訊 → tiles 確在自訂壓縮裡,非未壓縮。
+3. **MAME 跑到 overworld**:鍵盤可通到角色創建,但存/讀檔走 **GS/OS 滑鼠檔案對話框**。
+   - **lua 滑鼠注入失效**:`MOUSE_X/Y field:set_value()` 對相對軸**不是乾淨座標設定**——
+     設常數小值游標貼角落、設 400/150/550 游標位置非單調(疑值域 wrap / scaled delta),**無法精準點檔案/按鈕**。
+   - ⇒ 讀檔對話框過不去 → 到不了 overworld → 拿不到 authentic 載具/怪物 tile。
+
+**結論**:IIgs 載具/怪物目前 **EGA fallback**(`iigs.png` 已可玩)。要 authentic 需(三者皆獨立深坑):
+① 解 MAME ADB 滑鼠注入(查 mouse field 值域 / 或改用 .inp 錄製);② 找含載具/怪物的精確-palette 實機截圖;
+③ 反組譯 ULTIMAI 65816 找解壓常式。
