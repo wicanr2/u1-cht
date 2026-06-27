@@ -13,6 +13,7 @@ PANELS = [
     ("MSX", "screen_msx.png"),
     ("PC-98", "screen_pc98.png"),
     ("Apple IIgs", "screen_iigs.png"),
+    ("Atari 8-bit", "screen_atari.png"),
 ]
 IMGDIR = "docs/img/"
 CROP = (40, 36, 40+576, 36+360)   # overworld 取景(避開狀態列/邊框)

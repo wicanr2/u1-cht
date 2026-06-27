@@ -213,13 +213,19 @@ int main(int argc, char *args[]) {
                 {"MSX", "assets/tilesets/msx.png", "./assets/music/msx.ogg"},
                 {"Apple IIgs", "assets/tilesets/iigs.png", "./assets/music/iigs.ogg"},
                 {"PC-98", "assets/tilesets/pc98.png", "./assets/music/pc98.ogg"},
+                {"Atari", "assets/tilesets/atari.png", "./assets/music/atari.ogg"},
                 {"VGA", "assets/tilesets/vga.png", kDefaultMusic},  // VGA=DOS 重染,無獨立 BGM
             };
-            // config 指定的 tileset_png 若不在清單(自訂路徑)→ 沿用預設音樂。
+            // config 指定的 tileset_png:在清單則用其 index;不在(自訂路徑)→ 附加成新 pack,
+            // 避免靜默 fallback 到 pngPacks[0] 而載錯 tileset。
             auto pngPackPath = Configuration::getTilesetPng();
-            int cfgPngIdx = 0;
+            int cfgPngIdx = -1;
             for (size_t i = 0; i < pngPacks.size(); ++i)
                 if (pngPacks[i].tiles == pngPackPath) { cfgPngIdx = (int)i; break; }
+            if (cfgPngIdx < 0) {
+                pngPacks.push_back({"自訂", pngPackPath, kDefaultMusic});
+                cfgPngIdx = (int)pngPacks.size() - 1;
+            }
             const int kBinModes = 2;  // EGA, CGA
             const char *kBinNames[] = {"EGA", "CGA"};
             int tilesetIdx = 0;

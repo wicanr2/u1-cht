@@ -1,4 +1,11 @@
-# Atari 8-bit《Ultima I》overworld tileset 逆向(進行中)
+# Atari 8-bit《Ultima I》overworld tileset 逆向(✅ 完成)
+
+> **TL;DR**:tile 在 `$6400` charset,但是 **1bpp(每 byte 8 像素)非 2bpp**(這是先前卡關主因)。
+> 一個 overworld tile = **char[i](上半 8×8)+ char[i+32](下半 8×8)= 8×16**,共 **19 個 tile**。
+> 兩段 charset($6400 chars 0-18、$6500 chars 32-50)正好是 19 個 tile 的上半與下半。
+> palette(實機圖反推):水=藍、植被=橄欖綠、結構/玩家/生物=灰,黑底。
+> `build_atari_pack.py` → `assets/tilesets/atari.png`,game tester 渲染與 atari800-04 實機圖一致。
+
 
 > 目標:取出 Atari 8-bit 版(1983)的完整 overworld tileset(對齊 engine 52 槽)。
 > 方法依 L.CY 指示:**用已抽的檔 + 遊戲實際圖比對,不跑模擬器**(`rulebook/64` 截圖 oracle、
@@ -11,28 +18,34 @@
 2. **文字字型 charset @ $6400**:反組譯 OUTMOVE 找到 `CHBAS($02F4)=$64`、`CHBASE($D409)=$64`
    → charset 在 **$6400**。但 segment 只載入 chars 0-18($6400-$6497)+ chars 32-50($6500-$6597)
    = 38 個重定義字模,**其餘為全零**。
-3. **★ 關鍵否證:overworld tile 圖不在 $6400 charset**。
-   用實機圖反推驗證:把 atari800-04 的 water/grass/player tile 轉成 ANTIC 4/5 邏輯像素
-   (每字元 **4 px 寬 2bpp、ANTIC5 每列顯示 2 次**),結構比對 $6400 全 128 字元 → **零命中**
-   (grass 只命中全零空字元)。⇒ $6400 是**文字字型**,地圖 tile 由別的機制繪製。
+3. **走錯的彎路(記錄以備鑑)**:先以為 tile 是 **2bpp ANTIC 4/5**(4px/char),結構比對 $6400 全零命中,
+   一度誤判「tile 不在 $6400」。錯在 **bpp**:Atari overworld 的 tile charset 是 **1bpp**(ANTIC 2 類,
+   每 byte 8 像素),不是多彩 2bpp。換 1bpp 解讀後字模立刻清晰可辨。
 
-## 已取得(authentic)
+## ★ 破解:1bpp charset + 上下半合成
 
-**4 個真實 Atari tile**(`rip_atari_tiles.py` 從 atari800-04 切,16×16):
-- **water**:藍色波紋 / **grass**:橄欖綠短橫點 / **forest**:橄欖綠密塊 / **player**:灰色人形。
-- overworld palette(由截圖反推):**黑底 + 橄欖綠(75,88,0)/ 藍(8,64,212)/ 灰(160,160,160)**。
-  注意:OUTMOVE @$8103 的 COLPF0-3=$84/$d4/$56/$0a 是**別場景**的色,非 overworld。
+用「已知輸出反推」(`rulebook/64` 截圖 oracle):把 atari800-04 的 **player tile**(最複雜、不會誤中)
+轉 8×16 1bpp,搜遍記憶體 → 上半 8 byte 命中 **$6440 = char 8**。⇒ tile 是 **1bpp**、存在 $6400。
+再對 4 個實機 tile 求上下半 char:
 
-## 待解(完整 52 槽的下一步)
+| tile | 上半 char | 下半 char |
+|---|---|---|
+| grass | 1 | 33 |
+| forest | 2 | 34 |
+| player | 8 | 40 |
 
-tile 圖既不在 $6400 charset,候選儲存/繪製機制(逐一驗):
-1. **第二套 charset**(經 DLI 在地圖區切 CHBAS;或 `SET1-5.bin` 載到 $2400 的另一字模集)——
-   `SET1-5.bin` 連續載 $2400-$2a59,先前當 charset 渲為雜訊,需配正確 ANTIC 模式/色再試。
-2. **軟體 bitmap / PMG**:tile 可能畫進點陣畫面緩衝,非字元。
-3. **map-draw routine RE**:反組譯 OUTMOVE 的逐格繪製(讀 map cell → 取 tile 圖 → 寫畫面),
-   反追 tile 圖指標到實際儲存位置(同 IIgs 的 `$4c00`/DrawTile 追法)。需 6502 反組譯器。
-4. **更多實機截圖**:單張 overworld 只 4 tile 入鏡;town/castle/dungeon/載具/怪物需各自截圖
-   或同源 Apple II 版(tile 近似)補。
+**規律:下半 = 上半 + 32**。兩段 charset(chars 0-18 + 32-50)就是 19 個 tile 的上半與下半。
+⇒ **tile i = char[i](上)+ char[i+32](下),8×16,共 19 個**。1bpp 全部渲出 → 水/草/林/山/城堡/
+城鎮/地牢/玩家/馬/載具/怪物全部可辨。
 
-> 進度誠實標示:格式與文字字型已定位、4 tile authentic;完整 tileset 待上述其一突破。
-> 不因「4 色粗圖」而放棄——`rulebook/83`:老遊戲整合判準是完整性,保全歷史。
+palette(實機圖反推,overworld 僅 3 前景色):**水=藍(8,64,212)、植被(草/林/山)=橄欖綠(75,88,0)、
+其餘(結構/玩家/生物)=灰(160,160,160)**,黑底。
+
+## 成果
+
+- `build_atari_pack.py`:解 19 個 1bpp tile(char i + i+32)、套實證 palette、19→52 槽 → `assets/tilesets/atari.png`。
+- game tester 進 overworld 渲染與 atari800-04 實機圖**一致**(藍波紋水、橄欖綠草點、綠森林、灰人形玩家)。
+- 工具:`rip_atari_tiles.py`(截圖切 oracle tile)、`build_atari_pack.py`(主建構)。
+
+> 教訓:卡關時別只懷疑「位置」,也要懷疑「**格式假設**」(這裡是 bpp)。同一份 $6400 資料,
+> 2bpp 解讀是雜訊、1bpp 解讀是乾淨 tile。`rulebook/83`:不因「4 色粗圖」放棄——完整性,保全歷史。

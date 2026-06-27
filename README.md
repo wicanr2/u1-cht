@@ -3,7 +3,7 @@
 > Ultima I: The First Age of Darkness — 一切角色扮演遊戲的起點，現在能用母語走進索薩利亞。
 
 基於 [`matiaslaino/open_ultima`](https://github.com/matiaslaino/open_ultima)(C++17 / SDL2，MIT 授權)的開源重製，
-加上繁體中文化、Linux 移植、功能補完，以及一個別處沒有的彩蛋——**六種平台的原汁原味畫面，一鍵切換**。
+加上繁體中文化、Linux 移植、功能補完，以及一個別處沒有的彩蛋——**七種平台的原汁原味畫面，一鍵切換**。
 
 ![索薩利亞的清晨，繁體中文狀態列](docs/img/screen_iigs.png)
 
@@ -25,7 +25,7 @@
 ## 目錄
 
 - [這是什麼遊戲](#what)
-- [六種畫面，一個世界](#tilesets)
+- [七種畫面，一個世界](#tilesets)
 - [已經做好的](#done)
 - [操作與快速鍵](#keys)
 - [譯名小考](#names)
@@ -53,12 +53,12 @@
 ---
 
 <a name="tilesets"></a>
-## 六種畫面，一個世界
+## 七種畫面，一個世界
 
 《創世紀 I》四十年來被移植到十幾種機器，每一台的美術都是當年工程師重畫的。我們把這些版本的圖素
-一張一張抽回來、對齊到引擎的 52 格 tile，做成可熱鍵切換的素材包——**同一張索薩利亞地圖，六種時代的眼睛**。
+一張一張抽回來、對齊到引擎的 52 格 tile，做成可熱鍵切換的素材包——**同一張索薩利亞地圖，七種時代的眼睛**。
 
-![EGA / CGA / FM Towns / MSX / PC-98 / Apple IIgs 六版畫面對比](docs/img/tilesets_compare.png)
+![EGA / CGA / FM Towns / MSX / PC-98 / Apple IIgs / Atari 七版畫面對比](docs/img/tilesets_compare.png)
 
 | 版本 | 來源 | 風味 |
 |---|---|---|
@@ -68,6 +68,7 @@
 | **MSX** | `.dsk` 反組譯 OUT.COM 破解格式 | SCREEN 7 點陣的東洋骨架 |
 | **PC-98** | `.fdi` 取出 `EGCTILES.BIN`,破解 32×32 4-plane planar | 純飽和 RGB、32×32 高解析的日系重繪 |
 | **Apple IIgs** | 1994 Vitesse 版 woz 反組譯、LZSS 解壓原始圖檔 | 由《異星搜奇》團隊重繪、如今近乎絕跡的決定版 |
+| **Atari 8-bit** | 1983 ATR 反組譯 OUTMOVE、$6400 1bpp charset | 黑底橄欖綠與藍，家用電腦草創期的素樸 |
 
 最後一個值得多說一句。1994 年，曾主導《Bard's Tale III》的 Rebecca Heineman 重組班底，
 為 Apple IIgs 重畫了全套高解析美術、配上 synthLAB 音樂，做出公認畫面最強的《創世紀 I》。
@@ -79,7 +80,7 @@
 最後再用實機截圖當對照、反推出整套地形與人物 tile 的確切位置,把全 52 格原汁原味的 IIgs 像素一格不差地取出來。
 全程紀錄成一個獨立章節:**[📖 Apple IIgs 逆向工程全紀錄](docs/re/apple-iigs-reverse-engineering.md)**。
 
-> 切換方式:`F1` / `PageDown` 循環 EGA → CGA → 各平台素材包(FM Towns → MSX → Apple IIgs → PC-98 → VGA),畫面即時換臉、不需重開。
+> 切換方式:`F1` / `PageDown` 循環 EGA → CGA → 各平台素材包(FM Towns → MSX → Apple IIgs → PC-98 → Atari → VGA),畫面即時換臉、不需重開。
 
 ---
 
@@ -104,7 +105,7 @@
 | 鍵 | 作用 |
 |---|---|
 | 方向鍵 | 在世界地圖移動(指令列顯示「東／南／西／北」) |
-| `F1` / `PageDown` | 循環切換 tileset(EGA / CGA / FM Towns / MSX / Apple IIgs / PC-98 / VGA) |
+| `F1` / `PageDown` | 循環切換 tileset(EGA / CGA / FM Towns / MSX / Apple IIgs / PC-98 / Atari / VGA) |
 | `F6` | 設定選單:即時調整移動速度 `speed_pct` 與生怪率 `spawn_pct` |
 | `M` | 音樂開／關(背景音樂隨 `F1` 平台切換) |
 | `F10` / `Ctrl+Q` | 離開(跳確認框,`Y`/`Enter` 確定,`N`/`ESC` 取消) |
