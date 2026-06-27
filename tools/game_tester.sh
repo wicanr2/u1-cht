@@ -12,6 +12,7 @@ Xvfb :99 -screen 0 1280x800x24 >/dev/null 2>&1 &
 XPID=$!
 sleep 1
 
+rm -f save.json               # 確保走「新遊戲 → 建角開場」路徑
 ./build/u1_cht > run.log 2>&1 &
 GPID=$!
 sleep 2.5   # 等載入地圖/字型
@@ -23,6 +24,12 @@ echo "window id: ${WID:-NOTFOUND}"
 
 shot(){ import -window root "$OUTDIR/$1.png" 2>/dev/null || xwd -root -silent | convert xwd:- "$OUTDIR/$1.png" 2>/dev/null; echo "shot: $1"; }
 key(){ xdotool key --window "$WID" "$1" 2>/dev/null; sleep 0.6; }
+
+# === 建角開場(新遊戲必經)===
+shot t00_charcreate                # 性別/種族/職業 + 屬性分配畫面
+key Down; key Right; key Right; key Right   # 力量列 +3,驗證分配
+shot t00b_charcreate_alloc
+key Return; key Return             # 跳到「開始」列 → 確認 → 進世界
 
 # === 正常玩家路徑 ===
 shot t01_start                     # 開場:世界地圖 + 中文狀態列

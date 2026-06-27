@@ -23,6 +23,8 @@
 #include "src/SaveGame.h"
 #include "src/common/I18n.h"
 #include "src/ItemCatalog.h"
+#include "src/CharCreation.h"
+#include <array>
 
 using namespace std;
 using namespace OpenUltima;
@@ -335,6 +337,71 @@ static void drawZtats(SDL_Renderer *renderer, Player &p) {
     line(I18n::t("ui.help.dismiss"), box.x + (bw - 120) / 2, box.y + bh - 28, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
 }
 
+// 建角狀態:性別 / 種族 / 職業 + 6 屬性分配 + 目前選列(0=性別,1=種族,2=職業,3..8=屬性,9=開始)
+struct CharCreateState {
+    int sex = 0, raceIdx = 0, klassIdx = 0, row = 0;
+    std::array<int, CharCreation::kAttrN> alloc{0, 0, 0, 0, 0, 0};
+    int spent() const { int s = 0; for (int v : alloc) s += v; return s; }
+    int remaining() const { return CharCreation::kPool - spent(); }
+};
+constexpr int kCCRowStart = 3 + CharCreation::kAttrN;  // 開始列 index = 9
+constexpr int kCCRowN = kCCRowStart + 1;               // 10 列
+
+// 建角畫面:置中 modal,顯示性別/種族/職業選擇 + 六屬性分配 + 剩餘點數。
+static void drawCharCreate(SDL_Renderer *renderer, const CharCreateState &s) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_Rect full = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &full);
+    const int bw = 560, bh = 420;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0x10, 0x10, 0x18, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xD0, 0x40, 0xFF);
+    SDL_RenderDrawRect(renderer, &box);
+    SDL_Color title{0xFF, 0xD0, 0x40, 0xFF}, lab{0xC0, 0xC0, 0xC0, 0xFF},
+        val{0xFF, 0xFF, 0xFF, 0xFF}, sel{0xFF, 0xFF, 0x60, 0xFF}, dim{0x80, 0x80, 0x80, 0xFF};
+    auto line = [&](const string &str, int x, int yy, SDL_Color c) {
+        LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, str, c); t.render(renderer, x, yy);
+    };
+    int x = box.x + 40, y = box.y + 18;
+    line(I18n::t("cc.title"), box.x + (bw - 80) / 2, y, title); y += 42;
+
+    // 一列:label + ◄ value ►(選中時黃字 + 箭頭)
+    auto picker = [&](int rowIdx, const string &labelKey, const string &value) {
+        bool on = (s.row == rowIdx);
+        line(I18n::t(labelKey), x, y, on ? sel : lab);
+        string v = on ? ("◀ " + value + " ▶") : ("  " + value);
+        line(v, x + 130, y, on ? sel : val);
+        y += 30;
+    };
+    picker(0, "cc.row.sex", I18n::t(CharCreation::sexKey(s.sex)));
+    picker(1, "cc.row.race", I18n::t(CharCreation::race(s.raceIdx).nameKey));
+    {
+        const auto &k = CharCreation::klass(s.klassIdx);
+        string cls = I18n::t(k.nameKey) + "  " + I18n::t("cc.prime") + I18n::t(CharCreation::attrKey(k.primeAttr));
+        picker(2, "cc.row.class", cls);
+    }
+    y += 8;
+    line(I18n::tf("cc.points", {to_string(s.remaining())}), x, y,
+         s.remaining() > 0 ? SDL_Color{0x80, 0xFF, 0x80, 0xFF} : dim); y += 30;
+
+    // 六屬性:有效值 = base + 種族修正 + 分配
+    const auto &r = CharCreation::race(s.raceIdx);
+    for (int i = 0; i < CharCreation::kAttrN; ++i) {
+        bool on = (s.row == 3 + i);
+        int eff = CharCreation::kBase + r.mod[i] + s.alloc[i];
+        line(I18n::t(CharCreation::attrKey(i)), x, y, on ? sel : lab);
+        string bar = (on ? "◀ " : "  ") + to_string(eff) + (on ? " ▶" : "");
+        line(bar, x + 130, y, on ? sel : val);
+        if (s.alloc[i] > 0) line("+" + to_string(s.alloc[i]), x + 230, y, dim);
+        y += 26;
+    }
+    y += 12;
+    bool startOn = (s.row == kCCRowStart);
+    line(I18n::t("cc.start"), box.x + (bw - 130) / 2, y, startOn ? sel : dim); y += 30;
+    line(I18n::t("cc.hint"), box.x + 40, box.y + bh - 30, dim);
+}
+
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
 shared_ptr<CommandDisplay> _commandDisplay;
 
@@ -432,9 +499,13 @@ int main(int argc, char *args[]) {
             SDL_Event e;
 
             auto player = make_shared<Player>(20, 20);
-            // 啟動時若有存檔則載入(還原玩家位置/數值 + F6 設定);損毀則維持新遊戲
-            if (SaveGame::exists(SaveGame::defaultPath()))
-                SaveGame::load(*player, SaveGame::defaultPath());
+            // 啟動時若有存檔則載入(還原玩家位置/數值 + F6 設定);損毀則維持新遊戲。
+            // 無存檔 = 新遊戲 → 之後跑建角開場(needCharCreate)。測試 hook 與 U1_SKIP_CC 一律跳過。
+            bool hasSave = SaveGame::exists(SaveGame::defaultPath());
+            if (hasSave) SaveGame::load(*player, SaveGame::defaultPath());
+            bool needCharCreate = !hasSave && !getenv("U1_SKIP_CC") &&
+                                  !getenv("U1_TEST_DUNGEON") && !getenv("U1_TEST_TOWN") &&
+                                  !getenv("U1_TEST_CASTLE");
             auto gameContext = make_shared<GameContext>(player);
             // 測試 hook(env-gated,正常遊玩不啟用):直接進地牢驗證怪物移動
             if (getenv("U1_TEST_DUNGEON")) gameContext->setScreen(ScreenType::Dungeon);
@@ -524,6 +595,45 @@ int main(int argc, char *args[]) {
             dungeonScreen->setDungeon(dungeon);
 
             shared_ptr<Screen> currentScreen = static_pointer_cast<Screen>(overworldScreen);
+
+            // ── 建角開場(新遊戲且非測試)──────────────────────────────
+            // ↑↓ 選列、←→ 調整(性別/種族/職業循環,屬性加減 ←減 →加 受剩餘點數限制)、
+            // Enter 在「開始」列確認 → 套到 player。關窗 → 直接離開。
+            if (needCharCreate) {
+                CharCreateState cc;
+                bool ccDone = false, ccQuit = false;
+                while (!ccDone && !ccQuit) {
+                    SDL_Event ce;
+                    while (SDL_PollEvent(&ce) != 0) {
+                        if (ce.type == SDL_QUIT) { ccQuit = true; break; }
+                        if (ce.type != SDL_KEYDOWN) continue;
+                        auto k = ce.key.keysym.sym;
+                        if (k == SDLK_UP)   cc.row = (cc.row + kCCRowN - 1) % kCCRowN;
+                        else if (k == SDLK_DOWN) cc.row = (cc.row + 1) % kCCRowN;
+                        else if (k == SDLK_LEFT || k == SDLK_RIGHT) {
+                            int d = (k == SDLK_RIGHT) ? 1 : -1;
+                            if (cc.row == 0) cc.sex = (cc.sex + CharCreation::kSexN + d) % CharCreation::kSexN;
+                            else if (cc.row == 1) cc.raceIdx = (cc.raceIdx + CharCreation::kRaceN + d) % CharCreation::kRaceN;
+                            else if (cc.row == 2) cc.klassIdx = (cc.klassIdx + CharCreation::kKlassN + d) % CharCreation::kKlassN;
+                            else if (cc.row >= 3 && cc.row < kCCRowStart) {
+                                int ai = cc.row - 3;
+                                if (d > 0 && cc.remaining() > 0) cc.alloc[ai]++;
+                                else if (d < 0 && cc.alloc[ai] > 0) cc.alloc[ai]--;
+                            }
+                        } else if (k == SDLK_RETURN) {
+                            if (cc.row == kCCRowStart) ccDone = true;
+                            else cc.row = kCCRowStart;  // 任意列按 Enter → 跳到開始,再按一次確認
+                        }
+                    }
+                    SDL_SetRenderTarget(gRenderer, nullptr);
+                    SDL_RenderSetLogicalSize(gRenderer, CANVAS_W, CANVAS_H);
+                    drawCharCreate(gRenderer, cc);
+                    SDL_RenderPresent(gRenderer);
+                    SDL_Delay(16);
+                }
+                if (ccQuit) { close(); return 0; }
+                CharCreation::apply(*player, cc.sex, cc.raceIdx, cc.klassIdx, cc.alloc);
+            }
 
             //While application is running
             bool quitDialogActive = false;
