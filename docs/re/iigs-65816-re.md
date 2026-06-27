@@ -140,3 +140,30 @@ id1(4191B,header `00 7d 01 00`)從 offset 2 LZSS 解壓 = **正好 32000 bytes =
 **到此的成果**:**IIgs 自訂圖格式(type 0x0001 = LZSS)完全破解並驗證**,79 個圖 resource 全可解。
 這解開了先前「載具/怪物 authentic tile」的牆——只差把正確的 tileset resource 對映到 engine 52 槽。
 工具鏈:`omf_parse.py`(段)、`dis65816.py`(反組譯)、`lzss_decode.py`(解壓)。
+
+## Step 8 — resource 分類 + resID 表(overworld tileset 仍待定位)
+
+追 0x201 caller 用的 resID 表(`LDA $table,x`):
+- `$b6c6`:(resID, val) 對 → resID 37-49(id25-id31)= 一組遊戲螢幕圖。
+- `$3839`:resID 26-35(id1a-id23)= 10 個 812B 圖。
+- `$ca83`:resID 21-24(id15-18)= portrait(128×64)。
+
+**全 79 個 type 0x0001 解碼後分類**(LZSS 全可解):
+| 類別 | resource |
+|---|---|
+| 全螢幕片頭/標題(32000B) | id01 ORIGIN、id02 Ultima標題、id0a/0e/32 等 |
+| portrait(128×64) | id15-18 |
+| HUD/分數(空戰) | id08(「CURVE / BONUS / 76507」) |
+| **商店/選單 UI 文字** | id1a-id23(解出含「WEAPONS」「ME…」ASCII) |
+| 遊戲螢幕圖 | id25-id31 等(各有關聯 palette,維度待定) |
+
+⚠ **16×16 overworld tile(草/水/山…)不在以上明顯處**:當 16×16 tiles 渲染全雜訊;
+seg#3(UltimaData)當 tiles 也雜訊。⇒ overworld tile 的儲存方式仍待定位:
+可能在某 type 0x0001 resource 的特定 palette+維度未命中、或以 rIcon-style(16×16+mask)存於他處、
+或繪圖走 QuickDraw/tile-engine 從 seg#3 特定 offset 取。
+
+**下一步**:反組譯「overworld 地圖繪製主迴圈」(讀 map cell → 取 tile 圖 → blit),
+從它實際取 tile 圖的指標反追到確切儲存位置 + 維度。LZSS 既破,拿到位置即可解。
+
+**到此確立**:IIgs 圖格式(LZSS)完全破解、79 圖全解、resource 分類 + resID 表清楚;
+唯 overworld 16×16 tile 的確切儲存待最後一步定位。
