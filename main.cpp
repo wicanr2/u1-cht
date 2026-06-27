@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <cstdlib>
 #include "src/Configuration.h"
+#include "src/SaveGame.h"
 
 using namespace std;
 using namespace OpenUltima;
@@ -108,7 +109,7 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
     SDL_RenderFillRect(renderer, &scrim);
 
-    const int bw = 540, bh = 392;
+    const int bw = 540, bh = 420;
     SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
     SDL_RenderFillRect(renderer, &box);
@@ -133,7 +134,8 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     line("F6", kx, y, key); line("設定:遊戲速度 / 怪物生成", tx, y, txt); y += 24;
     line("M  /  F9", kx, y, key); line("音樂開關 / 音效開關", tx, y, txt); y += 24;
     line("PageDown", kx, y, key); line("循環切換畫面風格(7 平台)", tx, y, txt); y += 24;
-    line("F10 / Ctrl+Q", kx, y, key); line("離開(確認後存檔)", tx, y, txt); y += 24;
+    line("F5", kx, y, key); line("手動存檔", tx, y, txt); y += 24;
+    line("F10 / Ctrl+Q", kx, y, key); line("離開(自動存檔後退出)", tx, y, txt); y += 24;
     line("ESC", kx, y, key); line("取消 / 返回上一層", tx, y, txt); y += 30;
     line("按任意鍵關閉", box.x + (bw - 120) / 2, box.y + bh - 30, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
 }
@@ -234,6 +236,9 @@ int main(int argc, char *args[]) {
             SDL_Event e;
 
             auto player = make_shared<Player>(20, 20);
+            // 啟動時若有存檔則載入(還原玩家位置/數值 + F6 設定);損毀則維持新遊戲
+            if (SaveGame::exists(SaveGame::defaultPath()))
+                SaveGame::load(*player, SaveGame::defaultPath());
             auto gameContext = make_shared<GameContext>(player);
             // 測試 hook(env-gated,正常遊玩不啟用):直接進地牢驗證怪物移動
             if (getenv("U1_TEST_DUNGEON")) gameContext->setScreen(ScreenType::Dungeon);
@@ -355,7 +360,9 @@ int main(int argc, char *args[]) {
                         if (e.type == SDL_KEYDOWN) {
                             auto k = e.key.keysym.sym;
                             if (k == SDLK_y || k == SDLK_RETURN) {
-                                // TODO: 存檔系統建立後在此 autosave 再離開
+                                // 離開鐵則:離開前 autosave(失敗則提示,但仍允許離開)
+                                if (!SaveGame::save(*player, SaveGame::defaultPath()))
+                                    CommandDisplay::writeLn("⚠ 存檔失敗(仍離開)", false);
                                 quit = true;
                             } else if (k == SDLK_n || k == SDLK_ESCAPE) {
                                 quitDialogActive = false;
@@ -399,6 +406,11 @@ int main(int argc, char *args[]) {
                                 } else {
                                     CommandDisplay::writeLn("音樂:無音訊裝置", false);
                                 }
+                            }
+                            // F5:手動存檔
+                            if (pressedKey == SDLK_F5) {
+                                bool ok = SaveGame::save(*player, SaveGame::defaultPath());
+                                CommandDisplay::writeLn(ok ? "已存檔" : "⚠ 存檔失敗", false);
                             }
                             // F9:切換音效(獨立於音樂)
                             if (pressedKey == SDLK_F9) {

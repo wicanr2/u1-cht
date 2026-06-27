@@ -34,3 +34,6 @@ __pycache__/
 assets/music/*.ogg
 !assets/music/theme.ogg
 assets/music/**/*.ogg
+
+# 執行期存檔
+save.json

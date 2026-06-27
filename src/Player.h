@@ -52,6 +52,12 @@ public:
 
     void receiveDamage(int damage) { _hp -= damage; };
 
+    // 存檔載入用 setter(直接還原數值)
+    void setHP(int v) { _hp = v; }
+    void setFood(int v) { _food = v; }
+    void setXP(int v) { _xp = v; }
+    void setMoney(int v) { _money = v; }
+
     // 食物消耗(隨時間 tick);耗盡回傳 true 代表飢餓
     void consumeFood(int n) { _food -= n; if (_food < 0) _food = 0; }
 
