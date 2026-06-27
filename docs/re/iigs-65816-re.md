@@ -89,3 +89,37 @@ JSR $021e                ; → LoadResource wrapper
 **第一性結論(到此)**:壓縮圖經 `caller → 0x201(type=1) → 0x21e(LoadResource)` 載入;
 **解壓不在載入路徑**,而在 caller 拿 handle 後的「繪製/解壓」碼。下一步:追一個 0x201 caller(如 0xdd5)
 看它如何用 handle → 找解壓 loop(讀壓縮 byte、依 flag 高位 copy literal/run、寫 SHR 像素)。
+
+## Step 5 — blit 迴圈(resource 像素 → SHR)
+
+追 0x201 caller @0xdc9:載入後 `LDA [$05]` 讀 header word0,拆高/低 byte 當維度(height/width)。
+@0xe20 是 blit 迴圈:`SEP #$21; LDY width-1; LDA [src],y; STA [dst],y; DEY; BPL`(每列 copy)、
+`src += width; dst += 0xa0`(160=SHR 每線 bytes)、`DEC height; BNE`。
+⇒ **把 resource 像素直接 copy 到 SHR(raw,非解壓)**。⇒ 載入時資料已是解壓好的 → 解壓在別處。
+
+## Step 6 — ★★★ 破解:type 0x0001 = LZSS(Resource Converter @0x398)
+
+啟動碼 @0xd2 用 **`ResourceConverter`(RM call 0x28)** 註冊:`PEA $0000; PEA $0398`(convertProc=0x398)、
+`PEA $0001`(rType=0x0001)。⇒ **type 0x0001 載入時自動呼叫 0x398 解壓**(GS/OS resource converter 機制)。
+
+反組譯 converter @0x398:讀 param block 指標 → `NewHandle`(MemMgr 0x0902)配輸出記憶體 → 解壓 loop @0x41c:
+```
+SEP #$21; LDA [src],y; STA $05        ; 讀控制 byte(8 bits,LSB first)
+ROR $05; BCC match                     ; bit=0 → match;bit=1 → literal
+  (literal) LDA [src],y; STA [dst]; DEX; INC dst         ; copy 1 byte
+  (match @0x441) REP #$21; LDA [src],y  ; 讀 16-bit descriptor
+    offset12 = desc & 0x0FFF; distance = 0x1000 - offset12
+    length   = (desc >> 12) + 3
+    從 dst[-distance] 回拷 length bytes                    ; LZ back-reference
+DEX; BEQ done                          ; 輸出滿(dp$09 = 解壓大小)即止
+```
+**⇒ 格式 = 經典 LZSS:控制 byte(bit=1 literal / bit=0 match)、match = 12-bit offset(distance=0x1000−off)+ 4-bit length(+3)。
+壓縮流從 resource offset 2 起。** 工具 `tools/re/iigs/lzss_decode.py`。
+
+### ✅ 驗證成功
+id1(4191B,header `00 7d 01 00`)從 offset 2 LZSS 解壓 = **正好 32000 bytes = 320×200 SHR 4bpp 一張螢幕**,
+渲染 = **ORIGIN logo(「An Electronic Arts Company」)**,乾淨可辨!**IIgs 自訂圖格式完全破解。**
+⇒ 79 個 type 0x0001 resource 全可解 → 含 overworld tileset → 可抽真實 IIgs 載具/怪物 tile(下一步)。
+
+> 先前誤判「PackBytes 爆增」是因為 type3 假設錯;真實是 LZSS。第一性逐行反組譯(註冊 converter → 解壓 loop)
+> 才拿到確切演算法。同 retro「反編當 oracle 不照抄」「斷言前先驗證」。
