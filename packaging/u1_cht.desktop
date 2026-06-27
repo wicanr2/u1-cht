@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Ultima I CHT
+Comment=Ultima I: The First Age of Darkness — Traditional Chinese remake
+Exec=u1_cht
+Icon=u1_cht
+Categories=Game;RolePlaying;
+Terminal=false
