@@ -12,7 +12,7 @@
 |---|---|---|---|
 | **PC-98** | `assets/music/pc98.ogg` | `.fdi` 的 `SCORE.DAT`+`VOICE.DAT`(YM2608 FM)→ **自包含 2-op FM 合成器原生 render**(`render_pc98_music.py`,不跑模擬器) | ✅ **可用**(52.9s,RMS 9462) |
 | **FM Towns** | `assets/music/fmtowns.ogg` | Trilogy CD 的 `MAP.EUP`(EUPHONY)→ **自寫 EUP→2-op FM 渲染**(`render_eup_music.py`) | ✅ **可用**(49.9s,RMS 3624;原 u7-cht ogg 為靜音,已重做) |
-| MSX | `assets/music/msx.ogg` | `.dsk` PSG(AY-3-8910)→ 自寫 PSG 渲染 | ⬜ 待定位檔案 |
+| **MSX** | `assets/music/msx.ogg` | `.dsk` 的 `ULT*.MCP`(Pony Canyon 音樂格式)→ **自寫 MCP→FM 渲染**(`render_mcp_music.py`) | ✅ **可用**(`ULT1`="LORD BRITISH'S THEME" overworld,41.4s RMS 5952) |
 | Apple IIgs | `assets/music/iigs.ogg` | woz 的 synthLAB / Ensoniq 5503 取樣合成 | ⬜ 待解格式 |
 | Atari | `assets/music/atari.ogg` | POKEY,OUTMOVE/SPAMOVE 內 | ⬜ 待定位 |
 | EGA / CGA / VGA(DOS) | `theme.ogg`(占位) | DOS 原版僅 PC speaker,無獨立 BGM | — 占位 |
@@ -29,6 +29,13 @@
 - **發聲 = FM**:用自包含 2-op FM(modulator→carrier)+ ADSR 包絡渲染,保留 chiptune FM 質感,**不跑模擬器**。
 - 10 首全渲(`assets/music/pc98/song0-9.ogg`);overworld 暫用 **song1**(三聲部、旋律完整,piano-roll 驗證為連貫音樂)。
   ⚠ 哪一首是 overworld 需聽感確認(FM Towns 參考曲為靜音,無法自動比對)。
+
+## ★ MSX 音樂(已完成,native MCP→FM)
+
+MSX 版(Pony Canyon 1986)BGM 在 `.dsk` 的 **`ULT*.MCP`** 檔(9 首,各帶標題,如 `ULT1`="LORD BRITISH'S THEME")。
+MCP 與 PC-98 SCORE / FM Towns EUP **同作曲團隊**(共用 `e0`/`e2`/`fa` 控制碼)。`render_mcp_music.py`:
+- `fe fe fe fe` = 音軌分隔;**4 byte/事件**:控制碼(byte0 ≥ 0xe0 或 0xfd)或音符 `[note, gate, step, vel]`。
+- step = delta tick;3 軌(MELODY / BASS / CHORD)。沿用 2-op FM 合成。overworld = `ULT1`。
 
 ## ★ FM Towns 音樂(已完成,native EUP→FM 渲染)
 
