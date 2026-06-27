@@ -1,7 +1,35 @@
 # Ultima I 繁中化 — 工作清單(WORKLIST)
 
 > 進度追蹤。✅=完成並驗證 / 🔜=排程中 / ⬜=待辦 / 🧱=架構牆(大工程)。
-> 每完成一項:tester 驗證 → commit → push → 勾選。更新日:2026-06-26。
+> 每完成一項:tester 驗證 → commit → push → 勾選。更新日:2026-06-27。
+
+## ★ 本 fork 相對 open_ultima 上游的貢獻
+
+> 以下都是上游 [`matiaslaino/open_ultima`](https://github.com/matiaslaino/open_ultima) **沒有做到**、由本專案新增的成果。
+> 上游是極早期英文重製(世界地圖 + 基礎地牢 + 地面相鄰攻擊);本 fork 在其上補完並中文化。
+
+**中文化 / 移植**
+- 全畫面**繁體中文**(UI/訊息/狀態列/方向/怪名)+ **i18n 查表層**(`I18n::t/tf` + `assets/strings/<lang>.json`,可換語言)。
+- **Linux 移植**(taoJSON→nlohmann、MSVC 例外可攜化)。
+- **內部畫布 320→640**(中文 16px 銳利)+ Noto Serif CJK 抗鋸齒 + **全形寬度感知換行**。
+
+**七平台美術(全自行逆向)**
+- EGA / CGA / **FM Towns / MSX / PC-98 / Apple IIgs / Atari 8-bit** + VGA(EGA 擴色)tileset,`F1`/`PageDown` 熱鍵循環。
+- 各自破解原版圖格式(IIgs LZSS 反組譯 65816、Atari $6400 1bpp charset、PC-98 4-plane planar、MSX SCREEN7、FM Towns chunky),
+  完整 RE 紀錄於 `docs/re/`(含截圖 oracle 結構比對等方法)。
+
+**各版音樂原生還原(零模擬器)**
+- **MSX / PC-98 / FM Towns** 三版地圖 BGM:逆向各自序列格式(MCP / SCORE / EUPHONY,同作曲團隊)→ 自寫 2-op FM 合成器轉 ogg。
+- 考證 Atari(原版無地圖 BGM)、IIgs(僅音效非 synthLAB 序列);見 `docs/music.md`。
+- **音效系統**(Mix_Chunk)+ 程序生成音效;`M`/`F9` 音樂/音效獨立開關。
+
+**遊戲系統 / 操作補完**
+- **存檔系統**(`SaveGame`:玩家+設定序列化、F10 離開 autosave、F5 手動、啟動載入)。
+- **離開鐵則**(F10/Ctrl+Q 確認框 + autosave、ESC 只取消)。
+- **F1 指令說明畫面**、**F6 設定**(時間流速 / 怪物生成率 / **野外怪物追蹤開關**)。
+- **食物 / 飢餓 tick**、回合制生怪 + `speed_pct`/`spawn_pct`。
+- **怪物 AI**:地面忠於 1981(出現即攻擊不移動)+ 可選貪婪追蹤;地牢 beeline。
+- **原版 U1 AI 考據**(逆向 1983 Atari)+ 跨平台 RE 方法論文件。
 
 ## A. 已完成 ✅
 
