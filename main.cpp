@@ -22,6 +22,7 @@
 #include "src/Configuration.h"
 #include "src/SaveGame.h"
 #include "src/common/I18n.h"
+#include "src/ItemCatalog.h"
 
 using namespace std;
 using namespace OpenUltima;
@@ -110,7 +111,7 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
     SDL_RenderFillRect(renderer, &scrim);
 
-    const int bw = 540, bh = 420;
+    const int bw = 540, bh = 444;
     SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
     SDL_RenderFillRect(renderer, &box);
@@ -130,7 +131,8 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     line(I18n::t("ui.help.action_head"), lx, y, head); y += 28;
     line("A", kx, y, key); line(I18n::t("ui.help.attack"), tx, y, txt); y += 26;
     line("E", kx, y, key); line(I18n::t("ui.help.enter"), tx, y, txt); y += 26;
-    line("K", kx, y, key); line(I18n::t("ui.help.klimb"), tx, y, txt); y += 30;
+    line("K", kx, y, key); line(I18n::t("ui.help.klimb"), tx, y, txt); y += 26;
+    line("B", kx, y, key); line(I18n::t("ui.help.buy"), tx, y, txt); y += 30;
     line(I18n::t("ui.help.sys_head"), lx, y, head); y += 28;
     line("F6", kx, y, key); line(I18n::t("ui.help.f6"), tx, y, txt); y += 24;
     line("M  /  F9", kx, y, key); line(I18n::t("ui.help.audio"), tx, y, txt); y += 24;
@@ -139,6 +141,51 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     line("F10 / Ctrl+Q", kx, y, key); line(I18n::t("ui.help.quit"), tx, y, txt); y += 24;
     line("ESC", kx, y, key); line(I18n::t("ui.help.esc"), tx, y, txt); y += 30;
     line(I18n::t("ui.help.dismiss"), box.x + (bw - 120) / 2, box.y + bh - 30, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
+}
+
+// 商店:mode 1=類別選單、mode 2=品項清單(置中 modal)
+static const ShopType kShopCats[4] = {ShopType::Weapon, ShopType::Armor, ShopType::Food, ShopType::Magic};
+static void drawShop(SDL_Renderer *renderer, Player &player, int mode, ShopType type, int sel) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xC0);
+    SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &scrim);
+
+    const int bw = 460, bh = 320;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0x40, 0x80, 0xFF, 0xFF);
+    SDL_RenderDrawRect(renderer, &box);
+
+    SDL_Color title{0xFF, 0xD0, 0x40, 0xFF}, on{0xFF, 0xFF, 0x60, 0xFF},
+        off{0xC0, 0xC0, 0xC0, 0xFF}, gold{0xFF, 0xE0, 0x80, 0xFF};
+    auto line = [&](const string &s, int x, int y, SDL_Color c) {
+        LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c);
+        t.render(renderer, x, y);
+    };
+    int y = box.y + 18;
+    line(I18n::t("shop.greeting"), box.x + 24, y, title);
+    line(I18n::tf("shop.gold", {to_string(player.getMoney())}), box.x + bw - 150, y, gold);
+    y += 40;
+    if (mode == 1) {
+        for (int i = 0; i < 4; ++i) {
+            line((sel == i ? "▶ " : "  ") + I18n::t(ItemCatalog::shopTitleKey(kShopCats[i])),
+                 box.x + 40, y, sel == i ? on : off);
+            y += 34;
+        }
+        line(I18n::t("shop.hint_cat"), box.x + 30, box.y + bh - 30, off);
+    } else {
+        line(I18n::t(ItemCatalog::shopTitleKey(type)), box.x + 24, y, title); y += 32;
+        auto items = ItemCatalog::itemsFor(type);
+        for (int i = 0; i < (int)items.size(); ++i) {
+            line((sel == i ? "▶ " : "  ") + I18n::t(items[i].nameKey) + "  " +
+                     to_string(items[i].price) + " G",
+                 box.x + 40, y, sel == i ? on : off);
+            y += 28;
+        }
+        line(I18n::t("shop.hint_buy"), box.x + 30, box.y + bh - 30, off);
+    }
 }
 
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
@@ -244,6 +291,10 @@ int main(int argc, char *args[]) {
             auto gameContext = make_shared<GameContext>(player);
             // 測試 hook(env-gated,正常遊玩不啟用):直接進地牢驗證怪物移動
             if (getenv("U1_TEST_DUNGEON")) gameContext->setScreen(ScreenType::Dungeon);
+            if (getenv("U1_TEST_TOWN")) {
+                player->setOverworldX(65); player->setOverworldY(22);  // 真實城鎮座標
+                gameContext->setScreen(ScreenType::Town);
+            }
             auto overworldScreen = make_shared<OverworldScreen>(gameContext, 19, 9);
             auto dungeonScreen = make_shared<DungeonScreen>(gameContext);
 
@@ -327,10 +378,53 @@ int main(int argc, char *args[]) {
             bool quitDialogActive = false;
             bool settingsActive = false;
             bool helpActive = false;
+            int shopMode = 0;            // 0=關、1=類別、2=品項
+            ShopType shopType = ShopType::Weapon;
+            int shopSel = 0;
             int settingsRow = 0;
             while (!quit) {
                 //Handle events on queue
                 while (SDL_PollEvent(&e) != 0) {
+                    // 商店開啟時:↑↓選、Enter 確定/購買、ESC 返回/關閉,吞掉其他輸入
+                    if (shopMode > 0) {
+                        if (e.type == SDL_KEYDOWN) {
+                            auto k = e.key.keysym.sym;
+                            int n = (shopMode == 1) ? 4 : (int)ItemCatalog::itemsFor(shopType).size();
+                            if (k == SDLK_ESCAPE) { if (shopMode == 2) { shopMode = 1; shopSel = 0; } else shopMode = 0; }
+                            else if (k == SDLK_UP) shopSel = (shopSel + n - 1) % n;
+                            else if (k == SDLK_DOWN) shopSel = (shopSel + 1) % n;
+                            else if (k == SDLK_RETURN) {
+                                if (shopMode == 1) { shopType = kShopCats[shopSel]; shopMode = 2; shopSel = 0; }
+                                else {
+                                    auto items = ItemCatalog::itemsFor(shopType);
+                                    auto &it = items[shopSel];
+                                    if (player->getMoney() < it.price) {
+                                        CommandDisplay::writeLn(I18n::t("shop.no_gold"), false);
+                                    } else {
+                                        player->addMoney(-it.price);
+                                        if (shopType == ShopType::Food) {
+                                            player->addFood(50);
+                                            CommandDisplay::writeLn(I18n::t("shop.bought_food"), false);
+                                        } else if (shopType == ShopType::Weapon) {
+                                            player->addWeapon(it.index);
+                                            if (it.index > player->getCurrentWeapon()) player->setCurrentWeapon(it.index);
+                                            CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);
+                                        } else if (shopType == ShopType::Armor) {
+                                            player->addArmor(it.index);
+                                            if (it.index > player->getCurrentArmor()) player->setCurrentArmor(it.index);
+                                            CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);
+                                        } else {  // Magic
+                                            player->addSpell(it.index);
+                                            CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);
+                                        }
+                                        Audio::playSfx("./assets/sfx/select.ogg");
+                                    }
+                                }
+                            }
+                        }
+                        continue;
+                    }
+
                     // 說明畫面開啟時:任意鍵(F1/ESC/Enter/空白)關閉,吞掉其他輸入
                     if (helpActive) {
                         if (e.type == SDL_KEYDOWN) helpActive = false;
@@ -408,6 +502,12 @@ int main(int argc, char *args[]) {
                                 } else {
                                     CommandDisplay::writeLn(I18n::t("msg.music_no_device"), false);
                                 }
+                            }
+                            // B:在城鎮/城堡開商店(交易)
+                            if (pressedKey == SDLK_b &&
+                                gameContext->getCurrentScreen() == ScreenType::Town) {
+                                shopMode = 1; shopSel = 0;
+                                continue;
                             }
                             // F5:手動存檔
                             if (pressedKey == SDLK_F5) {
@@ -499,6 +599,10 @@ int main(int argc, char *args[]) {
                 if (helpActive) {
                     SDL_RenderSetViewport(gRenderer, nullptr);
                     drawHelpScreen(gRenderer);
+                }
+                if (shopMode > 0) {
+                    SDL_RenderSetViewport(gRenderer, nullptr);
+                    drawShop(gRenderer, *player, shopMode, shopType, shopSel);
                 }
 
                 //Update screen

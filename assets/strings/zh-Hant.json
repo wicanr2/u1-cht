@@ -21,6 +21,7 @@
   "ui.help.attack": "攻擊(Attack)",
   "ui.help.enter": "進入 城鎮/城堡/地牢(Enter)",
   "ui.help.klimb": "攀爬 上下樓梯(Klimb,地牢)",
+  "ui.help.buy": "購買/交易(Buy,城鎮商店)",
   "ui.help.sys_head": "● 系統",
   "ui.help.f6": "設定:遊戲速度 / 怪物生成",
   "ui.help.audio": "音樂開關 / 音效開關",
@@ -83,5 +84,32 @@
 
   "monster.wandering_warlock": "遊蕩術士",
   "monster.thief": "盜賊",
-  "monster.giant_rat": "巨鼠"
+  "monster.giant_rat": "巨鼠",
+
+  "shop.greeting": "歡迎光臨,旅人!",
+  "shop.gold": "金幣:{0}",
+  "shop.hint_cat": "↑↓ 選擇   Enter 進入   ESC 離開",
+  "shop.hint_buy": "↑↓ 選擇   Enter 購買   ESC 返回",
+  "shop.no_gold": "金幣不足!",
+  "shop.bought": "買了{0}",
+  "shop.bought_food": "補充了食物(+50)",
+  "shop.title.weapon": "武器店",
+  "shop.title.armor": "防具店",
+  "shop.title.food": "食物店",
+  "shop.title.magic": "魔法店",
+  "shop.title.none": "商店",
+
+  "item.weapon.hands": "徒手", "item.weapon.dagger": "匕首", "item.weapon.mace": "釘錘",
+  "item.weapon.axe": "戰斧", "item.weapon.bow": "弓箭", "item.weapon.sword": "長劍",
+  "item.weapon.greatsword": "巨劍", "item.weapon.phazor": "光能槍",
+  "item.weapon.w8": "武器8", "item.weapon.w9": "武器9", "item.weapon.w10": "武器10",
+  "item.weapon.w11": "武器11", "item.weapon.w12": "武器12", "item.weapon.w13": "武器13",
+  "item.weapon.w14": "武器14", "item.weapon.w15": "武器15",
+  "item.armor.none": "無甲", "item.armor.leather": "皮甲", "item.armor.chain": "鏈甲",
+  "item.armor.plate": "板甲", "item.armor.a4": "防具4", "item.armor.a5": "防具5",
+  "item.armor.a6": "防具6", "item.armor.a7": "防具7",
+  "item.spell.prayer": "祈禱", "item.spell.open": "開啟術", "item.spell.unlock": "解鎖術",
+  "item.spell.magic_missile": "魔法飛彈", "item.spell.ladder_up": "升梯術",
+  "item.spell.ladder_down": "降梯術", "item.spell.blink": "瞬移", "item.spell.kill": "致死術",
+  "item.food.rations": "口糧(+50 食物)"
 }

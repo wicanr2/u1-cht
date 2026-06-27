@@ -56,11 +56,13 @@ assets/strings/zh-Hant.json 既有 i18n 層 —— 商店/對話/任務文字走
 
 ## 4. 分階段實作(一個一個做,每階段可玩可驗證)
 
-**Phase A — 商店系統(城鎮核心)**
+**Phase A — 商店系統(城鎮核心)** — 🟡 v1 完成(核心可玩)
 1. `Player` 加屬性 + 裝備 + 物品欄 + 對應 getter/setter,存檔序列化(`SaveGame` 擴充)。
 2. `TownScreen`:踩到 shop tile(由 `towns.json` 對應)→ 開**商店 modal**(自繪中文,沿用 F6/離開鐵則的 modal 風格):列品項+價格、↑↓選、Enter 買、ESC 離開。買賣改 gold/food/裝備/法術。
 3. 食物店、武器店、防具店、魔法店先到位。`PlayerStatusDisplay` 顯示目前武器/防具(可選)。
-4. 驗證:進城鎮 → 買劍/皮甲/食物 → 狀態變化 → game tester 截圖。
+4. 驗證:✅ 進城鎮 `B` → 武器/防具/食物/魔法類別 → 品項+價格 → 買(扣金幣/入物品欄/裝備)/金幣不足提示。截圖驗證、存檔持久化。
+   - ⚠ v1 觸發為按 `B`(類別選單),非站到特定店員;城鎮招牌(THE INN/ARMOURY/MAGIC/GROCER)實機可讀
+     → **後續精修**:依玩家位置鄰近招牌自動判定店家類型(需城鎮格式 RE:index 51-63 解碼 + 店員放置)。
 
 **Phase B — 戰鬥深度**
 5. 傷害公式接裝備:`OverworldScreen`/`DungeonScreen` 攻擊傷害 = f(武器, 力量);受傷 = f(怪, 防具)。
