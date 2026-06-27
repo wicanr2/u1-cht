@@ -1,7 +1,7 @@
 # Ultima I 繁中化 — 工作清單(WORKLIST)
 
 > 進度追蹤。✅=完成並驗證 / 🔜=排程中 / ⬜=待辦 / 🧱=架構牆(大工程)。
-> 每完成一項:tester 驗證 → commit → push → 勾選。更新日:2026-06-27。
+> 每完成一項:tester 驗證 → commit → push → 勾選。更新日:2026-06-27(Phase A v1 完成)。
 
 ## ★ 本 fork 相對 open_ultima 上游的貢獻
 
@@ -148,10 +148,21 @@ docker run --rm -v "$PWD":/work -w /work u1-msxrun bash -c '
 - [x] **i18n 查表層**(`I18n::t/tf` + `assets/strings/zh-Hant.json`):~97 個用戶可見字串全外移成 key→譯文;插值用 `{0}` 佔位符(`tf`)。全檔遷移、缺 key 回退顯示 key。截圖驗證 F1/狀態列/訊息正確。
 - [x] **`CommandDisplay` 全形寬度感知換行**:依顯示寬度斷行(全形 2 / 半形 1 單位,上限 52),只在 UTF-8 字元邊界切。取代原 byte 數換行(中文行被切太短)。
 - [x] **各版本音樂原生還原**(MSX/PC-98/FM Towns 三版,自寫合成器、零模擬器;見 `docs/music.md`)。
-      Atari/DOS 原版無 BGM、IIgs 僅音效(已考證)。剩:overworld 曲目聽感確認(哪首是 overworld)。
-- [ ] **Town / Castle 內容**(商店/NPC/國王任務)→ 規劃見 [`docs/plan-town-combat.md`](docs/plan-town-combat.md)(資料三要件已確認:手冊/素材/RE)
-- [ ] **戰鬥深度**(武器/防具/法術/物品欄/屬性/升級)→ 規劃見 [`docs/plan-town-combat.md`](docs/plan-town-combat.md)
+      Atari/DOS 原版無 BGM、IIgs 僅音效(已考證)。overworld 曲目已用音級比對確認(PC-98=song1)。
 - [ ] 打包(AppImage / Windows)— **使用者指示不急著打包**
+
+## C2. 城鎮內容 + 戰鬥深度(規劃見 [`docs/plan-town-combat.md`](docs/plan-town-combat.md))🔜
+
+> 資料三要件已確認(手冊/素材/RE)。從上游「城鎮空殼+固定傷害」補完。
+
+- [x] **Phase A v1 — 商店系統(核心可玩)**:`Player` 加 6 屬性 + 武器[16]/防具[8]/法術[8] 物品欄 + 裝備;
+      `ItemCatalog`(品項+價格,i18n);商店 modal(`B` 城鎮開→類別→品項→購買/裝備/食物+50/金幣不足);
+      `SaveGame` 序列化。截圖驗證、regression OK。
+- [ ] **Phase A.2 — 商店精修(authentic 店員定位)**:RE 城鎮格式(index 51-63 解碼 + 店員放置)→
+      站到招牌旁(WEAPONS/ARMOUR/MAGIC/FOOD/PUB)自動判定店家類型,取代 `B` 類別選單。
+- [ ] **Phase B — 戰鬥深度**:傷害接裝備(攻 = f(武器,力量)、受 = f(怪,防具));XP→升級(HP/屬性);
+      死亡→回 Lord British 城堡復活(扣資源)。`ItemCatalog::weaponPower/armorDefense` 已備。
+- [ ] **Phase C — 城堡/國王/法術/酒館**:國王給任務+領獎;地牢施法(買來的法術:飛彈/致死/升降梯/開鎖);酒館線索。
 
 ## D. 架構牆 / 長期 🧱
 
