@@ -147,7 +147,8 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
 }
 
 // 商店:mode 1=類別選單、mode 2=品項清單(置中 modal)
-static const ShopType kShopCats[4] = {ShopType::Weapon, ShopType::Armor, ShopType::Food, ShopType::Magic};
+static const int kShopCatN = 5;
+static const ShopType kShopCats[kShopCatN] = {ShopType::Weapon, ShopType::Armor, ShopType::Food, ShopType::Magic, ShopType::Pub};
 static void drawShop(SDL_Renderer *renderer, Player &player, int mode, ShopType type, int sel) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xC0);
@@ -172,7 +173,7 @@ static void drawShop(SDL_Renderer *renderer, Player &player, int mode, ShopType 
     line(I18n::tf("shop.gold", {to_string(player.getMoney())}), box.x + bw - 150, y, gold);
     y += 40;
     if (mode == 1) {
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < kShopCatN; ++i) {
             line((sel == i ? "▶ " : "  ") + I18n::t(ItemCatalog::shopTitleKey(kShopCats[i])),
                  box.x + 40, y, sel == i ? on : off);
             y += 34;
@@ -515,7 +516,7 @@ int main(int argc, char *args[]) {
                     if (shopMode > 0) {
                         if (e.type == SDL_KEYDOWN) {
                             auto k = e.key.keysym.sym;
-                            int n = (shopMode == 1) ? 4 : (int)ItemCatalog::itemsFor(shopType).size();
+                            int n = (shopMode == 1) ? kShopCatN : (int)ItemCatalog::itemsFor(shopType).size();
                             if (k == SDLK_ESCAPE) { if (shopMode == 2) { shopMode = 1; shopSel = 0; } else shopMode = 0; }
                             else if (k == SDLK_UP) shopSel = (shopSel + n - 1) % n;
                             else if (k == SDLK_DOWN) shopSel = (shopSel + 1) % n;
@@ -539,6 +540,8 @@ int main(int argc, char *args[]) {
                                             player->addArmor(it.index);
                                             if (it.index > player->getCurrentArmor()) player->setCurrentArmor(it.index);
                                             CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);
+                                        } else if (shopType == ShopType::Pub) {
+                                            CommandDisplay::writeLn(I18n::t("clue." + to_string(rand() % 6)), false);
                                         } else {  // Magic
                                             player->addSpell(it.index);
                                             CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);

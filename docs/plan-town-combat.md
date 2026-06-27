@@ -69,7 +69,7 @@ assets/strings/zh-Hant.json 既有 i18n 層 —— 商店/對話/任務文字走
 6. XP → 升級(HP/屬性成長)、死亡 → 回 Lord British 城堡復活(扣資源,接存檔)。
 7. 驗證:換武器前後傷害差異、升級、死亡復活。
 
-**Phase C — 城堡 / 國王 / 法術 / 酒館**
+**Phase C — 城堡 / 國王 / 法術 / 酒館** — ✅ 完成(+ Z 角色屬性表)
 8. 城堡國王:對話 modal 給任務 + 領獎(加屬性/gold)。
 9. 法術:地牢可施 Magic Missile/Kill/Ladder/Open/Unlock 等(接買來的法術)。
 10. 酒館:花錢得線索(主線提示)。
