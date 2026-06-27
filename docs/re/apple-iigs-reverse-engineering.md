@@ -121,7 +121,18 @@ DEX; BEQ done                       ; 輸出滿即止
 
 **環境**:`docker/Dockerfile.{a2,mame}`(floptool / MAME);BIOS 與 woz / GS-OS 碟在 `re_work/iigs/`(版權,gitignore)。
 
-## 7. 下一步:完成真實 IIgs 全 52 槽
+## 7. 追地圖繪製碼:overworld tile-draw 機制調查
 
-LZSS 既破,接著用靜態溯源追「overworld 地圖繪製碼」定位 tileset 的確切 resID + 維度,
-把真實 IIgs 載具/怪物 tile 抽出補完 `iigs.png`。(進行中)
+LZSS 既破,接著反組譯找 overworld 的逐格 tile-draw,定位 tile 圖確切儲存。調查結果(細節見 `iigs-65816-re.md` Step 8-9):
+
+- **resource 分類(79 個全解)**:片頭/標題(32000B 全螢幕)、portrait(128×64)、HUD 空戰分數(「BONUS/CURVE」)、
+  **商店選單 UI 文字**(解出「WEAPONS」)、遊戲螢幕圖。**16×16 overworld 地形 tile 不在這些明顯處**。
+- **resID 表**:`$b6c6`(resID 37-49)、`$3839`(26-35 商店 UI)、`$ca83`(21-24 portrait)把 resource 分組。
+- **SHR blit routine**:`ADC #$00a0`(SHR 每線 160)三處——0xaaf=矩形填色、0xc39=清屏、
+  **0xdc9 = 「在 (x,y) 畫圖 resID」**(`PEA x;PEA y;PEA resID;JSR $0dc9`),4 個散落 caller、組合選單/標題畫面用,
+  **非逐格 tile loop**。
+- ⇒ **overworld tile-draw 是尚未定位的另一 routine**。最可能:tiles 在啟動時 LZSS 解壓進一塊 **RAM tile-cache**,
+  地圖主迴圈讀 map cell → 從 cache blit 16×16。需找這個迴圈(讀 map data + tile-cache 指標)反追到 cache 來源 resource。
+
+**現狀**:`iigs.png` = 8 個真實 IIgs 地形/玩家/馬(hg101 截圖切)+ EGA fallback,可玩。
+完整 52 槽真實素材就差「定位 overworld tile-cache 來源 resource + 維度」這一步——格式既破,拿到位置即可解。
