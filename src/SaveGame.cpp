@@ -43,6 +43,8 @@ bool SaveGame::save(const Player &player, const std::string &path) {
         {"questsCompleted", player.getQuestsCompleted()},
         {"vehicle", (int)player.getVehicle()},
         {"princessFreed", player.isPrincessFreed()},
+        {"hasShuttle", player.hasShuttle()},
+        {"spaceAce", player.isSpaceAce()},
     };
     // F6 設定一併持久化(時間流速 / 生成率 / 怪物追蹤)
     j["settings"] = {
@@ -99,6 +101,8 @@ bool SaveGame::load(Player &player, const std::string &path) {
         else if (p.value("hasRaft", false))
             player.setVehicle(Player::Vehicle::Raft);
         player.setPrincessFreed(p.value("princessFreed", false));
+        player.setShuttle(p.value("hasShuttle", false));
+        player.setSpaceAce(p.value("spaceAce", false));
         if (j.contains("settings")) {
             auto &s = j["settings"];
             Configuration::setSpeedPct(s.value("speed_pct", Configuration::getSpeedPct()));

@@ -64,7 +64,8 @@ public:
                 return {{1, "item.transport.horse", 100},
                         {2, "item.transport.raft", 200},
                         {3, "item.transport.frigate", 500},
-                        {4, "item.transport.aircar", 1500}};
+                        {4, "item.transport.aircar", 1500},
+                        {9, "item.transport.shuttle", 1000}};   // 9=太空梭(非地面載具,L 鍵發射)
             default:
                 return {};
         }

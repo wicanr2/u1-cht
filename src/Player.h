@@ -138,6 +138,12 @@ public:
     bool isPrincessFreed() const { return _princessFreed; }
     void setPrincessFreed(bool v) { _princessFreed = v; }
 
+    // 太空梭 + 星海試煉(Space Ace):endgame 前置
+    bool hasShuttle() const { return _hasShuttle; }
+    void setShuttle(bool v) { _hasShuttle = v; }
+    bool isSpaceAce() const { return _spaceAce; }
+    void setSpaceAce(bool v) { _spaceAce = v; }
+
     // 食物消耗(隨時間 tick);耗盡回傳 true 代表飢餓
     void consumeFood(int n) { _food -= n; if (_food < 0) _food = 0; }
 
@@ -182,5 +188,7 @@ private:
 
     Vehicle _vehicle = Vehicle::Foot;   // 目前載具
     bool _princessFreed = false;        // 是否已救出公主(獲時光機)
+    bool _hasShuttle = false;           // 是否擁有太空梭
+    bool _spaceAce = false;             // 是否已通過星海試煉(Space Ace)
 };
 

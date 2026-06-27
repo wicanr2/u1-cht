@@ -64,6 +64,8 @@ rpg_smoke(){  # $1=env $2=開啟鍵 $3=label
 rpg_smoke U1_TEST_TOWN   b rpg_shop    # 城鎮 B 商店
 rpg_smoke U1_TEST_CASTLE t rpg_king    # 城堡 T 國王
 rpg_smoke U1_TEST_DUNGEON c rpg_cast   # 地牢 C 施法(空法術也不崩)
+rpg_smoke U1_TEST_SPACE   space rpg_space   # 星海射擊子遊戲
+rpg_smoke U1_TEST_ENDGAME t   rpg_endgame   # 終局國王對話(三件齊備)
 rm -f save.json
 
 kill -9 "$XPID" 2>/dev/null; wait "$XPID" 2>/dev/null

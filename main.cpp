@@ -13,6 +13,7 @@
 #include "src/Constants.h"
 #include "src/CommandDisplay.h"
 #include "src/dungeon/DungeonScreen.h"
+#include "src/space/SpaceScreen.h"
 #include "src/town/TownManager.h"
 #include "src/town/TownScreen.h"
 #include "src/town/TownSpriteTypeLoader.h"
@@ -137,7 +138,8 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     line("B", kx, y, key); line(I18n::t("ui.help.buy"), tx, y, txt); y += 26;
     line("T", kx, y, key); line(I18n::t("ui.help.talk"), tx, y, txt); y += 26;
     line("C", kx, y, key); line(I18n::t("ui.help.cast"), tx, y, txt); y += 26;
-    line("Z", kx, y, key); line(I18n::t("ui.help.ztats"), tx, y, txt); y += 30;
+    line("Z", kx, y, key); line(I18n::t("ui.help.ztats"), tx, y, txt); y += 26;
+    line("L", kx, y, key); line(I18n::t("ui.help.launch"), tx, y, txt); y += 30;
     line(I18n::t("ui.help.sys_head"), lx, y, head); y += 28;
     line("F6", kx, y, key); line(I18n::t("ui.help.f6"), tx, y, txt); y += 24;
     line("M  /  F9", kx, y, key); line(I18n::t("ui.help.audio"), tx, y, txt); y += 24;
@@ -198,8 +200,12 @@ static void drawShop(SDL_Renderer *renderer, Player &player, int mode, ShopType 
 // 國王任務數值(draw/input 共用):討伐數 / 金幣賞
 static int questTargetFor(Player &p) { return 5 + p.getQuestsCompleted() * 5; }
 static int questGoldFor(Player &p) { return 100 + p.getQuestsCompleted() * 100; }
-static const int kEndgameQuests = 4;   // 完成 4 位國王試煉 → 終局
-static bool endgameReady(Player &p) { return p.getQuestsCompleted() >= kEndgameQuests && !p.hasQuest(); }
+static const int kEndgameQuests = 4;   // 完成 4 位國王試煉
+static bool questsAllDone(Player &p) { return p.getQuestsCompleted() >= kEndgameQuests && !p.hasQuest(); }
+// 終局三件:4 國王試煉 + 救公主(得時光機)+ 星海試煉(Space Ace)→ 可殺蒙登
+static bool endgameReady(Player &p) {
+    return questsAllDone(p) && p.isPrincessFreed() && p.isSpaceAce();
+}
 
 // 城堡國王對話(置中 modal)
 static void drawKing(SDL_Renderer *renderer, Player &player) {
@@ -220,7 +226,13 @@ static void drawKing(SDL_Renderer *renderer, Player &player) {
     line(I18n::t("king.title"), box.x + (bw - 120) / 2, box.y + 18, title);
     if (endgameReady(player))
         line(I18n::t("king.endgame"), box.x + 30, box.y + 70, SDL_Color{0xFF, 0xA0, 0x40, 0xFF});
-    else if (!player.hasQuest())
+    else if (questsAllDone(player)) {
+        // 4 試煉已畢:引導完成 endgame 其餘前置(救公主 → 星海試煉)
+        if (!player.isPrincessFreed())
+            line(I18n::t("king.need_princess"), box.x + 30, box.y + 64, txt);
+        else if (!player.isSpaceAce())
+            line(I18n::t("king.need_spaceace"), box.x + 30, box.y + 64, txt);
+    } else if (!player.hasQuest())
         line(I18n::tf("king.offer", {to_string(questTargetFor(player)), to_string(questGoldFor(player))}),
              box.x + 30, box.y + 70, txt);
     else if (player.isQuestComplete())
@@ -228,7 +240,7 @@ static void drawKing(SDL_Renderer *renderer, Player &player) {
     else
         line(I18n::tf("king.incomplete", {to_string(player.getQuestKills()), to_string(player.getQuestTarget())}),
              box.x + 30, box.y + 70, txt);
-    bool actionable = !player.hasQuest() || player.isQuestComplete() || endgameReady(player);
+    bool actionable = (!questsAllDone(player) && (!player.hasQuest() || player.isQuestComplete())) || endgameReady(player);
     line(I18n::t(actionable ? "king.hint_action" : "king.hint_close"), box.x + 30, box.y + bh - 32, hint);
 }
 
@@ -519,8 +531,14 @@ int main(int argc, char *args[]) {
             }
             if (const char *v = getenv("U1_TEST_VEHICLE"))  // 驗證載具 sprite/通行(1馬2筏3艦4飛車)
                 player->setVehicle((Player::Vehicle)atoi(v));
+            if (getenv("U1_TEST_SPACE")) { player->setShuttle(true); gameContext->setScreen(ScreenType::Space); }
+            if (getenv("U1_TEST_ENDGAME")) {  // 設齊終局三件,驗國王終局對話 → 勝利
+                player->setQuestsCompleted(4); player->setPrincessFreed(true); player->setSpaceAce(true);
+                player->setOverworldX(32); player->setOverworldY(27); gameContext->enterCastle();
+            }
             auto overworldScreen = make_shared<OverworldScreen>(gameContext, 19, 9);
             auto dungeonScreen = make_shared<DungeonScreen>(gameContext);
+            auto spaceScreen = make_shared<SpaceScreen>(gameContext);
 
             auto egaTilesPath = Configuration::getEgaOverworldTilesFilePath();
             auto cgaTilesPath = Configuration::getCgaOverworldTilesFilePath();
@@ -684,10 +702,14 @@ int main(int argc, char *args[]) {
                                         } else if (shopType == ShopType::Pub) {
                                             CommandDisplay::writeLn(I18n::t("clue." + to_string(rand() % 6)), false);
                                         } else if (shopType == ShopType::Transport) {
-                                            // it.index 對應 Player::Vehicle(1=馬 2=木筏 3=巡防艦 4=飛車)
-                                            player->setVehicle((Player::Vehicle)it.index);
-                                            overworldScreen->refreshPlayerVehicleSprite();
-                                            CommandDisplay::writeLn(I18n::tf("shop.bought_vehicle", {I18n::t(it.nameKey)}), false);
+                                            if (it.index == 9) {  // 太空梭(非地面載具)
+                                                player->setShuttle(true);
+                                                CommandDisplay::writeLn(I18n::t("shop.bought_shuttle"), false);
+                                            } else {  // 1=馬 2=木筏 3=巡防艦 4=飛車
+                                                player->setVehicle((Player::Vehicle)it.index);
+                                                overworldScreen->refreshPlayerVehicleSprite();
+                                                CommandDisplay::writeLn(I18n::tf("shop.bought_vehicle", {I18n::t(it.nameKey)}), false);
+                                            }
                                         } else {  // Magic
                                             player->addSpell(it.index);
                                             CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);
@@ -725,7 +747,7 @@ int main(int argc, char *args[]) {
                             else if (k == SDLK_RETURN) {
                                 if (endgameReady(*player)) {
                                     kingActive = false; victoryActive = true;
-                                } else if (!player->hasQuest()) {
+                                } else if (!questsAllDone(*player) && !player->hasQuest()) {
                                     int tgt = questTargetFor(*player);
                                     player->giveQuest(tgt);
                                     CommandDisplay::writeLn(I18n::tf("king.accepted", {to_string(tgt)}), false);
@@ -844,6 +866,16 @@ int main(int argc, char *args[]) {
                                 else { shopMode = 1; shopSel = 0; }
                                 continue;
                             }
+                            // L:有太空梭時,在世界地圖發射進入星海試煉
+                            if (pressedKey == SDLK_l &&
+                                gameContext->getCurrentScreen() == ScreenType::Overworld) {
+                                if (player->hasShuttle()) {
+                                    gameContext->setScreen(ScreenType::Space);
+                                } else {
+                                    CommandDisplay::writeLn(I18n::t("space.no_shuttle"), false);
+                                }
+                                continue;
+                            }
                             // T:在城堡晉見國王(任務)
                             if (pressedKey == SDLK_t &&
                                 gameContext->getCurrentScreen() == ScreenType::Town &&
@@ -909,7 +941,9 @@ int main(int argc, char *args[]) {
                         currentScreen = static_pointer_cast<Screen>(townScreen);
                         break;
                     case ScreenType::Space:
-                        throw runtime_error("Unhandled");
+                        if (currentScreen != spaceScreen) spaceScreen->reset();
+                        currentScreen = static_pointer_cast<Screen>(spaceScreen);
+                        break;
                 }
 
                 currentScreen->update(timeStep);

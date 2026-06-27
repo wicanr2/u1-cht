@@ -233,5 +233,14 @@
   "shop.bought_vehicle": "購得{0}!",
   "ow.flying": "飛越…",
   "princess.freed": "汝救出了被囚的公主!",
-  "princess.reward": "公主感念相救,贈汝 400 金幣,並告知時光機之所在…"
+  "princess.reward": "公主感念相救,贈汝 400 金幣,並告知時光機之所在…",
+  "item.transport.shuttle": "太空梭(星海試煉,L 發射)",
+  "shop.bought_shuttle": "購得太空梭!於世界地圖按 L 升空",
+  "space.enter": "進入星海…擊落敵艦,證明汝之實力!(方向鍵移動,空白/A 射擊,ESC 撤離)",
+  "space.ace": "★ 汝已成為星海王牌(Space Ace)!可挑戰蒙登了!",
+  "space.shields_gone": "護盾耗盡!太空梭緊急撤回索薩利亞…",
+  "space.no_shuttle": "汝尚無太空梭(可於載具行購得)。",
+  "ui.help.launch": "升空 星海試煉(Launch,需太空梭)",
+  "king.need_princess": "汝已通過四王試煉!然蒙登仍不可敵——\n速往城堡牢房救出公主,取得時光機!",
+  "king.need_spaceace": "時光機在手,然汝須先在星海證明實力。\n駕太空梭升空(載具行購得,L 發射),擊落敵艦成為星海王牌!"
 }
