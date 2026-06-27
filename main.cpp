@@ -204,17 +204,33 @@ int main(int argc, char *args[]) {
             auto egaTilesPath = Configuration::getEgaOverworldTilesFilePath();
             auto cgaTilesPath = Configuration::getCgaOverworldTilesFilePath();
 
-            // tileset 變體:0=EGA(BIN),1=CGA(BIN),2=PNG AssetPack(跨平台素材包)。
-            const char *kTilesetNames[] = {"EGA", "CGA", "PNG"};
+            // tileset 變體:0=EGA(BIN),1=CGA(BIN),2..=各跨平台 PNG 素材包(F1 逐一循環)。
+            std::vector<std::pair<std::string, std::string>> pngPacks = {
+                {"FM Towns", "assets/tilesets/fmtowns.png"},
+                {"MSX", "assets/tilesets/msx.png"},
+                {"Apple IIgs", "assets/tilesets/iigs.png"},
+                {"PC-98", "assets/tilesets/pc98.png"},
+                {"VGA", "assets/tilesets/vga.png"},
+            };
+            // config 指定的 tileset_png 若不在清單(自訂路徑)→ 插到最前,維持原設定行為。
             auto pngPackPath = Configuration::getTilesetPng();
+            int cfgPngIdx = 0;
+            for (size_t i = 0; i < pngPacks.size(); ++i)
+                if (pngPacks[i].second == pngPackPath) { cfgPngIdx = (int)i; break; }
+            const int kBinModes = 2;  // EGA, CGA
+            const char *kBinNames[] = {"EGA", "CGA"};
             int tilesetIdx = 0;
             {
                 auto ts = Configuration::getTileset();
-                if (ts == "cga") tilesetIdx = 1; else if (ts == "png") tilesetIdx = 2;
+                if (ts == "cga") tilesetIdx = 1; else if (ts == "png") tilesetIdx = kBinModes + cfgPngIdx;
             }
+            int tilesetCount = kBinModes + (int)pngPacks.size();
+            auto tilesetName = [&](int idx) {
+                return idx >= kBinModes ? pngPacks[idx - kBinModes].first : std::string(kBinNames[idx]);
+            };
             auto applyTileset = [&](int idx) {
-                if (idx == 2)
-                    overworldScreen->initFromPng(gRenderer, pngPackPath);
+                if (idx >= kBinModes)
+                    overworldScreen->initFromPng(gRenderer, pngPacks[idx - kBinModes].second);
                 else if (idx == 1)
                     overworldScreen->init(gRenderer, make_unique<CGALinearDecodeStrategy>(16, 16).get(), cgaTilesPath);
                 else
@@ -301,9 +317,9 @@ int main(int argc, char *args[]) {
                             }
                             // F1 或 PageDown:循環切換 tileset(EGA→CGA→PNG包)+ 中文提示。
                             if (pressedKey == SDLK_PAGEDOWN || pressedKey == SDLK_F1) {
-                                tilesetIdx = (tilesetIdx + 1) % 3;
+                                tilesetIdx = (tilesetIdx + 1) % tilesetCount;
                                 applyTileset(tilesetIdx);
-                                CommandDisplay::writeLn(string("圖形模式:") + kTilesetNames[tilesetIdx], false);
+                                CommandDisplay::writeLn(string("圖形模式:") + tilesetName(tilesetIdx), false);
                             }
                             // M:切換背景音樂
                             if (pressedKey == SDLK_m) {
