@@ -52,7 +52,8 @@
 > - **EGA** ✅ `ega.png`(EGATILES.BIN,RowPlanar 4bpp,`tiles_to_png.py`)— 完整 52 槽,作各 pack fallback 基底。
 > - **CGA** ✅ `cga.png`(CGATILES.BIN,Linear 2bpp 青/洋紅/白,`cga_tiles_to_png.py`)— 完整 52 槽真實 CGA。
 > - **Tandy(T1K)** ⬜ T1KTILES.BIN 與 EGA 同大小不同格式,需專屬 decoder(見下方 ★)。
-> - **VGA**:U1 DOS **無 VGA tileset**(原版只有 EGA/CGA/Tandy);高彩版 = FM Towns / IIgs。
+> - **VGA** ✅ `vga.png`(EGA 重新染色:豐富基色 + 光影 + dither,15→1331 色;`build_vga_pack.py`)——
+>   原版無 VGA,以 EGA 為底擴色域成 256 色感高彩版。
 > **IIgs 載具/怪物**:目前 EGA fallback;真實 IIgs 載具/怪物截圖不存在(版稀有)→ 需 MAME 跑到 overworld
 > (差 GS/OS 讀檔滑鼠校準)或破解 type 0x0001 自訂壓縮。
 
