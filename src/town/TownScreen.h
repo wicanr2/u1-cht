@@ -34,7 +34,14 @@ private:
     shared_ptr<Town> _currentTown = nullptr;
     shared_ptr<TownTile> _playerTile;
 
+    // 公主救援:城堡牢房裡的公主(PERSON_PRISONER);救出後給時光機
+    shared_ptr<TownTile> _princessTile;
+    bool _princessActive = false;
+    int _princessX = -1, _princessY = -1;
+
     void resetPlayerPosition();
+    void placePrincess();           // 進城堡時,若未救則放公主到牢房
+    bool tryFreePrincess();         // 玩家與公主相鄰時 E 觸發救援,回 true 表已處理
 
     void playerMove(CardinalPoint direction);
 };

@@ -134,6 +134,10 @@ public:
     bool hasRaft() const { return canCrossWater(); }
     void setRaft(bool v) { if (v && _vehicle == Vehicle::Foot) _vehicle = Vehicle::Raft; }
 
+    // 公主救援:救出後給予時光機(endgame 前置之一)
+    bool isPrincessFreed() const { return _princessFreed; }
+    void setPrincessFreed(bool v) { _princessFreed = v; }
+
     // 食物消耗(隨時間 tick);耗盡回傳 true 代表飢餓
     void consumeFood(int n) { _food -= n; if (_food < 0) _food = 0; }
 
@@ -177,5 +181,6 @@ private:
     int _questsCompleted = 0; // 完成任務數(用於獎勵遞增)
 
     Vehicle _vehicle = Vehicle::Foot;   // 目前載具
+    bool _princessFreed = false;        // 是否已救出公主(獲時光機)
 };
 

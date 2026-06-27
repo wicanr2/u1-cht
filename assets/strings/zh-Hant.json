@@ -231,5 +231,7 @@
   "item.transport.frigate": "巡防艦(渡深海)",
   "item.transport.aircar": "飛車(飛越山海)",
   "shop.bought_vehicle": "購得{0}!",
-  "ow.flying": "飛越…"
+  "ow.flying": "飛越…",
+  "princess.freed": "汝救出了被囚的公主!",
+  "princess.reward": "公主感念相救,贈汝 400 金幣,並告知時光機之所在…"
 }

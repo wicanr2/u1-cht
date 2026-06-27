@@ -16,6 +16,8 @@ TownScreen::TownScreen(const shared_ptr<GameContext> &gameContext, SDL_Renderer 
     auto playerSpriteType = _townSpriteTypeLoader->getSpriteType(TownSpriteType::SpriteType::PERSON_PLAYER);
     _playerTile = make_shared<TownTile>(PLAYER_INITIAL_TOWN_POSITION_X, PLAYER_INITIAL_TOWN_POSITION_Y,
                                         playerSpriteType);
+    auto prisonerSprite = _townSpriteTypeLoader->getSpriteType(TownSpriteType::SpriteType::PERSON_PRISONER);
+    _princessTile = make_shared<TownTile>(0, 0, prisonerSprite);
 }
 
 void TownScreen::update(float elapsed) {
@@ -28,7 +30,9 @@ void TownScreen::handle(const SDL_Event &e) {
 
         switch (pressedKey) {
             case SDLK_e:
-                _gameContext->setScreen(ScreenType::Overworld);
+                // 相鄰公主 → 救援;否則離開回世界地圖
+                if (!tryFreePrincess())
+                    _gameContext->setScreen(ScreenType::Overworld);
                 break;
             case SDLK_UP:
                 playerMove(CardinalPoint::North);
@@ -60,6 +64,7 @@ void TownScreen::refresh() {
 
     // reset player starting position on town.
     resetPlayerPosition();
+    placePrincess();   // 城堡且未救 → 把公主放進牢房
 
     if (getenv("U1_DUMP_TOWN")) {   // 一次性:印城鎮格局以了解招牌/店員排布
         using S = TownSpriteType::SpriteType;
@@ -97,6 +102,18 @@ void TownScreen::refresh() {
                 }
             }
         _playerTile->setCoordinates(sx, sy);
+        // 公主救援自測:放玩家到公主旁,驗 tryFreePrincess
+        if (_princessActive) {
+            int m0 = _gameContext->getPlayer()->getMoney();
+            _playerTile->setCoordinates(_princessX - 1, _princessY);
+            bool freed = tryFreePrincess();
+            printf("PRINCESS active@%d,%d freed=%d money %d->%d\n",
+                   _princessX, _princessY, freed ? 1 : 0, m0, _gameContext->getPlayer()->getMoney());
+            _gameContext->getPlayer()->setPrincessFreed(false);  // 還原(僅自測)
+            _playerTile->setCoordinates(sx, sy);
+        } else {
+            printf("PRINCESS inactive (no prison cell found?)\n");
+        }
         fflush(stdout);
     }
 }
@@ -160,6 +177,59 @@ ShopType TownScreen::shopAtPlayer() {
     return best;
 }
 
+// 把公主放進城堡牢房:找「PRISON」招牌,在其上方牢房欄位的 FLOOR 格放公主。
+void TownScreen::placePrincess() {
+    using S = TownSpriteType::SpriteType;
+    _princessActive = false;
+    if (!_currentTown || !_currentTown->isCastle()) return;
+    if (_gameContext->getPlayer()->isPrincessFreed()) return;
+
+    auto typeAt = [&](int x, int y) -> S {
+        if (x < 0 || y < 0 || x >= Town::WIDTH || y >= Town::HEIGHT) return S::NONE;
+        auto t = _currentTown->getTile(x, y);
+        return t ? t->getType() : S::NONE;
+    };
+    // 找 PRISON 招牌的列與欄範圍
+    int signRow = -1, sc0 = -1, sc1 = -1;
+    for (int y = 0; y < Town::HEIGHT && signRow < 0; y++) {
+        std::string word; int startX = -1;
+        for (int x = 0; x <= Town::WIDTH; x++) {
+            S s = (x < Town::WIDTH) ? typeAt(x, y) : S::NONE;
+            bool letter = (s >= S::A && s <= S::Z);
+            if (letter) { if (word.empty()) startX = x; word += (char)('A' + ((int)s - (int)S::A)); }
+            else {
+                if (word.find("PRISON") != std::string::npos) { signRow = y; sc0 = startX; sc1 = x - 1; break; }
+                word.clear();
+            }
+        }
+    }
+    if (signRow < 0) return;
+    // 在招牌上方數列、欄範圍(略放寬)內找一個 FLOOR 格當牢房
+    for (int y = signRow - 1; y >= signRow - 6 && y >= 0; y--) {
+        for (int x = sc0 - 1; x <= sc1 + 1; x++) {
+            if (typeAt(x, y) == S::FLOOR) {
+                _princessX = x; _princessY = y; _princessActive = true;
+                _princessTile->setCoordinates(x, y);
+                return;
+            }
+        }
+    }
+}
+
+// 玩家與公主相鄰(含對角)時救援:給時光機 + 重賞,公主消失。
+bool TownScreen::tryFreePrincess() {
+    if (!_princessActive) return false;
+    int px = _playerTile->getX(), py = _playerTile->getY();
+    if (abs(px - _princessX) > 1 || abs(py - _princessY) > 1) return false;
+    auto pl = _gameContext->getPlayer();
+    pl->setPrincessFreed(true);
+    pl->addMoney(400);
+    _princessActive = false;
+    CommandDisplay::writeLn(I18n::t("princess.freed"), false);
+    CommandDisplay::writeLn(I18n::t("princess.reward"), false);
+    return true;
+}
+
 void TownScreen::draw(SDL_Renderer *renderer) {
     SDL_Rect defaultViewport = {MAIN_VIEWPORT_PADDING, MAIN_VIEWPORT_PADDING, WIDTH, HEIGHT};
     SDL_RenderSetViewport(renderer, &defaultViewport);
@@ -172,6 +242,7 @@ void TownScreen::draw(SDL_Renderer *renderer) {
         tile->draw(renderer, camera);
     }
 
+    if (_princessActive) _princessTile->draw(renderer, camera);
     _playerTile->draw(renderer, camera);
 }
 
