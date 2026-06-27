@@ -19,13 +19,13 @@
 | 解析 resource fork | IIgs Resource Manager map,110 個 resource | `extract_woz.py` |
 | 圖格式(type 0x0001) | **❌ 靜態解不出 / 模擬器卡滑鼠對話框 / 截圖非精確 palette** | (三面牆) |
 | **★ 圖格式破解** | **反組譯 ULTIMAI(65816)→ 找到 LZSS 解壓 converter** | `omf_parse / dis65816 / lzss_decode` |
-| overworld 地形 tile | hg101 原生 SHR 截圖直接切(繞過格式) | `build_iigs_pack.py` |
+| overworld 地形 tile | **截圖 oracle 結構比對反推 → id08 tile 88-135 LZSS 解壓** | `build_iigs_pack.py` |
 
 **最終結果**:type 0x0001 = **LZSS 壓縮**(12-bit offset + 4-bit length)。79 個圖 resource 全可解,
 驗證解出 ORIGIN logo、Ultima I 標題、太空戰鬥 48 sprite。進一步**完全定位 overworld tile-draw 機制**
 (`$196f` 主迴圈 → `$0f75` DrawTile → **48-tile `$4c00` buffer**,`$c4df` 索引,16×16×128B)。
-**格式與繪製機制 100% 破解**;唯 overworld 地形 tile 像素在「進 overworld」時才填入 `$4c00`,
-取得真實 tile 仍需進 overworld dump 或追 overworld-init 填充來源(見 §7、Step 11-12)。
+最後 `$4c00` 動態 dump 卡滑鼠牆 → 改用**截圖 oracle 結構比對**,反推出 **overworld tileset = id08 tile 88-135**。
+**格式、繪製機制、tileset 位置 100% 破解;IIgs 全 52 槽 = 100% 真實 IIgs 像素,EGA fallback 完全移除**(見 §7 Step 12)。
 
 ---
 
@@ -109,8 +109,9 @@ DEX; BEQ done                       ; 輸出滿即止
 ## 6. 成果與工具鏈
 
 **成果**:Apple IIgs 版《創世紀 I》的自訂圖形壓縮格式(type 0x0001 = LZSS)**完全破解並驗證**;
-79 個圖 resource 全可解(含太空戰鬥 48 sprite atlas);**overworld tile-draw 機制與 48-tile `$4c00` buffer 已完全定位**(§7、Step 11)。
-overworld 地形 tile 目前以 hg101 截圖切的 8 個真實 tile + EGA fallback(`iigs.png`);完整真實 tile 待從 `$4c00` 取像素(進 overworld dump 或追 init 來源)。
+79 個圖 resource 全可解(含太空戰鬥 48 sprite atlas);**overworld tile-draw 機制與 48-tile `$4c00` buffer 已完全定位**(§7 Step 11)。
+最終以**截圖 oracle 結構比對**反推出 **overworld tileset = id08 tile 88-135**(§7 Step 12),
+`iigs.png` 全 52 槽改為 **100% 真實 IIgs 像素**,EGA fallback 完全移除,game tester 進 overworld 渲染正確。
 
 **工具鏈**(`tools/re/iigs/`):
 | 工具 | 作用 |
