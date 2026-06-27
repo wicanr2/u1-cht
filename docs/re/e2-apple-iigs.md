@@ -1,5 +1,10 @@
 # E2 Apple IIgs 素材抽取 — woz 牆已破(2026-06-27)
 
+> ⚠ **後續重大更新(2026-06-27):type 0x0001 圖格式已破解 = LZSS**。
+> 本檔下方「自訂壓縮抗拒 / 二級牆 / 需反組譯解壓常式」等是**破解前的歷史紀錄,結論已被取代**。
+> 完整成果與最終結論見 **[`apple-iigs-reverse-engineering.md`](apple-iigs-reverse-engineering.md)**(整合章節)
+> 與 [`iigs-65816-re.md`](iigs-65816-re.md)(反組譯逐步日誌)。本檔保留作 E2 探索過程紀錄。
+
 ## ★★★★ 最終解:用 hg101 實機截圖直接切 tile(2026-06-27)
 
 **繞過全部難題**(模擬器導航 + 自訂壓縮格式):hg101 的 Apple IIgs 截圖是 **320×200 原生 SHR、PNG 無損**
@@ -56,6 +61,9 @@
   type0 literal / type1 單byte×c / type2 4byte群×c / type3 單byte×4c)。
 
 ## 🔄 剩餘(overworld tileset 抽取)— 二級牆:自訂壓縮圖格式
+
+> ✅ **此牆已破(後續)**:type 0x0001 = **LZSS**(反組譯找到 ResourceConverter @0x398),79 圖全可解。
+> 下方為破解前的試誤紀錄(保留作避免重蹈);最終結論見整合章節。「非標準 PackBytes」判斷正確——實為 LZSS。
 
 深入嘗試後(2026-06-27),tileset 卡在 **type 0x0001 的自訂壓縮圖格式**,以下為已排除/已確認,避免重蹈:
 
@@ -137,6 +145,10 @@ ULTIMA I IIgs 的存檔/讀檔走 **GS/OS 標準檔案對話框**(SFPutFile / SF
      設常數小值游標貼角落、設 400/150/550 游標位置非單調(疑值域 wrap / scaled delta),**無法精準點檔案/按鈕**。
    - ⇒ 讀檔對話框過不去 → 到不了 overworld → 拿不到 authentic 載具/怪物 tile。
 
-**結論**:IIgs 載具/怪物目前 **EGA fallback**(`iigs.png` 已可玩)。要 authentic 需(三者皆獨立深坑):
-① 解 MAME ADB 滑鼠注入(查 mouse field 值域 / 或改用 .inp 錄製);② 找含載具/怪物的精確-palette 實機截圖;
-③ 反組譯 ULTIMAI 65816 找解壓常式。
+**結論(破解前)**:IIgs 載具/怪物 **EGA fallback**(`iigs.png` 已可玩)。
+原列三條深坑:① MAME 滑鼠注入;② 找精確-palette 截圖;③ 反組譯 65816 找解壓常式。
+
+> ✅ **更新(後續完成)**:走了 ③ —— **反組譯 ULTIMAI(65816)成功破解圖格式 = LZSS**,79 圖全可解,
+> 並進一步定位 overworld tile-draw(`$196f`→`$0f75`)與 **48-tile `$4c00` buffer**(`$c4df` 索引,16×16×128B)。
+> 機制全破;唯 tile 像素在進 overworld 才填入 `$4c00`,取得真實 tile 仍需進 overworld dump 或追 init 填充來源。
+> 完整見 **[`apple-iigs-reverse-engineering.md`](apple-iigs-reverse-engineering.md)** §4/§7 與 `iigs-65816-re.md` Step 1-12。

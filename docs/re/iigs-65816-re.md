@@ -228,3 +228,16 @@ row=0x10..0x90 step2:  col=0x10..0x90 step2:
 **唯一剩**:tile 像素在進 overworld 才填入 → 抽取需 ① MAME 進 overworld dump `$4c00`(卡 GS/OS 滑鼠對話框),
 或 ② 反組譯 overworld-init 找填 `$4c00` 的來源(resource/seg#3 packed)+ 展開法。tile 數量(48)、尺寸(16×16×128B)、
 索引($c4df)、繪製 routine 全已知——格式與機制全破,差最後一步取像素。
+
+## Step 12 — tile 來源靜態追蹤(本輪結論)
+
+走純靜態路找填 `$4c00` 的來源(繞過滑鼠牆):
+- **掃 seg#3 + 解壓 resource 找 48-tile 色少區**:seg#3 無;resource 只命中全螢幕圖的色少背景(假陽性,非 tileset)。
+  ⇒ tile 源**非簡單靜態 48-tile 連續區塊**。
+- **找 `$4c00` 寫入/指標**:無 `STA $4c00,x`、無 `LDA #$4c00` 指標設定 ⇒ 填充非直接 store loop。
+- **找 map-draw `$196f` / tile-copy `$06b8` 的 caller**:無直接 JSR ⇒ 經 **JSL(跨 bank)或跳表 `JMP ($0e7f,x)`** dispatch。
+
+**本輪結論**:overworld tile-draw 機制 100% 反組譯(`$196f` 主迴圈 → `$0f75` DrawTile → `$4c00` 48-tile buffer,`$c4df` 索引);
+但 **tile 像素在「進 overworld」時才填入 `$4c00`**,填充來源/展開法經 JSL/跳表 dispatch,單純靜態掃描未命中。
+**取得真實 tile 像素的兩條路**(下一階段):① MAME 進 overworld dump `$4c00`(卡 GS/OS 滑鼠對話框);
+② 追跳表 `$0e7f` 的 overworld 命令 → init → 填 `$4c00` 來源。機制全破,差最後取像素。

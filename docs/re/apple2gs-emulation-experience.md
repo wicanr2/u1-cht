@@ -100,8 +100,9 @@ for a=0xE12000,0xE19FFF do f:write(string.char(sp:read_u8(a))) end; f:close()
 
 ## 8. ⛔ 牆:GS/OS 標準檔案對話框只認滑鼠
 - 存檔 SFPutFile / 讀檔 SFGetFile(「Which game my Lord?」,主選單 B):**鍵盤 Down/Return/type-select 都無法選檔開啟** → 退回主選單。
-- 滑鼠(ADB 相對,`set_value(delta)` 每 frame 累加):**pin 到角落已驗證**(`MOUSE_X=-30` 連 60 frame → 游標到 (0,0))。
-  但移到檔案/按鈕要校準 delta→pixel(640 模式 QuickDraw 座標),且存+讀兩對話框各需校準 → 多輪 ~90s 迭代,**未攻克**。
+- 滑鼠(ADB 相對,`MOUSE_X/Y field:set_value()`):**後續測定不可用於精準點擊**——
+  設常數小值游標貼角落、設 400/150/550 游標位置**非單調**(疑值域 wrap / scaled delta),不是乾淨座標設定。
+  ⇒ GS/OS 滑鼠檔案對話框點不準,進不了 overworld。需另解(查 mouse field 值域 / `.inp` 錄製 / 別的注入法)。
 - 替代:① 找現成存檔檔放碟上;② 改造碟設 ULTIMAI auto-launch 免 Finder;③ **直接看 §9**。
 
 ## 9. ★★ 最快的路:原生解析度實機截圖直接切 tile(本案最終解)

@@ -22,7 +22,10 @@
 | overworld 地形 tile | hg101 原生 SHR 截圖直接切(繞過格式) | `build_iigs_pack.py` |
 
 **最終結果**:type 0x0001 = **LZSS 壓縮**(12-bit offset + 4-bit length)。79 個圖 resource 全可解,
-驗證解出 ORIGIN logo、Ultima I 標題等。先前「載具/怪物拿不到真實素材」的牆,被反組譯打通。
+驗證解出 ORIGIN logo、Ultima I 標題、太空戰鬥 48 sprite。進一步**完全定位 overworld tile-draw 機制**
+(`$196f` 主迴圈 → `$0f75` DrawTile → **48-tile `$4c00` buffer**,`$c4df` 索引,16×16×128B)。
+**格式與繪製機制 100% 破解**;唯 overworld 地形 tile 像素在「進 overworld」時才填入 `$4c00`,
+取得真實 tile 仍需進 overworld dump 或追 overworld-init 填充來源(見 §7、Step 11-12)。
 
 ---
 
@@ -106,7 +109,8 @@ DEX; BEQ done                       ; 輸出滿即止
 ## 6. 成果與工具鏈
 
 **成果**:Apple IIgs 版《創世紀 I》的自訂圖形壓縮格式(type 0x0001 = LZSS)**完全破解並驗證**;
-79 個圖 resource 全可解;overworld 地形 tile 已 authentic(截圖切),載具/怪物待從解壓的 tileset resource 抽出。
+79 個圖 resource 全可解(含太空戰鬥 48 sprite atlas);**overworld tile-draw 機制與 48-tile `$4c00` buffer 已完全定位**(§7、Step 11)。
+overworld 地形 tile 目前以 hg101 截圖切的 8 個真實 tile + EGA fallback(`iigs.png`);完整真實 tile 待從 `$4c00` 取像素(進 overworld dump 或追 init 來源)。
 
 **工具鏈**(`tools/re/iigs/`):
 | 工具 | 作用 |
