@@ -1,6 +1,7 @@
 #include "OverworldScreen.h"
 #include "../common/I18n.h"
 #include "../Combat.h"
+#include "Bestiary.h"
 #include "TileTypeLoader.h"
 #include "../common/graphics/PixelDecodeStrategy.h"
 #include "Constants.h"
@@ -525,15 +526,24 @@ void OverworldScreen::spawnNpcs() {
         int x = px + (rand() % (2 * HALF_W + 1)) - HALF_W;
         int y = py + (rand() % (2 * HALF_H + 1)) - HALF_H;
         if (abs(x - px) + abs(y - py) < 3) continue;        // 太近
-        if (!isPassable(x, y)) continue;
         if (x == px && y == py) continue;
+        if (x < 0 || y < 0 || x > BOUND_X_TILES || y > BOUND_Y_TILES) continue;
+        // 地形:水域生海怪、可走陸地生陸怪、其餘(山)不生。
+        auto terrain = _tiles[getTileOffset(x, y)]->getSpriteType();
+        bool water = (terrain == OverworldSpriteType::SpriteType::WATER);
+        if (!water && !isPassable(x, y)) continue;
         bool occupied = false;
         for (const auto &e : _enemies) if (e->getX() == x && e->getY() == y) { occupied = true; break; }
         if (occupied) continue;
 
-        auto spriteType = _spritesMap.find(OverworldSpriteType::SpriteType::WANDERING_WARLOCK)->second;
-        auto tile = make_shared<OverworldTile>(x, y, spriteType, make_shared<TileAnimation>());
-        _enemies.push_back(make_shared<OverworldEnemy>(10, x, y, I18n::t("monster.wandering_warlock"), tile));
+        // 依地形從 bestiary 挑一隻(陸/海),給對應 sprite + 名稱 + HP。
+        const Bestiary::Mob &mob = Bestiary::pick(water, rand());
+        auto it = _spritesMap.find(mob.sprite);
+        if (it == _spritesMap.end())  // 該 tileset 缺此 sprite → 退回術士,不崩
+            it = _spritesMap.find(OverworldSpriteType::SpriteType::WANDERING_WARLOCK);
+        if (it == _spritesMap.end()) continue;
+        auto tile = make_shared<OverworldTile>(x, y, it->second, make_shared<TileAnimation>());
+        _enemies.push_back(make_shared<OverworldEnemy>(mob.hp, x, y, I18n::t(mob.nameKey), tile));
         return;
     }
 }
