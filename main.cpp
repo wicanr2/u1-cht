@@ -517,6 +517,8 @@ int main(int argc, char *args[]) {
                 player->setOverworldX(32); player->setOverworldY(27);  // 城堡座標
                 gameContext->enterCastle();
             }
+            if (const char *v = getenv("U1_TEST_VEHICLE"))  // 驗證載具 sprite/通行(1馬2筏3艦4飛車)
+                player->setVehicle((Player::Vehicle)atoi(v));
             auto overworldScreen = make_shared<OverworldScreen>(gameContext, 19, 9);
             auto dungeonScreen = make_shared<DungeonScreen>(gameContext);
 
@@ -682,8 +684,10 @@ int main(int argc, char *args[]) {
                                         } else if (shopType == ShopType::Pub) {
                                             CommandDisplay::writeLn(I18n::t("clue." + to_string(rand() % 6)), false);
                                         } else if (shopType == ShopType::Transport) {
-                                            player->setRaft(true);
-                                            CommandDisplay::writeLn(I18n::t("shop.bought_raft"), false);
+                                            // it.index 對應 Player::Vehicle(1=馬 2=木筏 3=巡防艦 4=飛車)
+                                            player->setVehicle((Player::Vehicle)it.index);
+                                            overworldScreen->refreshPlayerVehicleSprite();
+                                            CommandDisplay::writeLn(I18n::tf("shop.bought_vehicle", {I18n::t(it.nameKey)}), false);
                                         } else {  // Magic
                                             player->addSpell(it.index);
                                             CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);

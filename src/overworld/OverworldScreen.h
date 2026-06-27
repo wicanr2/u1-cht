@@ -41,6 +41,9 @@ public:
 
     void handle(const SDL_Event &event) override;
 
+    // 騎乘時把玩家圖示換成載具 sprite(徒步→PLAYER);買載具後 / 進世界時呼叫
+    void refreshPlayerVehicleSprite();
+
 private:
     static constexpr int BOUND_X_TILES = 167;
     static constexpr int BOUND_Y_TILES = 155;
@@ -62,6 +65,7 @@ private:
 
     vector<shared_ptr<OverworldEnemy>> _enemies;
     bool _attackMode = false;
+    bool _horseStepping = false;   // 馬雙步防遞迴
 
     void setCamera();
 

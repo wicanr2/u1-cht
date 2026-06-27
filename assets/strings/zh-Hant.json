@@ -172,8 +172,8 @@
   "victory.line1": "以一身淬鍊的武藝與魔法,將邪惡巫師一劍了結。",
   "victory.line2": "不朽寶石就此破碎,黑暗紀元終結——",
   "victory.line3": "索薩利亞重歸光明。汝之名,將永載史冊。",
-  "shop.title.transport": "船塢",
-  "item.transport.raft": "木筏(可渡水)",
+  "shop.title.transport": "載具行",
+  "item.transport.raft": "木筏(渡淺水)",
   "shop.bought_raft": "購得木筏!現在可揚帆渡水",
   "ow.sailing": "揚帆渡水…",
   "cc.title": "創 角",
@@ -226,5 +226,10 @@
   "monster.invisible_seeker": "隱形索敵者",
   "monster.mind_whipper": "噬心妖",
   "monster.carrion_creeper": "食屍爬蟲",
-  "monster.zorn": "佐恩"
+  "monster.zorn": "佐恩",
+  "item.transport.horse": "馬(陸路加速)",
+  "item.transport.frigate": "巡防艦(渡深海)",
+  "item.transport.aircar": "飛車(飛越山海)",
+  "shop.bought_vehicle": "購得{0}!",
+  "ow.flying": "飛越…"
 }

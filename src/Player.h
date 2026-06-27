@@ -120,9 +120,19 @@ public:
     void recordKill() { if (_questTarget > 0 && _questKills < _questTarget) _questKills++; }
     void completeQuest() { _questTarget = 0; _questKills = 0; _questsCompleted++; }
 
-    // 載具:筏/船(可渡水)
-    bool hasRaft() const { return _hasRaft; }
-    void setRaft(bool v) { _hasRaft = v; }
+    // 載具(U1):徒步 / 馬(陸路加速)/ 木筏・巡防艦(渡水)/ 飛車(飛越山海)
+    enum class Vehicle { Foot, Horse, Raft, Frigate, Aircar };
+    Vehicle getVehicle() const { return _vehicle; }
+    void setVehicle(Vehicle v) { _vehicle = v; }
+    bool isMounted() const { return _vehicle != Vehicle::Foot; }
+    bool canCrossWater() const {
+        return _vehicle == Vehicle::Raft || _vehicle == Vehicle::Frigate || _vehicle == Vehicle::Aircar;
+    }
+    bool canCrossMountain() const { return _vehicle == Vehicle::Aircar; }
+    bool isFastMount() const { return _vehicle == Vehicle::Horse; }  // 馬:陸路雙步
+    // 舊存檔相容:hasRaft 對映「可渡水」
+    bool hasRaft() const { return canCrossWater(); }
+    void setRaft(bool v) { if (v && _vehicle == Vehicle::Foot) _vehicle = Vehicle::Raft; }
 
     // 食物消耗(隨時間 tick);耗盡回傳 true 代表飢餓
     void consumeFood(int n) { _food -= n; if (_food < 0) _food = 0; }
@@ -166,6 +176,6 @@ private:
     int _questKills = 0;      // 已殺
     int _questsCompleted = 0; // 完成任務數(用於獎勵遞增)
 
-    bool _hasRaft = false;    // 是否擁有筏/船(可渡水)
+    Vehicle _vehicle = Vehicle::Foot;   // 目前載具
 };
 

@@ -40,7 +40,8 @@ bool SaveGame::save(const Player &player, const std::string &path) {
         {"currentWeapon", player.getCurrentWeapon()}, {"currentArmor", player.getCurrentArmor()},
         {"weapons", weapons}, {"armor", armor}, {"spells", spells},
         {"questTarget", player.getQuestTarget()}, {"questKills", player.getQuestKills()},
-        {"questsCompleted", player.getQuestsCompleted()}, {"hasRaft", player.hasRaft()},
+        {"questsCompleted", player.getQuestsCompleted()},
+        {"vehicle", (int)player.getVehicle()},
     };
     // F6 設定一併持久化(時間流速 / 生成率 / 怪物追蹤)
     j["settings"] = {
@@ -91,7 +92,11 @@ bool SaveGame::load(Player &player, const std::string &path) {
         player.setQuestTarget(p.value("questTarget", 0));
         player.setQuestKills(p.value("questKills", 0));
         player.setQuestsCompleted(p.value("questsCompleted", 0));
-        player.setRaft(p.value("hasRaft", false));
+        // 新存檔用 vehicle(int);舊存檔只有 hasRaft → 對映木筏。
+        if (p.contains("vehicle"))
+            player.setVehicle((Player::Vehicle)p.value("vehicle", 0));
+        else if (p.value("hasRaft", false))
+            player.setVehicle(Player::Vehicle::Raft);
         if (j.contains("settings")) {
             auto &s = j["settings"];
             Configuration::setSpeedPct(s.value("speed_pct", Configuration::getSpeedPct()));

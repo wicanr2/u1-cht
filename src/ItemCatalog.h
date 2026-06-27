@@ -60,7 +60,11 @@ public:
             case ShopType::Pub:
                 return {{0, "shop.pub.drink", 10}};   // 買一杯,聽段八卦/線索
             case ShopType::Transport:
-                return {{0, "item.transport.raft", 200}};   // 筏:可渡水
+                // index 對應 Player::Vehicle(1=馬 2=木筏 3=巡防艦 4=飛車)
+                return {{1, "item.transport.horse", 100},
+                        {2, "item.transport.raft", 200},
+                        {3, "item.transport.frigate", 500},
+                        {4, "item.transport.aircar", 1500}};
             default:
                 return {};
         }

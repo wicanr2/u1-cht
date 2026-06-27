@@ -114,6 +114,7 @@ void OverworldScreen::buildFromSprites(const vector<shared_ptr<OverworldSpriteTy
             enemy->getTile()->setSprite(it->second);
         }
     }
+    refreshPlayerVehicleSprite();   // 載入存檔的載具 → 玩家圖示一致
 
     delete[] buffer;
 }
@@ -169,19 +170,23 @@ void OverworldScreen::move(int deltaX, int deltaY) {
     if (playerY < 0) playerY = 0;
     if (playerY > BOUND_Y_TILES) playerY = BOUND_Y_TILES;
 
-    // Don't allow player to walk across mountains or through water.
+    // 地形 × 載具:山(需飛車)/ 水(需木筏・巡防艦・飛車)
+    auto pl = _gameContext->getPlayer();
     OverworldSpriteType::SpriteType typeTypeSteppedOn = _tiles[getTileOffset(playerX, playerY)]->getSpriteType();
     if (typeTypeSteppedOn == OverworldSpriteType::SpriteType::MOUNTAIN) {
-        CommandDisplay::writeLn(I18n::t("ow.mountain_blocked"), true);
-        return;
+        if (!pl->canCrossMountain()) {
+            CommandDisplay::writeLn(I18n::t("ow.mountain_blocked"), true);
+            return;
+        }
+        CommandDisplay::writeLn(I18n::t("ow.flying"), true);    // 飛車 → 飛越山嶺
     }
 
     if (typeTypeSteppedOn == OverworldSpriteType::SpriteType::WATER) {
-        if (!_gameContext->getPlayer()->hasRaft()) {
+        if (!pl->canCrossWater()) {
             CommandDisplay::writeLn(I18n::t("ow.water_blocked"), true);
             return;
         }
-        CommandDisplay::writeLn(I18n::t("ow.sailing"), true);   // 有筏 → 揚帆渡水
+        CommandDisplay::writeLn(I18n::t(pl->getVehicle() == Player::Vehicle::Aircar ? "ow.flying" : "ow.sailing"), true);
     }
 
     // Don't allow player to walk past an enemy
@@ -194,10 +199,11 @@ void OverworldScreen::move(int deltaX, int deltaY) {
 
     CommandDisplay::writeLn(getCardinalPointFromDeltas(deltaX, deltaY), true);
 
-    _gameContext->getPlayer()->setOverworldX(playerX);
-    _gameContext->getPlayer()->setOverworldY(playerY);
+    pl->setOverworldX(playerX);
+    pl->setOverworldY(playerY);
 
     _playerTile->setCoordinates(toPixels(playerX), toPixels(playerY));
+    refreshPlayerVehicleSprite();   // 騎乘時玩家圖示換成載具
 
     cout << "\nMoved to: " << playerX << ", " << playerY << "\n";
 
@@ -206,6 +212,32 @@ void OverworldScreen::move(int deltaX, int deltaY) {
 
     // 成功走一步 → 推進 turn-based 時間 tick + 嘗試生怪
     onStep();
+
+    // 馬:陸路雙步(再前進一格,僅當下一格同為可走陸地、無怪)。_horseStepping 防遞迴。
+    if (pl->isFastMount() && !_horseStepping) {
+        int nx = playerX + deltaX, ny = playerY + deltaY;
+        if (nx >= 0 && ny >= 0 && nx <= BOUND_X_TILES && ny <= BOUND_Y_TILES && isPassable(nx, ny)) {
+            bool blocked = false;
+            for (const auto &e : _enemies) if (e->getX() == nx && e->getY() == ny) { blocked = true; break; }
+            if (!blocked) { _horseStepping = true; move(deltaX, deltaY); _horseStepping = false; }
+        }
+    }
+}
+
+void OverworldScreen::refreshPlayerVehicleSprite() {
+    using V = Player::Vehicle;
+    using S = OverworldSpriteType::SpriteType;
+    S want = S::PLAYER;
+    switch (_gameContext->getPlayer()->getVehicle()) {
+        case V::Horse:   want = S::HORSE; break;
+        case V::Raft:    want = S::RAFT; break;
+        case V::Frigate: want = S::FRIGATE; break;
+        case V::Aircar:  want = S::AIRCAR; break;
+        default:         want = S::PLAYER; break;
+    }
+    auto it = _spritesMap.find(want);
+    if (it == _spritesMap.end()) it = _spritesMap.find(S::PLAYER);
+    if (it != _spritesMap.end()) _playerTile->setSprite(it->second);
 }
 
 void OverworldScreen::attack(int deltaX, int deltaY) {
