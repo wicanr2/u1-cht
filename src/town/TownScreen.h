@@ -5,10 +5,14 @@
 #include <utility>
 #include "Town.h"
 #include "TownManager.h"
+#include "../ItemCatalog.h"
 
 class TownScreen : public Screen {
 public:
     TownScreen(const shared_ptr<GameContext> &gameContext, SDL_Renderer *renderer);
+
+    // 站在 counter 旁時依最近招牌字判定店家(authentic 定位);否則回 None。
+    ShopType shopAtPlayer();
 
     void update(float elapsed) override;
 

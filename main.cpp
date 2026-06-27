@@ -838,7 +838,10 @@ int main(int argc, char *args[]) {
                             // B:在城鎮/城堡開商店(交易)
                             if (pressedKey == SDLK_b &&
                                 gameContext->getCurrentScreen() == ScreenType::Town) {
-                                shopMode = 1; shopSel = 0;
+                                // authentic 定位:站在店家櫃檯旁 → 直接開該店;否則退回類別選單
+                                ShopType at = townScreen->shopAtPlayer();
+                                if (at != ShopType::None) { shopType = at; shopMode = 2; shopSel = 0; }
+                                else { shopMode = 1; shopSel = 0; }
                                 continue;
                             }
                             // T:在城堡晉見國王(任務)
