@@ -11,14 +11,21 @@ public:
     // 載入並循環播放背景音樂(ogg/mp3/wav)。失敗則靜默忽略。
     static bool playMusic(const std::string &path);
 
-    // 切換靜音(暫停/恢復音樂)。回傳切換後是否「開啟」。
+    // 切換音樂靜音(暫停/恢復)。回傳切換後是否「開啟」。
     static bool toggleMute();
 
+    // 播放一次性音效(獨立於音樂的 channel;chunk 依路徑快取)。音效靜音時為 no-op。
+    static void playSfx(const std::string &path);
+    // 切換音效靜音(獨立於音樂)。回傳切換後是否「開啟」。
+    static bool toggleSfx();
+
     static bool isMuted() { return _muted; }
+    static bool sfxMuted() { return _sfxMuted; }
     static bool available() { return _ok; }
 
 private:
     static bool _ok;     // SDL_mixer 是否成功初始化
     static bool _muted;
+    static bool _sfxMuted;
     static bool _hasMusic;
 };

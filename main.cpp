@@ -99,6 +99,43 @@ static void drawSettingsMenu(SDL_Renderer *renderer, int row) {
     line("↑↓ 選擇   ←→ 調整   F6/ESC 關閉", box.x + 36, box.y + 132, off);
 }
 
+// F1 說明畫面:列出全部指令(置中 modal,640x400 覆蓋層)
+static void drawHelpScreen(SDL_Renderer *renderer) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xC0);
+    SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &scrim);
+
+    const int bw = 540, bh = 392;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0x40, 0x80, 0xFF, 0xFF);
+    SDL_RenderDrawRect(renderer, &box);
+
+    SDL_Color title{0xFF, 0xD0, 0x40, 0xFF}, head{0x80, 0xC0, 0xFF, 0xFF},
+        key{0xFF, 0xFF, 0x80, 0xFF}, txt{0xE0, 0xE0, 0xE0, 0xFF};
+    auto line = [&](const string &s, int x, int y, SDL_Color c) {
+        LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c);
+        t.render(renderer, x, y);
+    };
+    int lx = box.x + 30, kx = box.x + 50, tx = box.x + 200, y = box.y + 18;
+    line("指令說明(F1)", box.x + (bw - 140) / 2, y, title); y += 38;
+    line("● 移動", lx, y, head); y += 28;
+    line("方向鍵", kx, y, key); line("世界/城鎮移動;地牢前進・轉向", tx, y, txt); y += 30;
+    line("● 動作指令", lx, y, head); y += 28;
+    line("A", kx, y, key); line("攻擊(Attack)", tx, y, txt); y += 26;
+    line("E", kx, y, key); line("進入 城鎮/城堡/地牢(Enter)", tx, y, txt); y += 26;
+    line("K", kx, y, key); line("攀爬 上下樓梯(Klimb,地牢)", tx, y, txt); y += 30;
+    line("● 系統", lx, y, head); y += 28;
+    line("F6", kx, y, key); line("設定:遊戲速度 / 怪物生成", tx, y, txt); y += 24;
+    line("M  /  F9", kx, y, key); line("音樂開關 / 音效開關", tx, y, txt); y += 24;
+    line("PageDown", kx, y, key); line("循環切換畫面風格(7 平台)", tx, y, txt); y += 24;
+    line("F10 / Ctrl+Q", kx, y, key); line("離開(確認後存檔)", tx, y, txt); y += 24;
+    line("ESC", kx, y, key); line("取消 / 返回上一層", tx, y, txt); y += 30;
+    line("按任意鍵關閉", box.x + (bw - 120) / 2, box.y + bh - 30, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
+}
+
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
 shared_ptr<CommandDisplay> _commandDisplay;
 
@@ -280,10 +317,17 @@ int main(int argc, char *args[]) {
             //While application is running
             bool quitDialogActive = false;
             bool settingsActive = false;
+            bool helpActive = false;
             int settingsRow = 0;
             while (!quit) {
                 //Handle events on queue
                 while (SDL_PollEvent(&e) != 0) {
+                    // 說明畫面開啟時:任意鍵(F1/ESC/Enter/空白)關閉,吞掉其他輸入
+                    if (helpActive) {
+                        if (e.type == SDL_KEYDOWN) helpActive = false;
+                        continue;
+                    }
+
                     // F6 設定選單開啟時:↑↓選列、←→±5%、F6/ESC 關閉,吞掉其他輸入
                     if (settingsActive) {
                         if (e.type == SDL_KEYDOWN) {
@@ -329,8 +373,13 @@ int main(int argc, char *args[]) {
                                 settingsActive = true;
                                 continue;
                             }
-                            // F1 或 PageDown:循環切換 tileset(EGA→CGA→PNG包)+ 中文提示。
-                            if (pressedKey == SDLK_PAGEDOWN || pressedKey == SDLK_F1) {
+                            // F1:說明畫面(列出所有指令)。
+                            if (pressedKey == SDLK_F1) {
+                                helpActive = true;
+                                continue;
+                            }
+                            // PageDown:循環切換 tileset(EGA→CGA→各平台 PNG 包)+ 中文提示。
+                            if (pressedKey == SDLK_PAGEDOWN) {
                                 tilesetIdx = (tilesetIdx + 1) % tilesetCount;
                                 applyTileset(tilesetIdx);
                                 applyMusic(tilesetIdx);  // 音樂跟隨切換的平台
@@ -345,6 +394,21 @@ int main(int argc, char *args[]) {
                                     CommandDisplay::writeLn("音樂:無音訊裝置", false);
                                 }
                             }
+                            // F9:切換音效(獨立於音樂)
+                            if (pressedKey == SDLK_F9) {
+                                if (Audio::available()) {
+                                    bool on = Audio::toggleSfx();
+                                    CommandDisplay::writeLn(on ? "音效:開" : "音效:關", false);
+                                } else {
+                                    CommandDisplay::writeLn("音效:無音訊裝置", false);
+                                }
+                            }
+                            // 音效:移動踏步 / 攻擊撞擊(音效靜音時自動 no-op)
+                            if (pressedKey == SDLK_UP || pressedKey == SDLK_DOWN ||
+                                pressedKey == SDLK_LEFT || pressedKey == SDLK_RIGHT)
+                                Audio::playSfx("./assets/sfx/step.ogg");
+                            else if (pressedKey == SDLK_a)
+                                Audio::playSfx("./assets/sfx/bump.ogg");
                         }
 
                         currentScreen->handle(e);
@@ -411,6 +475,10 @@ int main(int argc, char *args[]) {
                 if (quitDialogActive) {
                     SDL_RenderSetViewport(gRenderer, nullptr);
                     drawQuitDialog(gRenderer);
+                }
+                if (helpActive) {
+                    SDL_RenderSetViewport(gRenderer, nullptr);
+                    drawHelpScreen(gRenderer);
                 }
 
                 //Update screen
