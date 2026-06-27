@@ -40,7 +40,7 @@ bool SaveGame::save(const Player &player, const std::string &path) {
         {"currentWeapon", player.getCurrentWeapon()}, {"currentArmor", player.getCurrentArmor()},
         {"weapons", weapons}, {"armor", armor}, {"spells", spells},
         {"questTarget", player.getQuestTarget()}, {"questKills", player.getQuestKills()},
-        {"questsCompleted", player.getQuestsCompleted()},
+        {"questsCompleted", player.getQuestsCompleted()}, {"hasRaft", player.hasRaft()},
     };
     // F6 設定一併持久化(時間流速 / 生成率 / 怪物追蹤)
     j["settings"] = {
@@ -91,6 +91,7 @@ bool SaveGame::load(Player &player, const std::string &path) {
         player.setQuestTarget(p.value("questTarget", 0));
         player.setQuestKills(p.value("questKills", 0));
         player.setQuestsCompleted(p.value("questsCompleted", 0));
+        player.setRaft(p.value("hasRaft", false));
         if (j.contains("settings")) {
             auto &s = j["settings"];
             Configuration::setSpeedPct(s.value("speed_pct", Configuration::getSpeedPct()));

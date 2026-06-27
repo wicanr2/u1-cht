@@ -147,8 +147,9 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
 }
 
 // 商店:mode 1=類別選單、mode 2=品項清單(置中 modal)
-static const int kShopCatN = 5;
-static const ShopType kShopCats[kShopCatN] = {ShopType::Weapon, ShopType::Armor, ShopType::Food, ShopType::Magic, ShopType::Pub};
+static const int kShopCatN = 6;
+static const ShopType kShopCats[kShopCatN] = {ShopType::Weapon, ShopType::Armor, ShopType::Food,
+                                              ShopType::Magic, ShopType::Pub, ShopType::Transport};
 static void drawShop(SDL_Renderer *renderer, Player &player, int mode, ShopType type, int sel) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xC0);
@@ -570,6 +571,9 @@ int main(int argc, char *args[]) {
                                             CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);
                                         } else if (shopType == ShopType::Pub) {
                                             CommandDisplay::writeLn(I18n::t("clue." + to_string(rand() % 6)), false);
+                                        } else if (shopType == ShopType::Transport) {
+                                            player->setRaft(true);
+                                            CommandDisplay::writeLn(I18n::t("shop.bought_raft"), false);
                                         } else {  // Magic
                                             player->addSpell(it.index);
                                             CommandDisplay::writeLn(I18n::tf("shop.bought", {I18n::t(it.nameKey)}), false);

@@ -176,8 +176,11 @@ void OverworldScreen::move(int deltaX, int deltaY) {
     }
 
     if (typeTypeSteppedOn == OverworldSpriteType::SpriteType::WATER) {
-        CommandDisplay::writeLn(I18n::t("ow.water_blocked"), true);
-        return;
+        if (!_gameContext->getPlayer()->hasRaft()) {
+            CommandDisplay::writeLn(I18n::t("ow.water_blocked"), true);
+            return;
+        }
+        CommandDisplay::writeLn(I18n::t("ow.sailing"), true);   // 有筏 → 揚帆渡水
     }
 
     // Don't allow player to walk past an enemy

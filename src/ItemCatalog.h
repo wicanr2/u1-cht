@@ -5,7 +5,7 @@
 
 // 商店品項目錄:武器/防具/食物/魔法的可購買清單(名稱走 i18n key,index 對應 Player 物品欄)。
 // 數值先 author 自手冊/wiki(可玩、合理),逐步對齊原版(見 docs/plan-town-combat.md)。
-enum class ShopType { Weapon, Armor, Food, Magic, Pub, None };
+enum class ShopType { Weapon, Armor, Food, Magic, Pub, Transport, None };
 
 struct ShopItem {
     int index;            // Player 物品欄 index(武器/防具/法術)
@@ -59,6 +59,8 @@ public:
                         {6, spellNameKey(6), 150}, {7, spellNameKey(7), 300}};
             case ShopType::Pub:
                 return {{0, "shop.pub.drink", 10}};   // 買一杯,聽段八卦/線索
+            case ShopType::Transport:
+                return {{0, "item.transport.raft", 200}};   // 筏:可渡水
             default:
                 return {};
         }
@@ -71,6 +73,7 @@ public:
             case ShopType::Food:   return "shop.title.food";
             case ShopType::Magic:  return "shop.title.magic";
             case ShopType::Pub:    return "shop.title.pub";
+            case ShopType::Transport: return "shop.title.transport";
             default: return "shop.title.none";
         }
     }

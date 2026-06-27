@@ -120,6 +120,10 @@ public:
     void recordKill() { if (_questTarget > 0 && _questKills < _questTarget) _questKills++; }
     void completeQuest() { _questTarget = 0; _questKills = 0; _questsCompleted++; }
 
+    // 載具:筏/船(可渡水)
+    bool hasRaft() const { return _hasRaft; }
+    void setRaft(bool v) { _hasRaft = v; }
+
     // 食物消耗(隨時間 tick);耗盡回傳 true 代表飢餓
     void consumeFood(int n) { _food -= n; if (_food < 0) _food = 0; }
 
@@ -161,5 +165,7 @@ private:
     int _questTarget = 0;     // 國王任務:需殺怪數(0=無)
     int _questKills = 0;      // 已殺
     int _questsCompleted = 0; // 完成任務數(用於獎勵遞增)
+
+    bool _hasRaft = false;    // 是否擁有筏/船(可渡水)
 };
 

@@ -171,5 +171,9 @@
   "victory.line0": "汝駕馭時光機,回到蒙登尚未不朽之時,",
   "victory.line1": "以一身淬鍊的武藝與魔法,將邪惡巫師一劍了結。",
   "victory.line2": "不朽寶石就此破碎,黑暗紀元終結——",
-  "victory.line3": "索薩利亞重歸光明。汝之名,將永載史冊。"
+  "victory.line3": "索薩利亞重歸光明。汝之名,將永載史冊。",
+  "shop.title.transport": "船塢",
+  "item.transport.raft": "木筏(可渡水)",
+  "shop.bought_raft": "購得木筏!現在可揚帆渡水",
+  "ow.sailing": "揚帆渡水…"
 }
