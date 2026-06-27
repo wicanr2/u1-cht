@@ -123,3 +123,20 @@ id1(4191B,header `00 7d 01 00`)從 offset 2 LZSS 解壓 = **正好 32000 bytes =
 
 > 先前誤判「PackBytes 爆增」是因為 type3 假設錯;真實是 LZSS。第一性逐行反組譯(註冊 converter → 解壓 loop)
 > 才拿到確切演算法。同 retro「反編當 oracle 不照抄」「斷言前先驗證」。
+
+## Step 7 — 全 resource 解碼盤點(LZSS 套用)
+
+`lzss_decode.py` 套到全部 79 個 type 0x0001(從 offset 2 解壓),確認格式對全體有效:
+- **全螢幕 320×200(32000B)**:id01=ORIGIN logo、id02/0a/0e/32=Ultima 標題/「The Software Gremlins」/片頭/結局螢幕(渲染乾淨可辨)。
+- **portrait/場景(128×64,4096B)**:id15-18。
+- **HUD/分數表**:id08(17408B,寬 256 渲出「CURVE / BONUS / 76507」文字)。
+- **小 sprite(812B×10)**:id1a–id24。
+- 其餘多為非-320-寬子圖(對角條紋 = 寬度未對;各有自己維度,在 resource header 或 caller 設定)。
+
+**overworld tileset 定位(下一步)**:tileset 的確切 resID + 像素維度需用靜態溯源追「地圖繪製碼」——
+找哪個 0x201 caller 載入地圖 tile resource、它讀 header 取的寬高。11 個 caller(@0x519…0xb38f)逐一看 resID;
+或對照 hg101 實機 tile 的結構在解碼輸出中比對。
+
+**到此的成果**:**IIgs 自訂圖格式(type 0x0001 = LZSS)完全破解並驗證**,79 個圖 resource 全可解。
+這解開了先前「載具/怪物 authentic tile」的牆——只差把正確的 tileset resource 對映到 engine 52 槽。
+工具鏈:`omf_parse.py`(段)、`dis65816.py`(反組譯)、`lzss_decode.py`(解壓)。
