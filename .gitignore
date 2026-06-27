@@ -33,3 +33,4 @@ __pycache__/
 # 平台原版 BGM(版權,使用者自備;僅占位 theme.ogg 入庫)
 assets/music/*.ogg
 !assets/music/theme.ogg
+assets/music/**/*.ogg
