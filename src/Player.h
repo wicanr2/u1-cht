@@ -52,6 +52,22 @@ public:
 
     void receiveDamage(int damage) { _hp -= damage; };
 
+    int getMaxHP() const { return _maxHp; }
+    void setMaxHP(int v) { _maxHp = v; }
+    void heal(int n) { _hp += n; if (_hp > _maxHp) _hp = _maxHp; }
+
+    // 等級 = XP/1000 + 1(U1 風格的經驗門檻)。升級回滿 HP + 上限成長。
+    int getLevel() const { return _xp / 1000 + 1; }
+    void gainXP(int n) {
+        int before = getLevel();
+        _xp += n;
+        int after = getLevel();
+        if (after > before) {
+            _maxHp += 30 * (after - before);
+            _hp = _maxHp;   // 升級回滿
+        }
+    }
+
     // 存檔載入用 setter(直接還原數值)
     void setHP(int v) { _hp = v; }
     void setFood(int v) { _food = v; }
@@ -109,6 +125,7 @@ private:
     int _townY = 0;
 
     int _hp = 150;
+    int _maxHp = 150;
     int _food = 200;
     int _xp = 0;
     int _money = 100;

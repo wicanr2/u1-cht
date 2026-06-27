@@ -64,7 +64,7 @@ assets/strings/zh-Hant.json 既有 i18n 層 —— 商店/對話/任務文字走
    - ⚠ v1 觸發為按 `B`(類別選單),非站到特定店員;城鎮招牌(THE INN/ARMOURY/MAGIC/GROCER)實機可讀
      → **後續精修**:依玩家位置鄰近招牌自動判定店家類型(需城鎮格式 RE:index 51-63 解碼 + 店員放置)。
 
-**Phase B — 戰鬥深度**
+**Phase B — 戰鬥深度** — ✅ 完成
 5. 傷害公式接裝備:`OverworldScreen`/`DungeonScreen` 攻擊傷害 = f(武器, 力量);受傷 = f(怪, 防具)。
 6. XP → 升級(HP/屬性成長)、死亡 → 回 Lord British 城堡復活(扣資源,接存檔)。
 7. 驗證:換武器前後傷害差異、升級、死亡復活。

@@ -1,5 +1,6 @@
 #include "DungeonScreen.h"
 #include "../common/I18n.h"
+#include "../Combat.h"
 #include "../CommandDisplay.h"
 #include "../Configuration.h"
 #include "Door.h"
@@ -343,13 +344,15 @@ void DungeonScreen::doPlayerAttack() {
     }
 
     if (enemy != nullptr) {
-        CommandDisplay::writeLn(I18n::t("dg.attack_unarmed"), true);
-
-        enemy->receiveDamage(1);
+        auto player = _gameContext->getPlayer();
+        int ehp = enemy->getHP();
+        int dmg = Combat::playerAttackDamage(*player);
+        enemy->receiveDamage(dmg);
         if (enemy->isDead()) {
+            player->gainXP(Combat::killXP(ehp));
             CommandDisplay::writeLn(I18n::tf("dg.hit_kill", {enemy->getName()}), false);
         } else {
-            CommandDisplay::writeLn(I18n::t("dg.hit_damage1"), false);
+            CommandDisplay::writeLn(I18n::tf("dg.hit_damage", {to_string(dmg)}), false);
         }
     }
 }
@@ -372,13 +375,21 @@ void DungeonScreen::doMonsterAttacks() {
 void DungeonScreen::doMonsterAttack(const shared_ptr<Enemy> &enemy) {
     auto player = _gameContext->getPlayer();
 
+    int dmg = Combat::reduceByArmor(enemy->getDamage(), *player);
     CommandDisplay::writeLn(I18n::tf("dg.attacked", {enemy->getName()}), false);
-    CommandDisplay::writeLn(I18n::tf("dg.hit_damage", {to_string(enemy->getDamage())}), false);
+    CommandDisplay::writeLn(I18n::tf("dg.hit_damage", {to_string(dmg)}), false);
 
-    player->receiveDamage(enemy->getDamage());
+    player->receiveDamage(dmg);
 
     if (player->isDead()) {
+        // 死亡復活:回 Lord British 城堡(世界起點),HP 回滿、損失半數金幣。
         CommandDisplay::writeLn(I18n::t("common.dead"), false);
+        CommandDisplay::writeLn(I18n::t("respawn.revived"), false);
+        player->setMoney(player->getMoney() / 2);
+        player->setHP(player->getMaxHP());
+        player->setOverworldX(20);
+        player->setOverworldY(20);
+        _gameContext->setScreen(ScreenType::Overworld);
     }
 }
 

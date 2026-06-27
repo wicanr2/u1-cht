@@ -30,6 +30,7 @@ bool SaveGame::save(const Player &player, const std::string &path) {
         {"dungeonY", player.getDungeonY()},
         {"dungeonLevel", player.getDungeonLevel()},
         {"hp", player.getHP()},
+        {"maxHp", player.getMaxHP()},
         {"food", player.getFood()},
         {"xp", player.getXP()},
         {"money", player.getMoney()},
@@ -73,6 +74,7 @@ bool SaveGame::load(Player &player, const std::string &path) {
         player.setDungeonY(p.value("dungeonY", 0));
         player.setDungeonLevel(p.value("dungeonLevel", 0));
         player.setHP(p.value("hp", 150));
+        player.setMaxHP(p.value("maxHp", 150));
         player.setFood(p.value("food", 200));
         player.setXP(p.value("xp", 0));
         player.setMoney(p.value("money", 100));

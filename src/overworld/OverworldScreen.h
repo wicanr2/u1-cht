@@ -90,6 +90,8 @@ private:
     // 地面怪「相鄰時反擊玩家」(忠於原版 U1:地面怪不移動,只在相鄰時攻擊)
     void overworldMonsterTurn();
 
+    void respawnPlayer();   // 死亡復活(回城堡、HP 回滿、損失半數金幣)
+
     void spawnNpcs();
 
     bool isPassable(int x, int y);

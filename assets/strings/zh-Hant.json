@@ -59,6 +59,8 @@
   "ow.attacked": "遭{0}攻擊!損失 {1} 點生命",
   "ow.dagger_attack": "用匕首攻擊:",
   "ow.no_target": "沒有目標!",
+  "ow.hit": "命中!造成 {0} 點傷害",
+  "respawn.revived": "Lord British 救回了你…(損失半數金幣)",
 
   "dg.level": "第 {0} 層",
   "dg.turn_back": "向後轉",

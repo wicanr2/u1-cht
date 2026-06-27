@@ -1,5 +1,6 @@
 #include "OverworldScreen.h"
 #include "../common/I18n.h"
+#include "../Combat.h"
 #include "TileTypeLoader.h"
 #include "../common/graphics/PixelDecodeStrategy.h"
 #include "Constants.h"
@@ -217,13 +218,23 @@ void OverworldScreen::attack(int deltaX, int deltaY) {
         index++;
     }
 
-    //target->receiveDamage(1);
     CommandDisplay::writeLn(getCardinalPointFromDeltas(deltaX, deltaY), true);
-
-    CommandDisplay::writeLn(I18n::tf("ow.killed", {target->getName()}), false);
-    _enemies.erase(_enemies.begin() + index, _enemies.begin() + index + 1);
-
     _attackMode = false;
+
+    if (!target) {
+        CommandDisplay::writeLn(I18n::t("ow.no_target"), false);
+        return;
+    }
+    auto player = _gameContext->getPlayer();
+    int dmg = Combat::playerAttackDamage(*player);
+    target->receiveDamage(dmg);
+    if (target->isDead()) {
+        player->gainXP(Combat::killXP(10));
+        CommandDisplay::writeLn(I18n::tf("ow.killed", {target->getName()}), false);
+        _enemies.erase(_enemies.begin() + index, _enemies.begin() + index + 1);
+    } else {
+        CommandDisplay::writeLn(I18n::tf("ow.hit", {to_string(dmg)}), false);
+    }
 }
 
 void OverworldScreen::enterPlace() {
@@ -414,7 +425,7 @@ void OverworldScreen::onStep() {
         if (pl->isStarving()) {
             pl->receiveDamage(2);
             CommandDisplay::writeLn(I18n::t("common.starving"), false);
-            if (pl->isDead()) CommandDisplay::writeLn(I18n::t("common.starved"), false);
+            if (pl->isDead()) { CommandDisplay::writeLn(I18n::t("common.starved"), false); respawnPlayer(); }
         }
     }
 }
@@ -458,15 +469,27 @@ void OverworldScreen::overworldMonsterTurn() {
     // 相鄰反擊(原版行為;追蹤模式下怪走到旁邊後也用這段攻擊)
     for (const auto &e : _enemies) {
         if (abs(e->getX() - px) + abs(e->getY() - py) == 1) {
-            int dmg = 2 + rand() % 5;   // 2–6 點
+            int dmg = Combat::reduceByArmor(2 + rand() % 5, *player);   // 經防具減免
             player->receiveDamage(dmg);
             CommandDisplay::writeLn(I18n::tf("ow.attacked", {e->getName(), to_string(dmg)}), false);
             if (player->isDead()) {
-                CommandDisplay::writeLn(I18n::t("common.dead"), false);
+                respawnPlayer();
                 break;
             }
         }
     }
+}
+
+// 死亡復活:回 Lord British 城堡(以世界起點代),HP 回滿、損失半數金幣。
+void OverworldScreen::respawnPlayer() {
+    auto p = _gameContext->getPlayer();
+    CommandDisplay::writeLn(I18n::t("common.dead"), false);
+    CommandDisplay::writeLn(I18n::t("respawn.revived"), false);
+    p->setMoney(p->getMoney() / 2);
+    p->setHP(p->getMaxHP());
+    p->setOverworldX(20);
+    p->setOverworldY(20);
+    _gameContext->setScreen(ScreenType::Overworld);
 }
 
 void OverworldScreen::spawnNpcs() {

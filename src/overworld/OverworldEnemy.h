@@ -24,6 +24,10 @@ public:
         _tile->setCoordinates(x * 16, y * 16);
     }
 
+    int getHP() const { return _hp; }
+    void receiveDamage(int d) { _hp -= d; }
+    bool isDead() const { return _hp <= 0; }
+
     void update(float elapsed);
     void draw(SDL_Renderer *renderer, SDL_Rect camera);
 

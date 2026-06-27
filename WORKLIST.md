@@ -160,8 +160,9 @@ docker run --rm -v "$PWD":/work -w /work u1-msxrun bash -c '
       `SaveGame` 序列化。截圖驗證、regression OK。
 - [ ] **Phase A.2 — 商店精修(authentic 店員定位)**:RE 城鎮格式(index 51-63 解碼 + 店員放置)→
       站到招牌旁(WEAPONS/ARMOUR/MAGIC/FOOD/PUB)自動判定店家類型,取代 `B` 類別選單。
-- [ ] **Phase B — 戰鬥深度**:傷害接裝備(攻 = f(武器,力量)、受 = f(怪,防具));XP→升級(HP/屬性);
-      死亡→回 Lord British 城堡復活(扣資源)。`ItemCatalog::weaponPower/armorDefense` 已備。
+- [x] **Phase B — 戰鬥深度**:`Combat.h` 傷害公式(攻=2+武器威力+力量/5+浮動、受=raw−防具減免≥1);
+      overworld/dungeon 玩家攻擊用武器、怪攻擊減防具;擊殺得 XP(`gainXP`)→ 等級(XP/1000)升級回滿+maxHP+30;
+      死亡→回城堡(世界起點)HP 回滿、損失半數金幣。截圖驗證「命中!擊殺巨鼠!」+ 經驗 75;regression OK。
 - [ ] **Phase C — 城堡/國王/法術/酒館**:國王給任務+領獎;地牢施法(買來的法術:飛彈/致死/升降梯/開鎖);酒館線索。
 
 ## D. 架構牆 / 長期 🧱
