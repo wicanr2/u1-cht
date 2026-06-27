@@ -920,6 +920,20 @@ int main(int argc, char *args[]) {
                 SDL_RenderClear(gRenderer);
                 SDL_RenderCopy(gRenderer, gWorldTarget, nullptr, nullptr);
 
+                // 地牢層數/朝向:在 640 高解析層用 cjkUi(16px)繪製,複雜漢字(層)才不會糊掉。
+                if (currentScreen.get() == dungeonScreen.get()) {
+                    SDL_Color teal{0x42, 0xFF, 0xFF, 0xFF};
+                    int cx = 300;  // 對齊地牢線框中心(世界 target 區域)
+                    LTexture lv;
+                    lv.loadFromRenderedText(Fonts::cjkUi(), gRenderer,
+                        I18n::tf("dg.level", {to_string(player->getDungeonLevel() + 1)}), teal);
+                    lv.render(gRenderer, cx - lv.getWidth() / 2, 2);
+                    LTexture ori;
+                    ori.loadFromRenderedText(Fonts::cjkUi(), gRenderer,
+                        CardinalPointUtils::toString(player->getDungeonOrientation()), teal);
+                    ori.render(gRenderer, cx - ori.getWidth() / 2, 298);
+                }
+
                 // === UI(中文)在 640x400 高解析空間繪製,座標 x2 ===
                 _playerStatusDisplay->draw(gRenderer);
 

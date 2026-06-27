@@ -29,14 +29,8 @@ void DungeonScreen::draw(SDL_Renderer *renderer) {
     ShapeUtils::drawRoundedCorners(renderer);
     ShapeUtils::drawDungeonBorders(renderer);
 
-    _orientationLabel->loadFromRenderedText(Fonts::cjk(), renderer, CardinalPointUtils::toString(
-            _gameContext->getPlayer()->getDungeonOrientation()), Colors::TEXT_COLOR);
-    _orientationLabel->render(renderer, 144, 150);
-
-    _levelLabel->loadFromRenderedText(Fonts::cjk(), renderer,
-                                      I18n::tf("dg.level", {to_string(_gameContext->getPlayer()->getDungeonLevel() + 1)}),
-                                      Colors::TEXT_COLOR);
-    _levelLabel->render(renderer, 272 / 2, -2);
+    // 地牢層數/朝向標籤改在 640 高解析覆蓋層(main.cpp)用 cjkUi() 繪製:
+    // 原本在 320 target 內以 12px cjk() 繪製、再 nearest 2x 放大,複雜漢字(層)會糊成錯字。
 
     // TODO: not too happy with the viewport thingy
     SDL_Rect defaultViewport = {MAIN_VIEWPORT_PADDING, MAIN_VIEWPORT_PADDING, WIDTH, HEIGHT};
