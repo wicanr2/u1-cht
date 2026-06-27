@@ -4,10 +4,25 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <cstdio>
+#include <cstdlib>
+#include <SDL.h>
 
 using nlohmann::json;
 
+// 存檔放使用者可寫目錄(打包後 CWD 可能唯讀:AppImage squashfs / macOS .app)。
+// U1_SAVE_DIR 環境變數可覆寫(測試/開發用 "." 寫到 CWD)。預設 SDL_GetPrefPath。
 std::string SaveGame::defaultPath() {
+    if (const char *env = getenv("U1_SAVE_DIR")) {
+        std::string d = env;
+        if (!d.empty() && d.back() != '/' && d.back() != '\\') d += "/";
+        return d + "save.json";
+    }
+    char *pref = SDL_GetPrefPath("LCY", "Ultima1-CHT");
+    if (pref) {
+        std::string p = std::string(pref) + "save.json";
+        SDL_free(pref);
+        return p;
+    }
     return "save.json";
 }
 

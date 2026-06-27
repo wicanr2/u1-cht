@@ -8,6 +8,7 @@ mkdir -p "$OUTDIR"
 
 export DISPLAY=:99
 export SDL_AUDIODRIVER=dummy   # headless 無真實音效裝置,用 dummy 讓音訊路徑可跑
+export U1_SAVE_DIR=.          # 測試把存檔寫到 CWD(預設改用 SDL_GetPrefPath)
 Xvfb :99 -screen 0 1280x800x24 >/dev/null 2>&1 &
 XPID=$!
 sleep 1

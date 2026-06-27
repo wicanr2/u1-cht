@@ -26,6 +26,13 @@
 #include "src/ItemCatalog.h"
 #include "src/CharCreation.h"
 #include <array>
+#ifdef _WIN32
+#include <direct.h>
+#define chdir _chdir
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
 
 using namespace std;
 using namespace OpenUltima;
@@ -494,6 +501,15 @@ void close() {
 }
 
 int main(int argc, char *args[]) {
+    // 打包穩健性(retro-game-playtest 教訓):把 CWD 切到執行檔所在,
+    // 讓 ./assets ./resources config.json 不論從哪啟動都找得到;先記啟動目錄供 gamedata 後備搜尋
+    //(AppImage 唯讀 mount 下,使用者把版權 BIN 放在 .AppImage 旁的啟動目錄)。
+    {
+        char launch[4096];
+        if (getcwd(launch, sizeof(launch))) Configuration::setLaunchDir(launch);
+        char *base = SDL_GetBasePath();
+        if (base) { if (chdir(base) != 0) {} SDL_free(base); }
+    }
     Configuration::init();
     I18n::init("assets/strings/" + Configuration::getLanguage() + ".json");
     cout << Configuration::getEgaOverworldTilesFilePath();

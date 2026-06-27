@@ -17,9 +17,11 @@ public:
         return _value.at("resolution_height").get<int>();
     }
 
-    static string getGameFilesPath() {
-        return _value.at("game_files_path").get<string>();
-    }
+    // 版權遊戲資料(*.BIN)目錄:init 時已解析(在執行檔旁或啟動目錄找到含 MAP.BIN 的那個)。
+    static string getGameFilesPath() { return _resolvedGameFiles; }
+
+    // 啟動目錄(chdir 到執行檔前的 CWD;供 gamedata 後備搜尋,如 AppImage 旁)
+    static void setLaunchDir(const string &d) { _launchDir = d; }
 
     static string getLanguage() {
         return _value.value("language", string("zh-Hant"));
@@ -88,5 +90,7 @@ private:
     static int _spawnPct;
     static int _foodPct;
     static bool _chaseMonsters;
+    static string _launchDir;          // 啟動目錄(chdir 前)
+    static string _resolvedGameFiles;  // 解析後的 gamedata 路徑
     static int clampPct(int v) { return v < 10 ? 10 : (v > 200 ? 200 : v); }
 };
