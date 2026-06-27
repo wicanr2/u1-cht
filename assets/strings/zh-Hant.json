@@ -129,5 +129,15 @@
   "item.spell.blink": "瞬移",
   "item.spell.kill": "致死術",
   "item.food.rations": "口糧(+50 食物)",
-  "ui.help.talk": "晉見國王(Talk,城堡)"
+  "ui.help.talk": "晉見國王(Talk,城堡)",
+  "spell.menu_title": "施放法術",
+  "spell.empty": "尚無法術(可在魔法店購買)",
+  "spell.hint": "↑↓ 選擇   Enter 施放   ESC 取消",
+  "spell.none": "沒有此法術!",
+  "spell.no_target": "前方無目標!",
+  "spell.no_effect": "此處無法施放!",
+  "spell.missile": "魔法飛彈命中!造成 {0} 點傷害",
+  "spell.kill": "致死術發動!{0} 灰飛煙滅!",
+  "spell.prayer_cast": "祈禱獲應…恢復 50 點生命",
+  "ui.help.cast": "施放法術(Cast,地牢)"
 }

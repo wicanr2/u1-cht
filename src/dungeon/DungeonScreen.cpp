@@ -358,6 +358,61 @@ void DungeonScreen::doPlayerAttack() {
     }
 }
 
+// 施放法術:0祈禱 1開啟 2解鎖 3魔法飛彈 4升梯 5降梯 6瞬移 7致死
+void DungeonScreen::castSpell(int spellIndex) {
+    auto player = _gameContext->getPlayer();
+    if (player->getSpellCount(spellIndex) <= 0) {
+        CommandDisplay::writeLn(I18n::t("spell.none"), false);
+        return;
+    }
+    auto refreshVision = [&]() {
+        _vision = _dungeon->getVisible(player->getDungeonLevel(), player->getDungeonX(),
+                                       player->getDungeonY(), player->getDungeonOrientation());
+    };
+    shared_ptr<Enemy> enemy = nullptr;
+    for (const auto &t : _vision) if (t.enemy && !t.enemy->isDead()) { enemy = t.enemy; break; }
+    bool used = true;
+    switch (spellIndex) {
+        case 3: {  // 魔法飛彈
+            if (!enemy) { CommandDisplay::writeLn(I18n::t("spell.no_target"), false); used = false; break; }
+            int ehp = enemy->getHP(), dmg = 15 + player->getIntelligence();
+            enemy->receiveDamage(dmg);
+            CommandDisplay::writeLn(I18n::tf("spell.missile", {to_string(dmg)}), false);
+            if (enemy->isDead()) { player->gainXP(Combat::killXP(ehp)); player->recordKill();
+                CommandDisplay::writeLn(I18n::tf("dg.hit_kill", {enemy->getName()}), false); }
+            break;
+        }
+        case 7: {  // 致死術
+            if (!enemy) { CommandDisplay::writeLn(I18n::t("spell.no_target"), false); used = false; break; }
+            int ehp = enemy->getHP();
+            enemy->receiveDamage(9999);
+            player->gainXP(Combat::killXP(ehp)); player->recordKill();
+            CommandDisplay::writeLn(I18n::tf("spell.kill", {enemy->getName()}), false);
+            break;
+        }
+        case 4: {  // 升梯
+            int lvl = player->getDungeonLevel();
+            if (lvl <= 0) { CommandDisplay::writeLn(I18n::t("spell.no_effect"), false); used = false; break; }
+            player->setDungeonLevel(lvl - 1); refreshVision();
+            CommandDisplay::writeLn(I18n::tf("dg.klimb_up", {to_string(lvl)}), false);
+            break;
+        }
+        case 5: {  // 降梯
+            int lvl = player->getDungeonLevel();
+            player->setDungeonLevel(lvl + 1); refreshVision();
+            CommandDisplay::writeLn(I18n::tf("dg.klimb_down", {to_string(lvl + 2)}), false);
+            break;
+        }
+        case 0:    // 祈禱(回 HP)
+            player->heal(50);
+            CommandDisplay::writeLn(I18n::t("spell.prayer_cast"), false);
+            break;
+        default:   // 開啟/解鎖/瞬移:此處無對象
+            CommandDisplay::writeLn(I18n::t("spell.no_effect"), false); used = false;
+    }
+    if (used) player->addSpell(spellIndex, -1);
+}
+
 void DungeonScreen::doMonsterAttacks() {
     auto player = _gameContext->getPlayer();
 

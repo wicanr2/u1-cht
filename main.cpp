@@ -111,7 +111,7 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
     SDL_RenderFillRect(renderer, &scrim);
 
-    const int bw = 540, bh = 470;
+    const int bw = 540, bh = 496;
     SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
     SDL_RenderFillRect(renderer, &box);
@@ -133,7 +133,8 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     line("E", kx, y, key); line(I18n::t("ui.help.enter"), tx, y, txt); y += 26;
     line("K", kx, y, key); line(I18n::t("ui.help.klimb"), tx, y, txt); y += 26;
     line("B", kx, y, key); line(I18n::t("ui.help.buy"), tx, y, txt); y += 26;
-    line("T", kx, y, key); line(I18n::t("ui.help.talk"), tx, y, txt); y += 30;
+    line("T", kx, y, key); line(I18n::t("ui.help.talk"), tx, y, txt); y += 26;
+    line("C", kx, y, key); line(I18n::t("ui.help.cast"), tx, y, txt); y += 30;
     line(I18n::t("ui.help.sys_head"), lx, y, head); y += 28;
     line("F6", kx, y, key); line(I18n::t("ui.help.f6"), tx, y, txt); y += 24;
     line("M  /  F9", kx, y, key); line(I18n::t("ui.help.audio"), tx, y, txt); y += 24;
@@ -220,6 +221,45 @@ static void drawKing(SDL_Renderer *renderer, Player &player) {
              box.x + 30, box.y + 70, txt);
     bool actionable = !player.hasQuest() || player.isQuestComplete();
     line(I18n::t(actionable ? "king.hint_action" : "king.hint_close"), box.x + 30, box.y + bh - 32, hint);
+}
+
+// 取玩家擁有的法術 index 清單
+static std::vector<int> ownedSpells(Player &p) {
+    std::vector<int> v;
+    for (int i = 0; i < 8; ++i) if (p.getSpellCount(i) > 0) v.push_back(i);
+    return v;
+}
+
+// 施法選單(置中 modal)
+static void drawCast(SDL_Renderer *renderer, Player &player, int sel) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xC0);
+    SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &scrim);
+    const int bw = 420, bh = 280;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0xC0, 0x80, 0xFF, 0xFF);   // 紫邊(魔法)
+    SDL_RenderDrawRect(renderer, &box);
+    SDL_Color title{0xC0, 0x90, 0xFF, 0xFF}, on{0xFF, 0xFF, 0x60, 0xFF}, off{0xC0, 0xC0, 0xC0, 0xFF};
+    auto line = [&](const string &s, int x, int y, SDL_Color c) {
+        LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c); t.render(renderer, x, y);
+    };
+    line(I18n::t("spell.menu_title"), box.x + (bw - 100) / 2, box.y + 18, title);
+    auto owned = ownedSpells(player);
+    int y = box.y + 60;
+    if (owned.empty()) {
+        line(I18n::t("spell.empty"), box.x + 40, y, off);
+    } else {
+        for (int i = 0; i < (int)owned.size(); ++i) {
+            line((sel == i ? "▶ " : "  ") + I18n::t(ItemCatalog::spellNameKey(owned[i])) +
+                     "  ×" + to_string(player.getSpellCount(owned[i])),
+                 box.x + 40, y, sel == i ? on : off);
+            y += 28;
+        }
+    }
+    line(I18n::t("spell.hint"), box.x + 30, box.y + bh - 30, off);
 }
 
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
@@ -420,6 +460,8 @@ int main(int argc, char *args[]) {
             ShopType shopType = ShopType::Weapon;
             int shopSel = 0;
             bool kingActive = false;     // 城堡國王對話
+            bool castActive = false;     // 地牢施法選單
+            int castSel = 0;
             int settingsRow = 0;
             while (!quit) {
                 //Handle events on queue
@@ -459,6 +501,23 @@ int main(int argc, char *args[]) {
                                         Audio::playSfx("./assets/sfx/select.ogg");
                                     }
                                 }
+                            }
+                        }
+                        continue;
+                    }
+
+                    // 施法選單開啟時:↑↓選、Enter 施放、ESC 關閉
+                    if (castActive) {
+                        if (e.type == SDL_KEYDOWN) {
+                            auto k = e.key.keysym.sym;
+                            auto owned = ownedSpells(*player);
+                            if (k == SDLK_ESCAPE) castActive = false;
+                            else if (!owned.empty() && k == SDLK_UP) castSel = (castSel + (int)owned.size() - 1) % owned.size();
+                            else if (!owned.empty() && k == SDLK_DOWN) castSel = (castSel + 1) % owned.size();
+                            else if (k == SDLK_RETURN && !owned.empty()) {
+                                dungeonScreen->castSpell(owned[castSel]);
+                                Audio::playSfx("./assets/sfx/select.ogg");
+                                castActive = false;
                             }
                         }
                         continue;
@@ -580,6 +639,12 @@ int main(int argc, char *args[]) {
                                 kingActive = true;
                                 continue;
                             }
+                            // C:地牢施法
+                            if (pressedKey == SDLK_c &&
+                                gameContext->getCurrentScreen() == ScreenType::Dungeon) {
+                                castActive = true; castSel = 0;
+                                continue;
+                            }
                             // F5:手動存檔
                             if (pressedKey == SDLK_F5) {
                                 bool ok = SaveGame::save(*player, SaveGame::defaultPath());
@@ -678,6 +743,10 @@ int main(int argc, char *args[]) {
                 if (kingActive) {
                     SDL_RenderSetViewport(gRenderer, nullptr);
                     drawKing(gRenderer, *player);
+                }
+                if (castActive) {
+                    SDL_RenderSetViewport(gRenderer, nullptr);
+                    drawCast(gRenderer, *player, castSel);
                 }
 
                 //Update screen

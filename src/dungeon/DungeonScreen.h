@@ -17,6 +17,9 @@ public:
 
     void handle(const SDL_Event &e) override;
 
+    // 施放法術(spellIndex 對 ItemCatalog spell index);消耗一次,套用效果。
+    void castSpell(int spellIndex);
+
     void setDungeon(shared_ptr<Dungeon> dungeon) {
         _dungeon = std::move(dungeon);
         auto player = _gameContext->getPlayer();
