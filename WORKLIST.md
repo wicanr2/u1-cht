@@ -42,11 +42,19 @@
 ### E1–E5. 逐平台(一個一個做)
 | # | 平台 | 素材 | 格式 / 可複用經驗 | 狀態 |
 |---|---|---|---|---|
-| E1 | **FM Towns** | Trilogy CD(GRAPH 已抽於 u7-cht) | ✅ 地形渲染成功(綠草+藍水+森林);8色palette(偶數index)+ chunkyrev 解碼 + 自動分類 + 32→16。物件/怪物 sprite 精修待續 | ✅ 地形完成 |
+| E1 | **FM Towns** | Trilogy CD(GRAPH 已抽於 u7-cht) | ✅ **完成**:地形(UT1MAP)+ 載具(UT1TILE1)+ 怪物(UT1TILE0)全 52 槽。怪物槽原 cycling 跑進投射物→雜訊,已用明確 mapping 修正(`fix_fmtowns_monsters.py`)。8色palette+chunkyrev+32→16 | ✅ 完成 |
 | E2 | **Apple IIgs** | woz(1994) | ✅ **overworld pack 完成**(用 hg101 實機 320×200 SHR 截圖直接切 tile,繞過模擬器導航+自訂壓縮):8 真實 IIgs tile(水/草/森林/山/城堡/城鎮/玩家/馬)+ EGA fallback,game tester 驗證 overworld 渲染正常。`build_iigs_pack.py`+`assets/tilesets/iigs.png`。完整 52 槽(載具/怪物)需 MAME 跑到 overworld(鍵盤通到角色創建,差 GS/OS 讀檔滑鼠校準,見 docs/re/e2-apple-iigs.md) | ✅ 主tile完成 |
 | E3 | **MSX** | .dsk(FAT12) | ✅ **完成**(Path B 反組譯 OUT.COM 破解格式):body `p*192+i`→VRAM `p*256+i`,SCREEN7 chunky 4bpp。MSXTILES=96 tiles。已建 `assets/tilesets/msx.png`(52槽,`build_msx_pack.py`)+ game tester 驗證 overworld 渲染(水/草/森林/玩家/中文狀態列正常)。工具:`decode_msxtiles.py`/`build_msx_pack.py` | ✅ 完成 |
 | E4 | **PC-98** | `org_game/msx/【PC98】….fdi` | PC-98 FDI + planar 圖格式 | ⬜ |
 | E5 | **Atari** | 1983 ATR(已抽檔)| tile 在 `SET1-5`/`MASTER`?待找;6502 已反組譯 | ⬜ |
+
+> **DOS 原生 tileset(open_ultima 內建,gamedata BIN)**:
+> - **EGA** ✅ `ega.png`(EGATILES.BIN,RowPlanar 4bpp,`tiles_to_png.py`)— 完整 52 槽,作各 pack fallback 基底。
+> - **CGA** ✅ `cga.png`(CGATILES.BIN,Linear 2bpp 青/洋紅/白,`cga_tiles_to_png.py`)— 完整 52 槽真實 CGA。
+> - **Tandy(T1K)** ⬜ T1KTILES.BIN 與 EGA 同大小不同格式,需專屬 decoder(見下方 ★)。
+> - **VGA**:U1 DOS **無 VGA tileset**(原版只有 EGA/CGA/Tandy);高彩版 = FM Towns / IIgs。
+> **IIgs 載具/怪物**:目前 EGA fallback;真實 IIgs 載具/怪物截圖不存在(版稀有)→ 需 MAME 跑到 overworld
+> (差 GS/OS 讀檔滑鼠校準)或破解 type 0x0001 自訂壓縮。
 
 ### E1 FM Towns 續作(已解碼,剩 palette+對應)
 - [ ] U1 專屬 16 色 palette(RE U1 FM Towns 執行檔 / 對 hg101 FMTOWNS-06 實機採樣)— header 無內嵌 ColorMap
