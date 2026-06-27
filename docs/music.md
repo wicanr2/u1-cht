@@ -24,7 +24,17 @@ FM Towns 版 BGM 是 **EUPHONY(.EUP)FM 音樂**,配 `ULTIMA.FMB` 音色庫。Tri
 `MAP.EUP`(overworld)、`TOWN.EUP`、`DUNGEON.EUP`、`OSIRO.EUP`(城堡)等。
 渲染成 ogg 後放成 `assets/music/fmtowns.ogg`(目前用 `MAP.EUP` overworld 主題,53 秒循環)。
 
-## 其餘平台(待渲染)
+## 其餘平台:逐平台找檔 → 確認格式 → 原生轉回(不跑模擬器)
 
-chiptune 平台(MSX PSG / Atari POKEY / PC-98 FM / IIgs synthLAB)無法直接轉檔,
-需在各自模擬器內播放遊戲、錄下音訊軌再轉 ogg(emulator audio capture)。屬獨立工項,逐一補上。
+方法依 L.CY 指示:不錄模擬器,**找到音樂資料檔、確認格式、理解發聲機制、原生 render 回 ogg**。
+各平台格式調查(進行中):
+
+| 平台 | 音樂檔 | 格式 / 發聲機制 | 轉換路徑 | 狀態 |
+|---|---|---|---|---|
+| **PC-98** | `SCORE.DAT`(5433B)+ `VOICE.DAT`(1024B) | **YM2608(OPNA)FM**。SCORE.DAT 開頭是 ~10 首歌的 16-bit offset 表(`$0028 $00e2 $02e0 $052e…`)+ 序列資料;VOICE.DAT = FM 音色(operator 參數) | RE 序列格式 → 轉 VGM / 用 OPNA 合成器 render | 🟡 檔+格式已定位 |
+| **Apple IIgs** | woz resource(`id12`/`id13` ~3KB 等)+ Ensoniq 取樣 | **synthLAB / Ensoniq 5503 DOC**(32 振盪器取樣合成) | RE 樂曲序列 + 取樣 → 用 5503 合成器 render | 🟡 resource 已抽,格式待解 |
+| **MSX** | `.dsk` 內音樂資料 / OUT.COM | **PSG(AY-3-8910)** 或 SCC | 定位序列 → PSG 暫存器 log → render | ⬜ 待定位檔案 |
+| **Atari** | `OUTMOVE`/`SPAMOVE.bin` 內 | **POKEY** | 反組譯找音樂常式 + 序列 → POKEY render | ⬜ 待定位 |
+
+> 每個 chiptune 格式都是一份獨立 RE(序列格式 + 音色 + 合成器),工程量與 tileset 相當。逐平台推進。
+> FM Towns 之所以最快,是因為 EUPHONY(.EUP)是有現成播放器/轉檔工具的成熟格式。
