@@ -79,7 +79,7 @@ static void drawSettingsMenu(SDL_Renderer *renderer, int row) {
     SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
     SDL_RenderFillRect(renderer, &scrim);
 
-    const int bw = 420, bh = 170;
+    const int bw = 440, bh = 210;
     SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
     SDL_RenderFillRect(renderer, &box);
@@ -92,11 +92,13 @@ static void drawSettingsMenu(SDL_Renderer *renderer, int row) {
     };
     SDL_Color title{0xFF, 0xD0, 0x40, 0xFF}, on{0xFF, 0xFF, 0x60, 0xFF}, off{0xC0, 0xC0, 0xC0, 0xFF};
     line("設定(F6)", box.x + (bw - 120) / 2, box.y + 16, title);
-    line((row == 0 ? "▶ " : "  ") + ("遊戲速度: " + to_string(Configuration::getSpeedPct()) + "%"),
-         box.x + 40, box.y + 60, row == 0 ? on : off);
+    line((row == 0 ? "▶ " : "  ") + ("時間流速: " + to_string(Configuration::getSpeedPct()) + "%"),
+         box.x + 40, box.y + 56, row == 0 ? on : off);
     line((row == 1 ? "▶ " : "  ") + ("怪物生成: " + to_string(Configuration::getSpawnPct()) + "%"),
-         box.x + 40, box.y + 92, row == 1 ? on : off);
-    line("↑↓ 選擇   ←→ 調整   F6/ESC 關閉", box.x + 36, box.y + 132, off);
+         box.x + 40, box.y + 88, row == 1 ? on : off);
+    line((row == 2 ? "▶ " : "  ") + ("野外怪物追蹤: " + string(Configuration::getChaseMonsters() ? "開" : "關")),
+         box.x + 40, box.y + 120, row == 2 ? on : off);
+    line("↑↓ 選擇   ←→ 調整/切換   F6/ESC 關閉", box.x + 36, box.y + 168, off);
 }
 
 // F1 說明畫面:列出全部指令(置中 modal,640x400 覆蓋層)
@@ -328,17 +330,21 @@ int main(int argc, char *args[]) {
                         continue;
                     }
 
-                    // F6 設定選單開啟時:↑↓選列、←→±5%、F6/ESC 關閉,吞掉其他輸入
+                    // F6 設定選單開啟時:↑↓選列(3 列)、←→ 調整 / 切換、F6/ESC 關閉,吞掉其他輸入
                     if (settingsActive) {
                         if (e.type == SDL_KEYDOWN) {
                             auto k = e.key.keysym.sym;
                             if (k == SDLK_F6 || k == SDLK_ESCAPE) settingsActive = false;
-                            else if (k == SDLK_UP) settingsRow = 0;
-                            else if (k == SDLK_DOWN) settingsRow = 1;
+                            else if (k == SDLK_UP) settingsRow = (settingsRow + 2) % 3;
+                            else if (k == SDLK_DOWN) settingsRow = (settingsRow + 1) % 3;
                             else if (k == SDLK_LEFT || k == SDLK_RIGHT) {
-                                int d = (k == SDLK_RIGHT) ? 5 : -5;
-                                if (settingsRow == 0) Configuration::setSpeedPct(Configuration::getSpeedPct() + d);
-                                else Configuration::setSpawnPct(Configuration::getSpawnPct() + d);
+                                if (settingsRow == 2) {
+                                    Configuration::setChaseMonsters(!Configuration::getChaseMonsters());  // 開關
+                                } else {
+                                    int d = (k == SDLK_RIGHT) ? 5 : -5;
+                                    if (settingsRow == 0) Configuration::setSpeedPct(Configuration::getSpeedPct() + d);
+                                    else Configuration::setSpawnPct(Configuration::getSpawnPct() + d);
+                                }
                             }
                         }
                         continue;

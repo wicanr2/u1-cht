@@ -8,6 +8,7 @@ using namespace std;
 nlohmann::json Configuration::_value;
 int Configuration::_speedPct = 100;
 int Configuration::_spawnPct = 55;
+bool Configuration::_chaseMonsters = false;
 
 void Configuration::init() {
     ifstream in("config.json");
@@ -16,9 +17,10 @@ void Configuration::init() {
     }
     in >> _value;
 
-    // 初始化執行期可調值(F6 選單會改這兩個)
+    // 初始化執行期可調值(F6 選單會改這些)
     _speedPct = clampPct(_value.value("speed_pct", 100));
     _spawnPct = clampPct(_value.value("spawn_pct", 55));
+    _chaseMonsters = _value.value("chase_monsters", false);
 
     // validate that required configuration entries exist
     try {

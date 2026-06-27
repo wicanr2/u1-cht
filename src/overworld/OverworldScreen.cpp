@@ -426,6 +426,35 @@ void OverworldScreen::overworldMonsterTurn() {
     int px = player->getOverworldX();
     int py = player->getOverworldY();
 
+    // 追蹤模式(F6 開關,預設關):每隻怪朝玩家走一步(貪婪),
+    // 避開界外 / 山 / 水 / 玩家格 / 其他怪。關閉時 = 原版「不移動、只相鄰反擊」。
+    if (Configuration::getChaseMonsters()) {
+        for (const auto &e : _enemies) {
+            int dx = px - e->getX(), dy = py - e->getY();
+            if (abs(dx) + abs(dy) <= 1) continue;          // 已相鄰/重疊 → 留給攻擊判定
+            int sx = (dx > 0) - (dx < 0), sy = (dy > 0) - (dy < 0);
+            bool xFirst = abs(dx) >= abs(dy);
+            int cand[2][2] = {{xFirst ? sx : 0, xFirst ? 0 : sy},   // 先走距離大的軸
+                              {xFirst ? 0 : sx, xFirst ? sy : 0}};  // 被擋再走另一軸
+            for (auto &c : cand) {
+                if (c[0] == 0 && c[1] == 0) continue;
+                int nx = e->getX() + c[0], ny = e->getY() + c[1];
+                if (nx < 0 || nx > BOUND_X_TILES || ny < 0 || ny > BOUND_Y_TILES) continue;
+                auto t = _tiles[getTileOffset(nx, ny)]->getSpriteType();
+                if (t == OverworldSpriteType::SpriteType::MOUNTAIN ||
+                    t == OverworldSpriteType::SpriteType::WATER) continue;
+                if (nx == px && ny == py) continue;        // 不踩玩家(留相鄰攻擊)
+                bool occupied = false;
+                for (const auto &o : _enemies)
+                    if (o != e && o->getX() == nx && o->getY() == ny) { occupied = true; break; }
+                if (occupied) continue;
+                e->setCoordinates(nx, ny);
+                break;
+            }
+        }
+    }
+
+    // 相鄰反擊(原版行為;追蹤模式下怪走到旁邊後也用這段攻擊)
     for (const auto &e : _enemies) {
         if (abs(e->getX() - px) + abs(e->getY() - py) == 1) {
             int dmg = 2 + rand() % 5;   // 2–6 點

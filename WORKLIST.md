@@ -25,12 +25,12 @@
   - 自繪中文 modal、↑↓選列、←→±5%、F6/ESC 關閉;沿用離開鐵則的 modal 風格
 - [x] **F1 說明畫面 + F9 音效獨立開關**:F1 列出全部指令(modal);M=音樂、F9=音效兩者分開;
   tileset 循環移到 PageDown only。音效系統(Mix_Chunk)+ 程序生成 `assets/sfx/*.ogg`,接移動/攻擊。
-- [ ] **F6 設定擴充(參考 u2-cht `docs/GAME-MECHANICS.md` 的設定畫面)**:
-  - [ ] **時間流速(time tick)**:現 `speed_pct` 即時間 tick 快慢 → 對齊 u2-cht 標示「時間流速」+ 範圍 10–200%
-        (影響食物消耗 / 怪物移動 / 時間之門)。確認 F6 標籤與範圍一致。
-  - [ ] **怪物生成率**:現 `spawn_pct`(已可調)→ 對齊 u2-cht 標示與 10–200% 範圍。
-  - [ ] **★ 野外怪物自動追蹤玩家(開關)**:新增第 3 個設定項。預設 **關**(忠於 1981「出現即攻擊、不移動」);
-        **開** = 貪婪逐玩家(u2-cht 的 `chase` 行為)。掛在 overworld 怪物 onStep AI;存進 config/存檔持久化。
+- [x] **F6 設定擴充(參考 u2-cht `docs/GAME-MECHANICS.md` 的設定畫面)**:F6 三列、↑↓ 循環選列。
+  - [x] **時間流速(time tick)**:`speed_pct` F6 標籤改「時間流速」、範圍 10–200%(clampPct)。
+  - [x] **怪物生成率**:`spawn_pct`,F6 可調,10–200%。
+  - [x] **★ 野外怪物自動追蹤玩家(開關)**:F6 第 3 列(`chase_monsters`,←→ 切換,預設關)。
+        開 = `overworldMonsterTurn` 貪婪逐玩家走一步(避界外/山/水/玩家/他怪),關 = 原版不移動只相鄰反擊。
+        config.json.example 已加;**執行期值,持久化待存檔系統**(同 speed/spawn)。
 - [x] **食物 / 飢餓 tick**:每時間 tick 食物 −1;食物=0 時每回合扣 HP(參考 u2-cht 機制)
   - 掛在 `OverworldScreen::onStep` 與 `DungeonScreen` 的時間 tick;狀態列食物已顯示
 - [~] **跨版本素材包(AssetPack,ADR 0001)**:可換不同平台外觀
