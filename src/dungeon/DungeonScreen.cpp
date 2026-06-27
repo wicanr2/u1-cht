@@ -393,6 +393,7 @@ void DungeonScreen::castSpell(int spellIndex) {
         }
         case 5: {  // 降梯
             int lvl = player->getDungeonLevel();
+            if (lvl + 1 >= _dungeon->levelCount()) { CommandDisplay::writeLn(I18n::t("spell.no_effect"), false); used = false; break; }
             player->setDungeonLevel(lvl + 1); refreshVision();
             CommandDisplay::writeLn(I18n::tf("dg.klimb_down", {to_string(lvl + 2)}), false);
             break;

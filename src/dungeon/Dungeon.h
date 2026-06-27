@@ -30,6 +30,8 @@ public:
 
     vector<LadderInfo> getLevelLadders(int level) { return _laddersPerLevel[level]; }
 
+    int levelCount() const { return (int)_levels.size(); }
+
 private:
     static constexpr int SIZE = 9;
     static constexpr int WALLS = 4;

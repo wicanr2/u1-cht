@@ -522,7 +522,13 @@ int main(int argc, char *args[]) {
                                   !getenv("U1_TEST_CASTLE");
             auto gameContext = make_shared<GameContext>(player);
             // 測試 hook(env-gated,正常遊玩不啟用):直接進地牢驗證怪物移動
-            if (getenv("U1_TEST_DUNGEON")) gameContext->setScreen(ScreenType::Dungeon);
+            if (getenv("U1_TEST_DUNGEON")) {
+                if (getenv("U1_DUNGEON_FACE")) {  // 放在 (0,0) 面南,正對該層 (0,y) 怪物
+                    player->setDungeonX(0); player->setDungeonY(0);
+                }
+                if (const char *lv = getenv("U1_DUNGEON_LV")) player->setDungeonLevel(atoi(lv));
+                gameContext->setScreen(ScreenType::Dungeon);
+            }
             if (getenv("U1_TEST_TOWN")) {
                 player->setOverworldX(65); player->setOverworldY(22);  // 真實城鎮座標
                 gameContext->setScreen(ScreenType::Town);

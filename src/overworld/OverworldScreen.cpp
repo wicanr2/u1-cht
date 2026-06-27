@@ -290,9 +290,15 @@ void OverworldScreen::enterPlace() {
         case OverworldSpriteType::SpriteType::TOWN:
             _gameContext->enterTown();
             break;
-        case OverworldSpriteType::SpriteType::DUNGEON_ENTRANCE:
+        case OverworldSpriteType::SpriteType::DUNGEON_ENTRANCE: {
+            // 進地牢一律從頂層入口開始(2,0,面南),站在出口上梯
+            auto pl = _gameContext->getPlayer();
+            pl->setDungeonLevel(0);
+            pl->setDungeonX(2);
+            pl->setDungeonY(0);
             _gameContext->setScreen(ScreenType::Dungeon);
             break;
+        }
         default:
             break;
     }

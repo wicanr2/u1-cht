@@ -8,6 +8,7 @@ using namespace std;
 class Enemy {
 public:
     Enemy(int x, int y, int hp) : _x(x), _y(y), _hp(hp) {}
+    Enemy(int x, int y, int hp, int damage) : _x(x), _y(y), _hp(hp), _damage(damage) {}
 
     virtual void update(float elapsed) = 0;
 
@@ -24,7 +25,7 @@ public:
 
     int getHP() { return _hp; }
 
-    int getDamage() { return 1; }
+    int getDamage() { return _damage; }
 
     void receiveDamage(int damage);
 
@@ -34,6 +35,7 @@ protected:
     int _x;
     int _y;
     int _hp;
+    int _damage = 1;   // 基礎傷害(deeper bestiary 怪可設更高)
 };
 
 
