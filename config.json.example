@@ -5,6 +5,7 @@
   "language": "zh-Hant",
   "speed_pct": 100,
   "spawn_pct": 55,
+  "food_pct": 100,
   "tileset": "ega",
   "chase_monsters": false
 }

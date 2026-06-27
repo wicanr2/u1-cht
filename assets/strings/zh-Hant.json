@@ -20,7 +20,7 @@
   "ui.help.klimb": "攀爬 上下樓梯(Klimb,地牢)",
   "ui.help.buy": "購買/交易(Buy,城鎮商店)",
   "ui.help.sys_head": "● 系統",
-  "ui.help.f6": "設定:遊戲速度 / 怪物生成",
+  "ui.help.f6": "設定:時間流速 / 生怪率 / 食物消耗 / 怪物追蹤",
   "ui.help.audio": "音樂開關 / 音效開關",
   "ui.help.tileset": "循環切換畫面風格(7 平台)",
   "ui.help.save": "手動存檔",
@@ -242,5 +242,6 @@
   "space.no_shuttle": "汝尚無太空梭(可於載具行購得)。",
   "ui.help.launch": "升空 星海試煉(Launch,需太空梭)",
   "king.need_princess": "汝已通過四王試煉!然蒙登仍不可敵——\n速往城堡牢房救出公主,取得時光機!",
-  "king.need_spaceace": "時光機在手,然汝須先在星海證明實力。\n駕太空梭升空(載具行購得,L 發射),擊落敵艦成為星海王牌!"
+  "king.need_spaceace": "時光機在手,然汝須先在星海證明實力。\n駕太空梭升空(載具行購得,L 發射),擊落敵艦成為星海王牌!",
+  "ui.settings.food": "食物消耗: "
 }

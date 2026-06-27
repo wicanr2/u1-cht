@@ -34,6 +34,10 @@ public:
     static int getSpawnPct() { return _spawnPct; }
     static void setSpawnPct(int v) { _spawnPct = clampPct(v); }
 
+    // 食物消耗速度 %(每時間 tick 扣食物量倍率;100=每 tick −1=原行為,越高越快餓)
+    static int getFoodPct() { return _foodPct; }
+    static void setFoodPct(int v) { _foodPct = clampPct(v); }
+
     // 野外怪物是否自動追蹤玩家。預設關(忠於 1981「出現即攻擊、不移動」);
     // 開 = 每時間 tick 朝玩家走一步(貪婪逐玩家,參考 u2-cht)。
     static bool getChaseMonsters() { return _chaseMonsters; }
@@ -82,6 +86,7 @@ private:
     static nlohmann::json _value;
     static int _speedPct;   // 執行期值(init 時取自 config)
     static int _spawnPct;
+    static int _foodPct;
     static bool _chaseMonsters;
     static int clampPct(int v) { return v < 10 ? 10 : (v > 200 ? 200 : v); }
 };

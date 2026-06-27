@@ -147,6 +147,13 @@ public:
     // 食物消耗(隨時間 tick);耗盡回傳 true 代表飢餓
     void consumeFood(int n) { _food -= n; if (_food < 0) _food = 0; }
 
+    // 依消耗速度 %(F6 可調)扣食物:每 tick 累加 pct,滿 100 扣 1。
+    // 100=每 tick −1(原行為)、200=每 tick −2(快餓)、50=每兩 tick −1(慢餓)。
+    void consumeFoodTick(int pct) {
+        _foodAccum += pct;
+        while (_foodAccum >= 100) { _foodAccum -= 100; if (_food > 0) _food--; }
+    }
+
     bool isStarving() const { return _food <= 0; }
 
     bool isDead() { return _hp <= 0; }
@@ -190,5 +197,6 @@ private:
     bool _princessFreed = false;        // 是否已救出公主(獲時光機)
     bool _hasShuttle = false;           // 是否擁有太空梭
     bool _spaceAce = false;             // 是否已通過星海試煉(Space Ace)
+    int _foodAccum = 0;                 // 食物消耗累加器(consumeFoodTick 用)
 };
 

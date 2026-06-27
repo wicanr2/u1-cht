@@ -458,7 +458,7 @@ void OverworldScreen::onStep() {
 
         // 食物消耗 / 飢餓(每時間 tick;參考 u2-cht)
         auto pl = _gameContext->getPlayer();
-        pl->consumeFood(1);
+        pl->consumeFoodTick(Configuration::getFoodPct());
         if (pl->isStarving()) {
             pl->receiveDamage(2);
             CommandDisplay::writeLn(I18n::t("common.starving"), false);

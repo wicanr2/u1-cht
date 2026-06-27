@@ -278,7 +278,7 @@ void DungeonScreen::dungeonMonsterTurn() {
     _timeAccum += Configuration::getSpeedPct();
     while (_timeAccum >= 100) {
         _timeAccum -= 100;
-        player->consumeFood(1);
+        player->consumeFoodTick(Configuration::getFoodPct());
         if (player->isStarving()) {
             player->receiveDamage(2);
             CommandDisplay::writeLn(I18n::t("common.starving"), false);

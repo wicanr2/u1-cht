@@ -50,6 +50,7 @@ bool SaveGame::save(const Player &player, const std::string &path) {
     j["settings"] = {
         {"speed_pct", Configuration::getSpeedPct()},
         {"spawn_pct", Configuration::getSpawnPct()},
+        {"food_pct", Configuration::getFoodPct()},
         {"chase_monsters", Configuration::getChaseMonsters()},
     };
 
@@ -107,6 +108,7 @@ bool SaveGame::load(Player &player, const std::string &path) {
             auto &s = j["settings"];
             Configuration::setSpeedPct(s.value("speed_pct", Configuration::getSpeedPct()));
             Configuration::setSpawnPct(s.value("spawn_pct", Configuration::getSpawnPct()));
+            Configuration::setFoodPct(s.value("food_pct", Configuration::getFoodPct()));
             Configuration::setChaseMonsters(s.value("chase_monsters", Configuration::getChaseMonsters()));
         }
     } catch (const std::exception &ex) {
