@@ -121,8 +121,8 @@ docker run --rm -v "$PWD":/work -w /work u1-msxrun bash -c '
 - [x] **`CommandDisplay` 全形寬度感知換行**:依顯示寬度斷行(全形 2 / 半形 1 單位,上限 52),只在 UTF-8 字元邊界切。取代原 byte 數換行(中文行被切太短)。
 - [x] **各版本音樂原生還原**(MSX/PC-98/FM Towns 三版,自寫合成器、零模擬器;見 `docs/music.md`)。
       Atari/DOS 原版無 BGM、IIgs 僅音效(已考證)。剩:overworld 曲目聽感確認(哪首是 overworld)。
-- [ ] Town / Castle 內容(open_ultima 上游為空殼)
-- [ ] 戰鬥深度:武器 / 法術 / 物品欄(上游極早期)
+- [ ] **Town / Castle 內容**(商店/NPC/國王任務)→ 規劃見 [`docs/plan-town-combat.md`](docs/plan-town-combat.md)(資料三要件已確認:手冊/素材/RE)
+- [ ] **戰鬥深度**(武器/防具/法術/物品欄/屬性/升級)→ 規劃見 [`docs/plan-town-combat.md`](docs/plan-town-combat.md)
 - [ ] 打包(AppImage / Windows)— **使用者指示不急著打包**
 
 ## D. 架構牆 / 長期 🧱

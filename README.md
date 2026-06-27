@@ -160,6 +160,7 @@ docker run --rm -v "$PWD":/work -w /work u1-cht bash tools/game_tester.sh
 | [`CONTEXT.md`](CONTEXT.md) | 專案語彙(glossary)、上游現況、硬規則 |
 | [`WORKLIST.md`](WORKLIST.md) | 進度追蹤(已完成／排程／跨平台素材包) |
 | [`docs/keybindings.md`](docs/keybindings.md) | 操作介面與快速鍵 |
+| [`docs/plan-town-combat.md`](docs/plan-town-combat.md) | 城鎮內容 + 戰鬥深度的實作規劃(資料確認 + 分階段) |
 | [`docs/ultima1-original-ai.md`](docs/ultima1-original-ai.md) | 原版 U1(1981)怪物 AI 考據 + 出處 |
 | [`docs/localization-notes.md`](docs/localization-notes.md) | 中文化技術筆記(字型管線、拉畫布決策) |
 | [`docs/materials.md`](docs/materials.md) | 各平台素材來源清單(DOS／MSX／PC98／FM Towns／IIgs…) |
