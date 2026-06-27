@@ -182,8 +182,29 @@ void DungeonScreen::draw(SDL_Renderer *renderer) {
             }
         }
 
+        if (tile.chest != nullptr && !tile.chest->opened && distance >= 1) {
+            drawChest(renderer, distance, tile.chest->locked);
+        }
+
         distance--;
     }
+}
+
+// 寶箱:地板上的小箱(梯形箱身 + 蓋線 + 鎖)。金色=未鎖、橘紅=上鎖。距離越遠越小。
+void DungeonScreen::drawChest(SDL_Renderer *renderer, int distance, bool locked) {
+    static const float SCALE[6] = {0, 1.0f, 0.6f, 0.4f, 0.28f, 0.2f};
+    int d = distance; if (d < 1) d = 1; if (d > 5) d = 5;
+    float s = SCALE[d];
+    int cx = 152, floorY = 131;
+    int w = (int)(46 * s), h = (int)(30 * s);
+    int x0 = cx - w / 2, x1 = cx + w / 2, y1 = floorY, y0 = floorY - h;
+    if (locked) SDL_SetRenderDrawColor(renderer, 0xFF, 0x90, 0x40, 255);
+    else        SDL_SetRenderDrawColor(renderer, 0xFF, 0xD0, 0x40, 255);
+    SDL_Rect body = {x0, y0, w, h};
+    SDL_RenderDrawRect(renderer, &body);
+    SDL_RenderDrawLine(renderer, x0, y0 + h / 3, x1, y0 + h / 3);          // 蓋線
+    SDL_Rect lock = {cx - (int)(3 * s), y0 + h / 3 - (int)(2 * s), (int)(6 * s) + 1, (int)(7 * s) + 1};
+    SDL_RenderDrawRect(renderer, &lock);                                   // 鎖
 }
 
 void DungeonScreen::handle(const SDL_Event &e) {
@@ -251,6 +272,9 @@ void DungeonScreen::moveForward() {
     CommandDisplay::writeLn(I18n::t("dg.forward"), true);
 
     cout << "Moved to: " << player->getDungeonX() << ", " << player->getDungeonY() << "\n";
+
+    // 踩到寶箱 → 嘗試開啟(上鎖需法術、且有陷阱)
+    openChestAt(player->getDungeonX(), player->getDungeonY(), false);
 }
 
 void DungeonScreen::drawLeftWalls(SDL_Renderer *renderer) {
@@ -323,6 +347,38 @@ void DungeonScreen::moveEnemiesToward(int px, int py) {
             if (dungeonCellFree(nx, ny, e)) { e->setPosition(nx, ny); break; }
         }
     }
+}
+
+// 開寶箱:viaSpell=false(踩到)上鎖則需法術、且有陷阱機率;viaSpell=true(開棺/開鎖術)安全開啟。
+void DungeonScreen::openChestAt(int x, int y, bool viaSpell) {
+    auto player = _gameContext->getPlayer();
+    auto chest = _dungeon->getChestAt(player->getDungeonLevel(), x, y);
+    if (!chest) {
+        if (viaSpell) CommandDisplay::writeLn(I18n::t("spell.no_effect"), false);
+        return;
+    }
+    if (chest->locked && !viaSpell) {
+        CommandDisplay::writeLn(I18n::t("chest.locked"), false);   // 上鎖 → 需開鎖術
+        return;
+    }
+    chest->opened = true;
+    // 踩開的(非法術)上鎖箱有陷阱機率
+    if (!viaSpell && chest->locked && rand() % 100 < 40) {
+        int dmg = 5 + rand() % 6;
+        player->receiveDamage(dmg);
+        CommandDisplay::writeLn(I18n::tf("chest.trap", {to_string(dmg)}), false);
+        if (player->isDead()) {
+            CommandDisplay::writeLn(I18n::t("common.dead"), false);
+            CommandDisplay::writeLn(I18n::t("respawn.revived"), false);
+            player->setMoney(player->getMoney() / 2);
+            player->setHP(player->getMaxHP());
+            player->setOverworldX(20); player->setOverworldY(20);
+            _gameContext->setScreen(ScreenType::Overworld);
+            return;
+        }
+    }
+    player->addMoney(chest->gold);
+    CommandDisplay::writeLn(I18n::tf("chest.opened", {to_string(chest->gold)}), false);
 }
 
 void DungeonScreen::doPlayerAttack() {
@@ -402,7 +458,15 @@ void DungeonScreen::castSpell(int spellIndex) {
             player->heal(50);
             CommandDisplay::writeLn(I18n::t("spell.prayer_cast"), false);
             break;
-        default:   // 開啟/解鎖/瞬移:此處無對象
+        case 1:    // 開棺術:安全開啟前方寶箱/棺材
+        case 2: {  // 開鎖術:安全開啟前方(含上鎖)寶箱
+            shared_ptr<ChestInfo> chest = nullptr;
+            for (const auto &t : _vision) if (t.chest && !t.chest->opened) { chest = t.chest; break; }
+            if (!chest) { CommandDisplay::writeLn(I18n::t("spell.no_effect"), false); used = false; break; }
+            openChestAt(chest->x, chest->y, true);   // 法術安全開啟
+            break;
+        }
+        default:   // 瞬移等:此處無對象
             CommandDisplay::writeLn(I18n::t("spell.no_effect"), false); used = false;
     }
     if (used) player->addSpell(spellIndex, -1);

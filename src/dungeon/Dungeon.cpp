@@ -75,12 +75,22 @@ void Dungeon::randomize() {
             mobs.push_back(make_shared<DungeonMonster>(ex, ey, hp, dmg, t.key, t.shape, t.r, t.g, t.b));
         }
         _enemiesPerLevel.push_back(mobs);
+
+        // 寶箱:每層 1 個,金幣隨深度,約半數上鎖(需開鎖術/開棺術或踩中陷阱)
+        vector<shared_ptr<ChestInfo>> chests;
+        int cx, cy; randOpenCell(cx, cy);
+        int gold = 30 + lv * 20 + rand() % 40;
+        bool locked = (rand() % 2 == 0);
+        chests.push_back(make_shared<ChestInfo>(cx, cy, gold, locked));
+        _chestsPerLevel.push_back(chests);
     }
 
     if (getenv("U1_DUMP_DUNGEON")) {
         for (int lv = 0; lv < (int)_enemiesPerLevel.size(); lv++) {
             printf("DUNGEONLV %d enemies:", lv);
             for (auto &e : _enemiesPerLevel[lv]) printf(" %s@%d,%d", e->getName().c_str(), e->getX(), e->getY());
+            printf(" | chests:");
+            for (auto &c : _chestsPerLevel[lv]) printf(" %dG@%d,%d%s", c->gold, c->x, c->y, c->locked ? "(locked)" : "");
             printf(" | ladders:");
             for (auto &l : _laddersPerLevel[lv]) printf(" %s@%d,%d->%d,%d", l.goingUp ? "up" : "down", l.fromX, l.fromY, l.toX, l.toY);
             printf("\n");
@@ -165,6 +175,7 @@ vector<VisibleDungeonSpace> Dungeon::getVisible(int level, int x, int y, Cardina
             dungeonSpace.ladder = make_shared<LadderInfo>(ladder);
         }
     }
+    dungeonSpace.chest = getChestAt(level, x, y);
 
     visibleSpaces.push_back(dungeonSpace);
 
@@ -231,6 +242,7 @@ vector<VisibleDungeonSpace> Dungeon::getVisible(int level, int x, int y, Cardina
                 }
             }
         }
+        if (!wall) dungeonSpace.chest = getChestAt(level, visibleTileX, visibleTileY);
 
         visibleSpaces.push_back(dungeonSpace);
         i++;

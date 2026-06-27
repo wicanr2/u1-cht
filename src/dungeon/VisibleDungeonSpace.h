@@ -6,6 +6,7 @@
 #include "enemies/Enemy.h"
 #include "Ladder.h"
 #include "LadderInfo.h"
+#include "ChestInfo.h"
 
 using namespace std;
 
@@ -20,4 +21,5 @@ public:
     DungeonFeature right;
     shared_ptr<Enemy> enemy = nullptr;
     shared_ptr<LadderInfo> ladder = nullptr;
+    shared_ptr<ChestInfo> chest = nullptr;
 };

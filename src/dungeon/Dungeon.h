@@ -8,6 +8,7 @@
 #include "DungeonFeature.h"
 #include "enemies/Enemy.h"
 #include "LadderInfo.h"
+#include "ChestInfo.h"
 
 using namespace std;
 
@@ -32,6 +33,18 @@ public:
 
     int levelCount() const { return (int)_levels.size(); }
 
+    // 寶箱:取某層全部寶箱;或取某格未開的寶箱(nullptr=無)
+    vector<shared_ptr<ChestInfo>> getLevelChests(int level) {
+        return (level >= 0 && level < (int)_chestsPerLevel.size()) ? _chestsPerLevel[level]
+                                                                   : vector<shared_ptr<ChestInfo>>{};
+    }
+    shared_ptr<ChestInfo> getChestAt(int level, int x, int y) {
+        if (level < 0 || level >= (int)_chestsPerLevel.size()) return nullptr;
+        for (auto &c : _chestsPerLevel[level])
+            if (!c->opened && c->x == x && c->y == y) return c;
+        return nullptr;
+    }
+
 private:
     static constexpr int SIZE = 9;
     static constexpr int WALLS = 4;
@@ -39,6 +52,7 @@ private:
     static constexpr int MAX_VISIBILITY = 5;
 
     vector<vector<shared_ptr<Enemy>>> _enemiesPerLevel;
+    vector<vector<shared_ptr<ChestInfo>>> _chestsPerLevel;
 
     string _name;
     // level -> column -> cell (9 cells)

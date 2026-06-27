@@ -243,5 +243,8 @@
   "ui.help.launch": "升空 星海試煉(Launch,需太空梭)",
   "king.need_princess": "汝已通過四王試煉!然蒙登仍不可敵——\n速往城堡牢房救出公主,取得時光機!",
   "king.need_spaceace": "時光機在手,然汝須先在星海證明實力。\n駕太空梭升空(載具行購得,L 發射),擊落敵艦成為星海王牌!",
-  "ui.settings.food": "食物消耗: "
+  "ui.settings.food": "食物消耗: ",
+  "chest.opened": "打開寶箱,獲得 {0} 金幣!",
+  "chest.locked": "寶箱上鎖了…(可用開鎖術或開棺術)",
+  "chest.trap": "寶箱有陷阱!受到 {0} 點傷害"
 }

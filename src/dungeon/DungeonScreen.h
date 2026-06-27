@@ -47,6 +47,10 @@ private:
 
     void moveForward();
 
+    static void drawChest(SDL_Renderer *renderer, int distance, bool locked);
+
+    void openChestAt(int x, int y, bool viaSpell);   // 開寶箱(踩到=viaSpell false 可能有陷阱;法術=true 安全)
+
     static void drawLeftWalls(SDL_Renderer *renderer);
 
     static void drawRightWalls(SDL_Renderer *renderer);
