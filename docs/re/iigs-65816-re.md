@@ -241,3 +241,15 @@ row=0x10..0x90 step2:  col=0x10..0x90 step2:
 但 **tile 像素在「進 overworld」時才填入 `$4c00`**,填充來源/展開法經 JSL/跳表 dispatch,單純靜態掃描未命中。
 **取得真實 tile 像素的兩條路**(下一階段):① MAME 進 overworld dump `$4c00`(卡 GS/OS 滑鼠對話框);
 ② 追跳表 `$0e7f` 的 overworld 命令 → init → 填 `$4c00` 來源。機制全破,差最後取像素。
+
+## Step 13 — 第三條路勝出:截圖 oracle 反推 tileset 位置 ✅
+
+上面兩條路都卡(① 滑鼠牆 ② JSL/跳表深追)。改走**第三條路**:不追資料流,拿**已破解的 LZSS 解碼器**
+對全部 resource 滑窗解壓,用 **hg101 實機截圖當 oracle 做 palette 無關的結構比對**(首次出現順序重編 index → canonical pattern)。
+
+**命中**:`id08` @offset 11392 ≈ grass 1.00、@11520 ≈ water 1.00、@11776 ≈ castle 0.98
+⇒ **id08 tile 88–135(48 個)= 完整 overworld tileset**。palette 用截圖對 id08 像素多數決反推。
+⇒ **全 52 槽 100% 真實 IIgs 像素**(`build_iigs_pack.py`),game tester 進 overworld 渲染正確。**IIgs tile 攻關完結。**
+
+> 教訓:RE 追資料流撞牆時,「已知解碼器 + 已知輸出(截圖)反推未知資料位置」常比硬鑽動態 dump 快。
+> 萃取成跨 session 規則 `~/.claude/rulebook/63-re-screenshot-oracle.md`。詳見 `apple-iigs-reverse-engineering.md` Step 12。

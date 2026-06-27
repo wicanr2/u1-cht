@@ -151,4 +151,8 @@ ULTIMA I IIgs 的存檔/讀檔走 **GS/OS 標準檔案對話框**(SFPutFile / SF
 > ✅ **更新(後續完成)**:走了 ③ —— **反組譯 ULTIMAI(65816)成功破解圖格式 = LZSS**,79 圖全可解,
 > 並進一步定位 overworld tile-draw(`$196f`→`$0f75`)與 **48-tile `$4c00` buffer**(`$c4df` 索引,16×16×128B)。
 > 機制全破;唯 tile 像素在進 overworld 才填入 `$4c00`,取得真實 tile 仍需進 overworld dump 或追 init 填充來源。
-> 完整見 **[`apple-iigs-reverse-engineering.md`](apple-iigs-reverse-engineering.md)** §4/§7 與 `iigs-65816-re.md` Step 1-12。
+>
+> ✅✅ **最終完結**:`$4c00` 動態 dump 卡滑鼠牆 → 改走**第三條路:截圖 oracle 結構比對**。
+> 拿已破解 LZSS 掃全 resource,用 hg101 實機截圖做 palette 無關比對,命中 **id08 tile 88–135 = 完整 48-tile overworld tileset**。
+> **IIgs 全 52 槽改為 100% 真實 IIgs 像素,EGA fallback 完全移除**,game tester 進 overworld 渲染正確。
+> 完整見 **[`apple-iigs-reverse-engineering.md`](apple-iigs-reverse-engineering.md)** Step 12 與 `iigs-65816-re.md` Step 13。
