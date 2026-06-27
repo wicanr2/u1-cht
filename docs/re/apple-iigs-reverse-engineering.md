@@ -169,6 +169,6 @@ EGA fallback 完全移除。game tester 進 overworld 渲染正確(草原/玩家
 
 > **方法論教訓**:RE 追資料流撞牆(動態 dump 不可行)時,別硬鑽動態。**已知的解碼器(LZSS)+ 已知的輸出(實機截圖)
 > 可以反推未知的資料位置**——拿解碼器掃全部候選、用畫面當 ground truth 做結構比對。這比「繼續反組譯找填 buffer 的碼」
-> 快得多,且 palette 無關的結構比對能跨越顏色不一致。已萃取成跨 session 規則 `~/.claude/rulebook/63-re-screenshot-oracle.md`。
+> 快得多,且 palette 無關的結構比對能跨越顏色不一致。已萃取成跨 session 規則 `~/.claude/rulebook/64-re-screenshot-oracle.md`。
 
 **現狀**:`iigs.png` = **48 個真實 IIgs overworld tile(id08 88–135,LZSS 解壓)**,全 52 槽 authentic,EGA fallback 已除。

@@ -252,4 +252,4 @@ row=0x10..0x90 step2:  col=0x10..0x90 step2:
 ⇒ **全 52 槽 100% 真實 IIgs 像素**(`build_iigs_pack.py`),game tester 進 overworld 渲染正確。**IIgs tile 攻關完結。**
 
 > 教訓:RE 追資料流撞牆時,「已知解碼器 + 已知輸出(截圖)反推未知資料位置」常比硬鑽動態 dump 快。
-> 萃取成跨 session 規則 `~/.claude/rulebook/63-re-screenshot-oracle.md`。詳見 `apple-iigs-reverse-engineering.md` Step 12。
+> 萃取成跨 session 規則 `~/.claude/rulebook/64-re-screenshot-oracle.md`。詳見 `apple-iigs-reverse-engineering.md` Step 12。
