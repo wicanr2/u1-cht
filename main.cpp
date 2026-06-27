@@ -205,18 +205,21 @@ int main(int argc, char *args[]) {
             auto cgaTilesPath = Configuration::getCgaOverworldTilesFilePath();
 
             // tileset 變體:0=EGA(BIN),1=CGA(BIN),2..=各跨平台 PNG 素材包(F1 逐一循環)。
-            std::vector<std::pair<std::string, std::string>> pngPacks = {
-                {"FM Towns", "assets/tilesets/fmtowns.png"},
-                {"MSX", "assets/tilesets/msx.png"},
-                {"Apple IIgs", "assets/tilesets/iigs.png"},
-                {"PC-98", "assets/tilesets/pc98.png"},
-                {"VGA", "assets/tilesets/vga.png"},
+            // music = 該平台原版 BGM(版權,使用者自備於 assets/music/,缺檔則 fallback 占位曲)。
+            struct Pack { std::string name, tiles, music; };
+            const std::string kDefaultMusic = "./assets/music/theme.ogg";
+            std::vector<Pack> pngPacks = {
+                {"FM Towns", "assets/tilesets/fmtowns.png", "./assets/music/fmtowns.ogg"},
+                {"MSX", "assets/tilesets/msx.png", "./assets/music/msx.ogg"},
+                {"Apple IIgs", "assets/tilesets/iigs.png", "./assets/music/iigs.ogg"},
+                {"PC-98", "assets/tilesets/pc98.png", "./assets/music/pc98.ogg"},
+                {"VGA", "assets/tilesets/vga.png", kDefaultMusic},  // VGA=DOS 重染,無獨立 BGM
             };
-            // config 指定的 tileset_png 若不在清單(自訂路徑)→ 插到最前,維持原設定行為。
+            // config 指定的 tileset_png 若不在清單(自訂路徑)→ 沿用預設音樂。
             auto pngPackPath = Configuration::getTilesetPng();
             int cfgPngIdx = 0;
             for (size_t i = 0; i < pngPacks.size(); ++i)
-                if (pngPacks[i].second == pngPackPath) { cfgPngIdx = (int)i; break; }
+                if (pngPacks[i].tiles == pngPackPath) { cfgPngIdx = (int)i; break; }
             const int kBinModes = 2;  // EGA, CGA
             const char *kBinNames[] = {"EGA", "CGA"};
             int tilesetIdx = 0;
@@ -226,11 +229,16 @@ int main(int argc, char *args[]) {
             }
             int tilesetCount = kBinModes + (int)pngPacks.size();
             auto tilesetName = [&](int idx) {
-                return idx >= kBinModes ? pngPacks[idx - kBinModes].first : std::string(kBinNames[idx]);
+                return idx >= kBinModes ? pngPacks[idx - kBinModes].name : std::string(kBinNames[idx]);
+            };
+            // 音樂跟隨平台:平台 BGM 載入失敗(缺檔)→ 退回占位曲,不中斷。
+            auto applyMusic = [&](int idx) {
+                std::string m = idx >= kBinModes ? pngPacks[idx - kBinModes].music : kDefaultMusic;
+                if (!Audio::playMusic(m)) Audio::playMusic(kDefaultMusic);
             };
             auto applyTileset = [&](int idx) {
                 if (idx >= kBinModes)
-                    overworldScreen->initFromPng(gRenderer, pngPacks[idx - kBinModes].second);
+                    overworldScreen->initFromPng(gRenderer, pngPacks[idx - kBinModes].tiles);
                 else if (idx == 1)
                     overworldScreen->init(gRenderer, make_unique<CGALinearDecodeStrategy>(16, 16).get(), cgaTilesPath);
                 else
@@ -250,7 +258,7 @@ int main(int argc, char *args[]) {
             LTimer stepTimer;
             Fonts::init(gRenderer);
             Audio::init();
-            Audio::playMusic("./assets/music/theme.ogg");
+            applyMusic(tilesetIdx);  // 初始音樂跟隨起始平台
 
             _playerStatusDisplay = make_shared<PlayerStatusDisplay>(gRenderer, player);
             _commandDisplay = make_shared<CommandDisplay>(gRenderer);
@@ -319,6 +327,7 @@ int main(int argc, char *args[]) {
                             if (pressedKey == SDLK_PAGEDOWN || pressedKey == SDLK_F1) {
                                 tilesetIdx = (tilesetIdx + 1) % tilesetCount;
                                 applyTileset(tilesetIdx);
+                                applyMusic(tilesetIdx);  // 音樂跟隨切換的平台
                                 CommandDisplay::writeLn(string("圖形模式:") + tilesetName(tilesetIdx), false);
                             }
                             // M:切換背景音樂

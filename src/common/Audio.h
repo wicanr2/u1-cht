@@ -9,7 +9,7 @@ public:
     static void shutdown();
 
     // 載入並循環播放背景音樂(ogg/mp3/wav)。失敗則靜默忽略。
-    static void playMusic(const std::string &path);
+    static bool playMusic(const std::string &path);
 
     // 切換靜音(暫停/恢復音樂)。回傳切換後是否「開啟」。
     static bool toggleMute();

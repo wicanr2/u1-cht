@@ -91,7 +91,7 @@
 - **宋體抗鋸齒**:Noto Serif CJK，1280×800 乾淨 2× 縮放。
 - **離開鐵則**:`F10` / `Ctrl+Q` 跳置中中文確認框，`ESC` 永遠是取消——不會手滑噴掉進度。
 - **多版素材包熱鍵切換**:見上一章;`F1` 逐一循環全部平台包,切換不再讓 NPC 消失(這個雷 u4-cht 踩過)。
-- **音樂系統**:SDL_mixer + `M` 鍵開關(目前占位音樂，FM Towns 真音樂後續)。
+- **音樂跟隨平台**:`F1` 切到哪一版畫面，背景音樂就換成那一版的原版 BGM(FM Towns 已接 EUPHONY FM 音樂；其餘平台待渲染，缺檔自動退回占位曲）。`M` 鍵開關。
 - **回合制生怪 + 地面戰鬥**:`speed_pct` / `spawn_pct` 可調;地面怪相鄰反擊、不移動，忠於 1981 原版。
 - **跨平台逆向考據**:MSX(openMSX dump VRAM + Z80 反組譯)、Apple IIgs(MAME + GS/OS 導航 + SHR dump)
   的完整經驗都寫進了 `docs/re/`，不只是結果，是可重跑的方法。
@@ -106,7 +106,7 @@
 | 方向鍵 | 在世界地圖移動(指令列顯示「東／南／西／北」) |
 | `F1` / `PageDown` | 循環切換 tileset(EGA / CGA / FM Towns / MSX / Apple IIgs / PC-98 / VGA) |
 | `F6` | 設定選單:即時調整移動速度 `speed_pct` 與生怪率 `spawn_pct` |
-| `M` | 音樂開／關 |
+| `M` | 音樂開／關(背景音樂隨 `F1` 平台切換) |
 | `F10` / `Ctrl+Q` | 離開(跳確認框,`Y`/`Enter` 確定,`N`/`ESC` 取消) |
 
 完整對照與實作進度見 [`docs/keybindings.md`](docs/keybindings.md)。
@@ -162,6 +162,7 @@ docker run --rm -v "$PWD":/work -w /work u1-cht bash tools/game_tester.sh
 | [`docs/ultima1-original-ai.md`](docs/ultima1-original-ai.md) | 原版 U1(1981)怪物 AI 考據 + 出處 |
 | [`docs/localization-notes.md`](docs/localization-notes.md) | 中文化技術筆記(字型管線、拉畫布決策) |
 | [`docs/materials.md`](docs/materials.md) | 各平台素材來源清單(DOS／MSX／PC98／FM Towns／IIgs…) |
+| [`docs/music.md`](docs/music.md) | 各版本背景音樂(音樂跟隨平台、版權與取得方式) |
 | [**`docs/re/apple-iigs-reverse-engineering.md`**](docs/re/apple-iigs-reverse-engineering.md) | **★ Apple IIgs 逆向工程全紀錄**(woz 抽檔 → 反組譯 65816 → 破解 LZSS 圖格式) |
 | [`docs/re/`](docs/re/) | 逆向工程經驗:MSX openMSX、Apple IIgs MAME/GS-OS、6502 方法論等 |
 | [`docs/adr/0001-pluggable-asset-packs.md`](docs/adr/0001-pluggable-asset-packs.md) | 可替換素材包架構決策 |

@@ -2,12 +2,14 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <cstdio>
+#include <string>
 
 bool Audio::_ok = false;
 bool Audio::_muted = false;
 bool Audio::_hasMusic = false;
 
 static Mix_Music *gMusic = nullptr;
+static std::string gMusicPath;
 
 void Audio::init() {
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
@@ -23,16 +25,23 @@ void Audio::init() {
     printf("[Audio] initialized\n");
 }
 
-void Audio::playMusic(const std::string &path) {
-    if (!_ok) return;
-    gMusic = Mix_LoadMUS(path.c_str());
-    if (!gMusic) {
+bool Audio::playMusic(const std::string &path) {
+    if (!_ok) return false;
+    // 同一首已在播 → 不重載(避免切回同平台時音樂從頭跳)。
+    if (_hasMusic && path == gMusicPath) return true;
+    Mix_Music *next = Mix_LoadMUS(path.c_str());
+    if (!next) {
         printf("[Audio] Mix_LoadMUS failed (%s): %s\n", path.c_str(), Mix_GetError());
-        return;
+        return false;
     }
+    if (gMusic) { Mix_HaltMusic(); Mix_FreeMusic(gMusic); }  // 釋放舊曲,避免 leak
+    gMusic = next;
+    gMusicPath = path;
     _hasMusic = true;
     Mix_PlayMusic(gMusic, -1);  // -1 = 無限循環
+    if (_muted) Mix_PauseMusic();  // 維持使用者既有靜音狀態
     printf("[Audio] playing music: %s\n", path.c_str());
+    return true;
 }
 
 bool Audio::toggleMute() {

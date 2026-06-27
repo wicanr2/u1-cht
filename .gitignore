@@ -29,3 +29,7 @@ u1_cht_run
 re_work/
 run.log
 __pycache__/
+
+# 平台原版 BGM(版權,使用者自備;僅占位 theme.ogg 入庫)
+assets/music/*.ogg
+!assets/music/theme.ogg
