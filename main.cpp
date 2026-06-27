@@ -111,7 +111,7 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
     SDL_RenderFillRect(renderer, &scrim);
 
-    const int bw = 540, bh = 444;
+    const int bw = 540, bh = 470;
     SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
     SDL_RenderFillRect(renderer, &box);
@@ -132,7 +132,8 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     line("A", kx, y, key); line(I18n::t("ui.help.attack"), tx, y, txt); y += 26;
     line("E", kx, y, key); line(I18n::t("ui.help.enter"), tx, y, txt); y += 26;
     line("K", kx, y, key); line(I18n::t("ui.help.klimb"), tx, y, txt); y += 26;
-    line("B", kx, y, key); line(I18n::t("ui.help.buy"), tx, y, txt); y += 30;
+    line("B", kx, y, key); line(I18n::t("ui.help.buy"), tx, y, txt); y += 26;
+    line("T", kx, y, key); line(I18n::t("ui.help.talk"), tx, y, txt); y += 30;
     line(I18n::t("ui.help.sys_head"), lx, y, head); y += 28;
     line("F6", kx, y, key); line(I18n::t("ui.help.f6"), tx, y, txt); y += 24;
     line("M  /  F9", kx, y, key); line(I18n::t("ui.help.audio"), tx, y, txt); y += 24;
@@ -186,6 +187,39 @@ static void drawShop(SDL_Renderer *renderer, Player &player, int mode, ShopType 
         }
         line(I18n::t("shop.hint_buy"), box.x + 30, box.y + bh - 30, off);
     }
+}
+
+// 國王任務數值(draw/input 共用):討伐數 / 金幣賞
+static int questTargetFor(Player &p) { return 5 + p.getQuestsCompleted() * 5; }
+static int questGoldFor(Player &p) { return 100 + p.getQuestsCompleted() * 100; }
+
+// 城堡國王對話(置中 modal)
+static void drawKing(SDL_Renderer *renderer, Player &player) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xC0);
+    SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &scrim);
+    const int bw = 520, bh = 220;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xD0, 0x40, 0xFF);   // 金邊(王者)
+    SDL_RenderDrawRect(renderer, &box);
+    SDL_Color title{0xFF, 0xD0, 0x40, 0xFF}, txt{0xE0, 0xE0, 0xE0, 0xFF}, hint{0xA0, 0xA0, 0xA0, 0xFF};
+    auto line = [&](const string &s, int x, int y, SDL_Color c) {
+        LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c); t.render(renderer, x, y);
+    };
+    line(I18n::t("king.title"), box.x + (bw - 120) / 2, box.y + 18, title);
+    if (!player.hasQuest())
+        line(I18n::tf("king.offer", {to_string(questTargetFor(player)), to_string(questGoldFor(player))}),
+             box.x + 30, box.y + 70, txt);
+    else if (player.isQuestComplete())
+        line(I18n::t("king.complete"), box.x + 30, box.y + 70, txt);
+    else
+        line(I18n::tf("king.incomplete", {to_string(player.getQuestKills()), to_string(player.getQuestTarget())}),
+             box.x + 30, box.y + 70, txt);
+    bool actionable = !player.hasQuest() || player.isQuestComplete();
+    line(I18n::t(actionable ? "king.hint_action" : "king.hint_close"), box.x + 30, box.y + bh - 32, hint);
 }
 
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
@@ -295,6 +329,10 @@ int main(int argc, char *args[]) {
                 player->setOverworldX(65); player->setOverworldY(22);  // 真實城鎮座標
                 gameContext->setScreen(ScreenType::Town);
             }
+            if (getenv("U1_TEST_CASTLE")) {
+                player->setOverworldX(32); player->setOverworldY(27);  // 城堡座標
+                gameContext->enterCastle();
+            }
             auto overworldScreen = make_shared<OverworldScreen>(gameContext, 19, 9);
             auto dungeonScreen = make_shared<DungeonScreen>(gameContext);
 
@@ -381,6 +419,7 @@ int main(int argc, char *args[]) {
             int shopMode = 0;            // 0=關、1=類別、2=品項
             ShopType shopType = ShopType::Weapon;
             int shopSel = 0;
+            bool kingActive = false;     // 城堡國王對話
             int settingsRow = 0;
             while (!quit) {
                 //Handle events on queue
@@ -419,6 +458,31 @@ int main(int argc, char *args[]) {
                                         }
                                         Audio::playSfx("./assets/sfx/select.ogg");
                                     }
+                                }
+                            }
+                        }
+                        continue;
+                    }
+
+                    // 國王對話開啟時:Enter 接受任務 / 領賞、ESC 關閉
+                    if (kingActive) {
+                        if (e.type == SDL_KEYDOWN) {
+                            auto k = e.key.keysym.sym;
+                            if (k == SDLK_ESCAPE) kingActive = false;
+                            else if (k == SDLK_RETURN) {
+                                if (!player->hasQuest()) {
+                                    int tgt = questTargetFor(*player);
+                                    player->giveQuest(tgt);
+                                    CommandDisplay::writeLn(I18n::tf("king.accepted", {to_string(tgt)}), false);
+                                    kingActive = false;
+                                } else if (player->isQuestComplete()) {
+                                    int g = questGoldFor(*player);
+                                    player->addMoney(g);
+                                    player->setStrength(player->getStrength() + 1);
+                                    player->completeQuest();
+                                    CommandDisplay::writeLn(I18n::tf("king.reward", {to_string(g)}), false);
+                                    Audio::playSfx("./assets/sfx/select.ogg");
+                                    kingActive = false;
                                 }
                             }
                         }
@@ -507,6 +571,13 @@ int main(int argc, char *args[]) {
                             if (pressedKey == SDLK_b &&
                                 gameContext->getCurrentScreen() == ScreenType::Town) {
                                 shopMode = 1; shopSel = 0;
+                                continue;
+                            }
+                            // T:在城堡晉見國王(任務)
+                            if (pressedKey == SDLK_t &&
+                                gameContext->getCurrentScreen() == ScreenType::Town &&
+                                gameContext->isInCastle()) {
+                                kingActive = true;
                                 continue;
                             }
                             // F5:手動存檔
@@ -603,6 +674,10 @@ int main(int argc, char *args[]) {
                 if (shopMode > 0) {
                     SDL_RenderSetViewport(gRenderer, nullptr);
                     drawShop(gRenderer, *player, shopMode, shopType, shopSel);
+                }
+                if (kingActive) {
+                    SDL_RenderSetViewport(gRenderer, nullptr);
+                    drawKing(gRenderer, *player);
                 }
 
                 //Update screen

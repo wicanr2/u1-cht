@@ -39,6 +39,8 @@ bool SaveGame::save(const Player &player, const std::string &path) {
         {"wisdom", player.getWisdom()}, {"intelligence", player.getIntelligence()},
         {"currentWeapon", player.getCurrentWeapon()}, {"currentArmor", player.getCurrentArmor()},
         {"weapons", weapons}, {"armor", armor}, {"spells", spells},
+        {"questTarget", player.getQuestTarget()}, {"questKills", player.getQuestKills()},
+        {"questsCompleted", player.getQuestsCompleted()},
     };
     // F6 設定一併持久化(時間流速 / 生成率 / 怪物追蹤)
     j["settings"] = {
@@ -86,6 +88,9 @@ bool SaveGame::load(Player &player, const std::string &path) {
         if (p.contains("weapons")) for (int i = 0; i < 16 && i < (int)p["weapons"].size(); ++i) player.setWeaponCount(i, p["weapons"][i]);
         if (p.contains("armor")) for (int i = 0; i < 8 && i < (int)p["armor"].size(); ++i) player.setArmorCount(i, p["armor"][i]);
         if (p.contains("spells")) for (int i = 0; i < 8 && i < (int)p["spells"].size(); ++i) player.setSpellCount(i, p["spells"][i]);
+        player.setQuestTarget(p.value("questTarget", 0));
+        player.setQuestKills(p.value("questKills", 0));
+        player.setQuestsCompleted(p.value("questsCompleted", 0));
         if (j.contains("settings")) {
             auto &s = j["settings"];
             Configuration::setSpeedPct(s.value("speed_pct", Configuration::getSpeedPct()));

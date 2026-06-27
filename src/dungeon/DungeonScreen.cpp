@@ -350,6 +350,7 @@ void DungeonScreen::doPlayerAttack() {
         enemy->receiveDamage(dmg);
         if (enemy->isDead()) {
             player->gainXP(Combat::killXP(ehp));
+            player->recordKill();
             CommandDisplay::writeLn(I18n::tf("dg.hit_kill", {enemy->getName()}), false);
         } else {
             CommandDisplay::writeLn(I18n::tf("dg.hit_damage", {to_string(dmg)}), false);

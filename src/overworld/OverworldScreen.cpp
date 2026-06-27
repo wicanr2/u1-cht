@@ -230,6 +230,7 @@ void OverworldScreen::attack(int deltaX, int deltaY) {
     target->receiveDamage(dmg);
     if (target->isDead()) {
         player->gainXP(Combat::killXP(10));
+        player->recordKill();
         CommandDisplay::writeLn(I18n::tf("ow.killed", {target->getName()}), false);
         _enemies.erase(_enemies.begin() + index, _enemies.begin() + index + 1);
     } else {

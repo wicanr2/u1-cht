@@ -107,6 +107,19 @@ public:
     void setCurrentWeapon(int i) { _currentWeapon = i; }
     void setCurrentArmor(int i) { _currentArmor = i; }
 
+    // 國王任務:殺 N 隻怪。_questTarget=0 代表無任務。
+    int getQuestTarget() const { return _questTarget; }
+    int getQuestKills() const { return _questKills; }
+    int getQuestsCompleted() const { return _questsCompleted; }
+    void setQuestTarget(int v) { _questTarget = v; }
+    void setQuestKills(int v) { _questKills = v; }
+    void setQuestsCompleted(int v) { _questsCompleted = v; }
+    bool hasQuest() const { return _questTarget > 0; }
+    bool isQuestComplete() const { return _questTarget > 0 && _questKills >= _questTarget; }
+    void giveQuest(int target) { _questTarget = target; _questKills = 0; }
+    void recordKill() { if (_questTarget > 0 && _questKills < _questTarget) _questKills++; }
+    void completeQuest() { _questTarget = 0; _questKills = 0; _questsCompleted++; }
+
     // 食物消耗(隨時間 tick);耗盡回傳 true 代表飢餓
     void consumeFood(int n) { _food -= n; if (_food < 0) _food = 0; }
 
@@ -144,5 +157,9 @@ private:
     int _spells[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     int _currentWeapon = 0;   // 徒手
     int _currentArmor = 0;    // 無甲
+
+    int _questTarget = 0;     // 國王任務:需殺怪數(0=無)
+    int _questKills = 0;      // 已殺
+    int _questsCompleted = 0; // 完成任務數(用於獎勵遞增)
 };
 
