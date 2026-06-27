@@ -195,6 +195,8 @@ static void drawShop(SDL_Renderer *renderer, Player &player, int mode, ShopType 
 // 國王任務數值(draw/input 共用):討伐數 / 金幣賞
 static int questTargetFor(Player &p) { return 5 + p.getQuestsCompleted() * 5; }
 static int questGoldFor(Player &p) { return 100 + p.getQuestsCompleted() * 100; }
+static const int kEndgameQuests = 4;   // 完成 4 位國王試煉 → 終局
+static bool endgameReady(Player &p) { return p.getQuestsCompleted() >= kEndgameQuests && !p.hasQuest(); }
 
 // 城堡國王對話(置中 modal)
 static void drawKing(SDL_Renderer *renderer, Player &player) {
@@ -213,7 +215,9 @@ static void drawKing(SDL_Renderer *renderer, Player &player) {
         LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c); t.render(renderer, x, y);
     };
     line(I18n::t("king.title"), box.x + (bw - 120) / 2, box.y + 18, title);
-    if (!player.hasQuest())
+    if (endgameReady(player))
+        line(I18n::t("king.endgame"), box.x + 30, box.y + 70, SDL_Color{0xFF, 0xA0, 0x40, 0xFF});
+    else if (!player.hasQuest())
         line(I18n::tf("king.offer", {to_string(questTargetFor(player)), to_string(questGoldFor(player))}),
              box.x + 30, box.y + 70, txt);
     else if (player.isQuestComplete())
@@ -221,8 +225,31 @@ static void drawKing(SDL_Renderer *renderer, Player &player) {
     else
         line(I18n::tf("king.incomplete", {to_string(player.getQuestKills()), to_string(player.getQuestTarget())}),
              box.x + 30, box.y + 70, txt);
-    bool actionable = !player.hasQuest() || player.isQuestComplete();
+    bool actionable = !player.hasQuest() || player.isQuestComplete() || endgameReady(player);
     line(I18n::t(actionable ? "king.hint_action" : "king.hint_close"), box.x + 30, box.y + bh - 32, hint);
+}
+
+// 勝利畫面:擊敗蒙登、索薩利亞重歸光明(置中 modal,任意鍵關閉)
+static void drawVictory(SDL_Renderer *renderer) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xF0);
+    SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &scrim);
+    const int bw = 600, bh = 320;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xD0, 0x40, 0xFF);
+    SDL_RenderDrawRect(renderer, &box);
+    SDL_Color gold{0xFF, 0xD0, 0x40, 0xFF}, txt{0xF0, 0xF0, 0xF0, 0xFF};
+    auto center = [&](const string &s, int yy, SDL_Color c) {
+        LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c);
+        t.render(renderer, box.x + (bw - t.getWidth()) / 2, yy);
+    };
+    int y = box.y + 30;
+    center(I18n::t("victory.title"), y, gold); y += 56;
+    for (int i = 0; i < 4; ++i) { center(I18n::t("victory.line" + to_string(i)), y, txt); y += 36; }
+    center(I18n::t("ui.help.dismiss"), box.y + bh - 34, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
 }
 
 // 取玩家擁有的法術 index 清單
@@ -508,6 +535,7 @@ int main(int argc, char *args[]) {
             bool castActive = false;     // 地牢施法選單
             int castSel = 0;
             bool ztatsActive = false;    // Z 角色屬性表
+            bool victoryActive = false;  // 終局勝利畫面
             int settingsRow = 0;
             while (!quit) {
                 //Handle events on queue
@@ -577,7 +605,9 @@ int main(int argc, char *args[]) {
                             auto k = e.key.keysym.sym;
                             if (k == SDLK_ESCAPE) kingActive = false;
                             else if (k == SDLK_RETURN) {
-                                if (!player->hasQuest()) {
+                                if (endgameReady(*player)) {
+                                    kingActive = false; victoryActive = true;
+                                } else if (!player->hasQuest()) {
                                     int tgt = questTargetFor(*player);
                                     player->giveQuest(tgt);
                                     CommandDisplay::writeLn(I18n::tf("king.accepted", {to_string(tgt)}), false);
@@ -596,7 +626,11 @@ int main(int argc, char *args[]) {
                         continue;
                     }
 
-                    // 角色屬性表 / 說明畫面:任意鍵關閉
+                    // 勝利畫面 / 角色屬性表 / 說明畫面:任意鍵關閉
+                    if (victoryActive) {
+                        if (e.type == SDL_KEYDOWN) victoryActive = false;
+                        continue;
+                    }
                     if (ztatsActive) {
                         if (e.type == SDL_KEYDOWN) ztatsActive = false;
                         continue;
@@ -808,6 +842,10 @@ int main(int argc, char *args[]) {
                 if (ztatsActive) {
                     SDL_RenderSetViewport(gRenderer, nullptr);
                     drawZtats(gRenderer, *player);
+                }
+                if (victoryActive) {
+                    SDL_RenderSetViewport(gRenderer, nullptr);
+                    drawVictory(gRenderer);
                 }
 
                 //Update screen
