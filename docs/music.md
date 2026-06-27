@@ -11,7 +11,7 @@
 | 平台 | 檔案 | 來源 / 轉換方式 | 狀態 |
 |---|---|---|---|
 | **PC-98** | `assets/music/pc98.ogg` | `.fdi` 的 `SCORE.DAT`+`VOICE.DAT`(YM2608 FM)→ **自包含 2-op FM 合成器原生 render**(`render_pc98_music.py`,不跑模擬器) | ✅ **可用**(52.9s,RMS 9462) |
-| FM Towns | `assets/music/fmtowns.ogg` | Trilogy CD 的 `MAP.EUP`(EUPHONY)→ ogg | ⚠ **待修**:u7-cht 既有 `eup_*.ogg` 解碼為**靜音**(RMS=0,轉檔壞);需重做(同 PC-98 自寫 FM 渲染或修 EUP 轉檔) |
+| **FM Towns** | `assets/music/fmtowns.ogg` | Trilogy CD 的 `MAP.EUP`(EUPHONY)→ **自寫 EUP→2-op FM 渲染**(`render_eup_music.py`) | ✅ **可用**(49.9s,RMS 3624;原 u7-cht ogg 為靜音,已重做) |
 | MSX | `assets/music/msx.ogg` | `.dsk` PSG(AY-3-8910)→ 自寫 PSG 渲染 | ⬜ 待定位檔案 |
 | Apple IIgs | `assets/music/iigs.ogg` | woz 的 synthLAB / Ensoniq 5503 取樣合成 | ⬜ 待解格式 |
 | Atari | `assets/music/atari.ogg` | POKEY,OUTMOVE/SPAMOVE 內 | ⬜ 待定位 |
@@ -30,11 +30,16 @@
 - 10 首全渲(`assets/music/pc98/song0-9.ogg`);overworld 暫用 **song1**(三聲部、旋律完整,piano-roll 驗證為連貫音樂)。
   ⚠ 哪一首是 overworld 需聽感確認(FM Towns 參考曲為靜音,無法自動比對)。
 
-## FM Towns 音樂(待修)
+## ★ FM Towns 音樂(已完成,native EUP→FM 渲染)
 
-FM Towns 版 BGM 是 **EUPHONY(.EUP)** + `ULTIMA.FMB` 音色庫(`MAP.EUP` overworld 等)。
-u7-cht 既有 `sound_extract/eup_*.ogg` 經驗證**解碼為靜音**(轉檔失敗)→ 需重做:
-用同 PC-98 的自寫 FM 渲染解 EUP,或修正 EUP→ogg 工具鏈。
+FM Towns 版 BGM 是 **EUPHONY(.EUP)** 格式(`MAP.EUP` overworld、`TOWN`/`DUNGEON`/`OSIRO` 等)。
+u7-cht 既有 `sound_extract/eup_*.ogg` 經驗證為**靜音**(原轉檔失敗),已用自寫渲染重做。
+
+`render_eup_music.py` 解 EUP:
+- 檔頭(標題 + 固定音名表)後有 `"EUPHONY "` 簽章 → 其後 **6 byte/事件**。
+- 事件:`byte0`=status(0x9n note-on / 0x8n note-off,ch=status&0xF)、`byte1`=**step delta tick**
+  (全曲累積,sum≈4930 對上 ~53s)、`byte4`=note、`byte5`=velocity;note-off 結束該聲道音符。
+- 用同 PC-98 的 2-op FM 合成渲染,**不跑模擬器**。map/town/dungeon/castle 全渲於 `assets/music/fmtowns/`。
 
 ## 其餘平台:逐平台找檔 → 確認格式 → 原生轉回(不跑模擬器)
 
