@@ -28,6 +28,15 @@ open_ultima 自述「very very early」。**已實作**:世界地圖移動、基
 | EGA / CGA | EGA / CGA | 兩套 PC 顯示色盤(原始資料含 `EGATILES.BIN`/`CGATILES.BIN`) |
 | Klimb | 攀爬 | U1 上下樓梯指令(經典拼法) |
 | Ztats | 屬性 | 角色數值畫面 |
+| Lord British | 不列顛王 | 官方精訊譯名(creature_bilingual);全處統一 |
+| Mondain | 蒙登 | 大反派 |
+| Sosaria | 索薩利亞 | U1 世界 |
+| Dagger / Mace / Bow | 短劍 / 釘頭鎚 / 弓 | 武器,對齊精訊 config_bilingual |
+| Chain / Plate | 鎖子甲 / 鎧甲 | 防具,對齊精訊 |
+
+> **譯名權威來源(聖者之書)**:`../u4-cht/manuel/`(精訊《創世紀聖者之書特別版》PDF + `sage_pages/`)、
+> `../u4-cht/dumps/*_bilingual.json`(官方中文版抽出的怪物/裝備/城堡雙語對照)。
+> 新增名詞先查此處;系列共通名(怪物/裝備/Lord British)一律沿用官方譯名。
 
 ## 技術關鍵事實(供快速定位)
 - 邏輯解析度 `320×200`(`src/Constants.h`),整數倍放大輸出。

@@ -181,12 +181,14 @@ docker run --rm -v "$PWD":/work -w /work u1-msxrun bash -c '
 > 全程繁中、可存讀檔。地圖含 8 城堡/32 城鎮/36 地牢入口,正常走動+E 可達。
 > 剩餘為非必要擴充(見下)。
 
-## C3. 非必要擴充(可選,非通關必需)⬜
+## C3. 支線全補齊 ✅(非通關必需,但完整 remake)
 
-- [ ] Phase A.2 — 商店 authentic 店員定位(RE 城鎮格式 index 51-63)
-- [ ] 更多載具(馬=陸路加速、船=深海);目前木筏覆蓋渡水
-- [ ] 太空/時光機 endgame 子遊戲(原版「Space Ace」);目前以 4 國王試煉適配
-- [ ] 公主救援支線
+- [x] **譯名對齊聖者之書**:官方精訊中文版 bilingual dumps(creature/config)→ 短劍/釘頭鎚/弓/鎖子甲/鎧甲/不列顛王;完整世界 bestiary(15 種陸海怪,地形感知生怪)。
+- [x] **Phase A.2 — 商店 authentic 店員定位**:`TownScreen::shopAtPlayer()` 站 counter 旁掃招牌字判店家(ARMOUR→防具/ARMS→武器/MAGIC→魔法/GROCERY→食物/INN→酒館);U1_DUMP_TOWN 自測全對。
+- [x] **更多載具**:`Player::Vehicle`(馬陸路雙步 / 木筏渡淺水 / 巡防艦渡深海 / 飛車飛越山海);載具行 4 載具 + 騎乘 sprite 替換。
+- [x] **公主救援**:城堡 PRISON 牢房放公主(PERSON_PRISONER),相鄰 E 救出 → +400G + 時光機(princessFreed)。
+- [x] **太空/時光機 endgame 子遊戲**:`SpaceScreen` 星海線框射擊(L 升空),擊落 15 → Space Ace。
+- [x] **完整終局鏈**:endgameReady = 4 國王試煉 + 救公主 + Space Ace → 國王漸進引導 → 殺蒙登 → 勝利。
 
 ## D. 架構牆 / 長期 🧱
 
