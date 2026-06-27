@@ -111,7 +111,7 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
     SDL_RenderFillRect(renderer, &scrim);
 
-    const int bw = 540, bh = 496;
+    const int bw = 540, bh = 522;
     SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
     SDL_RenderFillRect(renderer, &box);
@@ -134,7 +134,8 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     line("K", kx, y, key); line(I18n::t("ui.help.klimb"), tx, y, txt); y += 26;
     line("B", kx, y, key); line(I18n::t("ui.help.buy"), tx, y, txt); y += 26;
     line("T", kx, y, key); line(I18n::t("ui.help.talk"), tx, y, txt); y += 26;
-    line("C", kx, y, key); line(I18n::t("ui.help.cast"), tx, y, txt); y += 30;
+    line("C", kx, y, key); line(I18n::t("ui.help.cast"), tx, y, txt); y += 26;
+    line("Z", kx, y, key); line(I18n::t("ui.help.ztats"), tx, y, txt); y += 30;
     line(I18n::t("ui.help.sys_head"), lx, y, head); y += 28;
     line("F6", kx, y, key); line(I18n::t("ui.help.f6"), tx, y, txt); y += 24;
     line("M  /  F9", kx, y, key); line(I18n::t("ui.help.audio"), tx, y, txt); y += 24;
@@ -260,6 +261,49 @@ static void drawCast(SDL_Renderer *renderer, Player &player, int sel) {
         }
     }
     line(I18n::t("spell.hint"), box.x + 30, box.y + bh - 30, off);
+}
+
+// Z 角色屬性表(Ztats):等級/屬性/裝備/任務(置中 modal,任意鍵關閉)
+static void drawZtats(SDL_Renderer *renderer, Player &p) {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xC8);
+    SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
+    SDL_RenderFillRect(renderer, &scrim);
+    const int bw = 540, bh = 400;
+    SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderFillRect(renderer, &box);
+    SDL_SetRenderDrawColor(renderer, 0x40, 0x80, 0xFF, 0xFF);
+    SDL_RenderDrawRect(renderer, &box);
+    SDL_Color title{0xFF, 0xD0, 0x40, 0xFF}, head{0x80, 0xC0, 0xFF, 0xFF},
+        lab{0xC0, 0xC0, 0xC0, 0xFF}, val{0xFF, 0xFF, 0xFF, 0xFF};
+    auto line = [&](const string &s, int x, int yy, SDL_Color c) {
+        LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c); t.render(renderer, x, yy);
+    };
+    int c1 = box.x + 40, c2 = box.x + 290, y = box.y + 18;
+    line(I18n::t("ztats.title"), box.x + (bw - 120) / 2, y, title); y += 40;
+    auto kv = [&](const string &k, const string &v, int col, int yy) {
+        line(I18n::t(k), col, yy, lab); line(v, col + 110, yy, val);
+    };
+    kv("ztats.level", to_string(p.getLevel()), c1, y);
+    kv("ztats.hp", to_string(p.getHP()) + "/" + to_string(p.getMaxHP()), c2, y); y += 28;
+    kv("ztats.xp", to_string(p.getXP()), c1, y);
+    kv("ztats.gold", to_string(p.getMoney()), c2, y); y += 36;
+    line(I18n::t("ztats.attrs"), c1, y, head); y += 28;
+    kv("ztats.str", to_string(p.getStrength()), c1, y);
+    kv("ztats.agi", to_string(p.getAgility()), c2, y); y += 26;
+    kv("ztats.sta", to_string(p.getStamina()), c1, y);
+    kv("ztats.cha", to_string(p.getCharisma()), c2, y); y += 26;
+    kv("ztats.wis", to_string(p.getWisdom()), c1, y);
+    kv("ztats.int", to_string(p.getIntelligence()), c2, y); y += 36;
+    line(I18n::t("ztats.equip"), c1, y, head); y += 28;
+    kv("ztats.weapon", I18n::t(ItemCatalog::weaponNameKey(p.getCurrentWeapon())), c1, y);
+    kv("ztats.armor", I18n::t(ItemCatalog::armorNameKey(p.getCurrentArmor())), c2, y); y += 32;
+    if (p.hasQuest())
+        line(I18n::tf("ztats.quest", {to_string(p.getQuestKills()), to_string(p.getQuestTarget())}), c1, y, lab);
+    else
+        line(I18n::t("ztats.no_quest"), c1, y, lab);
+    line(I18n::t("ui.help.dismiss"), box.x + (bw - 120) / 2, box.y + bh - 28, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
 }
 
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
@@ -462,6 +506,7 @@ int main(int argc, char *args[]) {
             bool kingActive = false;     // 城堡國王對話
             bool castActive = false;     // 地牢施法選單
             int castSel = 0;
+            bool ztatsActive = false;    // Z 角色屬性表
             int settingsRow = 0;
             while (!quit) {
                 //Handle events on queue
@@ -548,7 +593,11 @@ int main(int argc, char *args[]) {
                         continue;
                     }
 
-                    // 說明畫面開啟時:任意鍵(F1/ESC/Enter/空白)關閉,吞掉其他輸入
+                    // 角色屬性表 / 說明畫面:任意鍵關閉
+                    if (ztatsActive) {
+                        if (e.type == SDL_KEYDOWN) ztatsActive = false;
+                        continue;
+                    }
                     if (helpActive) {
                         if (e.type == SDL_KEYDOWN) helpActive = false;
                         continue;
@@ -608,6 +657,11 @@ int main(int argc, char *args[]) {
                             // F1:說明畫面(列出所有指令)。
                             if (pressedKey == SDLK_F1) {
                                 helpActive = true;
+                                continue;
+                            }
+                            // Z:角色屬性表(Ztats)
+                            if (pressedKey == SDLK_z) {
+                                ztatsActive = true;
                                 continue;
                             }
                             // PageDown:循環切換 tileset(EGA→CGA→各平台 PNG 包)+ 中文提示。
@@ -747,6 +801,10 @@ int main(int argc, char *args[]) {
                 if (castActive) {
                     SDL_RenderSetViewport(gRenderer, nullptr);
                     drawCast(gRenderer, *player, castSel);
+                }
+                if (ztatsActive) {
+                    SDL_RenderSetViewport(gRenderer, nullptr);
+                    drawZtats(gRenderer, *player);
                 }
 
                 //Update screen
