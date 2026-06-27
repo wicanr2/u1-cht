@@ -189,6 +189,8 @@ docker run --rm -v "$PWD":/work -w /work u1-msxrun bash -c '
 - [x] **公主救援**:城堡 PRISON 牢房放公主(PERSON_PRISONER),相鄰 E 救出 → +400G + 時光機(princessFreed)。
 - [x] **太空/時光機 endgame 子遊戲**:`SpaceScreen` 星海線框射擊(L 升空),擊落 15 → Space Ace。
 - [x] **完整終局鏈**:endgameReady = 4 國王試煉 + 救公主 + Space Ace → 國王漸進引導 → 殺蒙登 → 勝利。
+- [x] **地牢內容補完**:2 層 1 鼠 → **8 層 + 完整 bestiary**(`DungeonMonster` 參數化怪:Humanoid/Beast/Blob/Flyer 四形狀,13 種分深度帶,HP/傷害隨層提升)+ 層間鏈接梯(L0→出地牢)+ **寶箱**(每層 1 箱,金幣隨深度,半數上鎖;踩開有陷阱,開棺/開鎖術安全開啟)。
+- [x] **F6 食物消耗速度**:餓死機制可調(food_pct 10–200%),併入 timetick 設定畫面(4 列)。
 
 ## D. 架構牆 / 長期 🧱
 
