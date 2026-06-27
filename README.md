@@ -73,6 +73,10 @@
 可惜發行商不久後倒閉，這個版本極其稀有，網路上乾淨截圖屈指可數。
 我們從僅存的實機畫面把地形與人物一格一格切回來——上面那張開場圖的水波與草地，就是它本人。
 
+而這個版本的圖檔藏在一種從無公開文件的自訂壓縮格式裡。我們把它的程式從一張 woz 磁碟一路逆向，
+最後**反組譯 65816 機器碼、在程式裡直接讀出它的解壓演算法**(原來是 LZSS),完全破解。
+全程紀錄成一個獨立章節:**[📖 Apple IIgs 逆向工程全紀錄](docs/re/apple-iigs-reverse-engineering.md)**。
+
 > 切換方式:`F1` / `PageDown` 循環 EGA → CGA → PNG 素材包，畫面即時換臉、不需重開。
 
 ---
@@ -156,6 +160,7 @@ docker run --rm -v "$PWD":/work -w /work u1-cht bash tools/game_tester.sh
 | [`docs/ultima1-original-ai.md`](docs/ultima1-original-ai.md) | 原版 U1(1981)怪物 AI 考據 + 出處 |
 | [`docs/localization-notes.md`](docs/localization-notes.md) | 中文化技術筆記(字型管線、拉畫布決策) |
 | [`docs/materials.md`](docs/materials.md) | 各平台素材來源清單(DOS／MSX／PC98／FM Towns／IIgs…) |
+| [**`docs/re/apple-iigs-reverse-engineering.md`**](docs/re/apple-iigs-reverse-engineering.md) | **★ Apple IIgs 逆向工程全紀錄**(woz 抽檔 → 反組譯 65816 → 破解 LZSS 圖格式) |
 | [`docs/re/`](docs/re/) | 逆向工程經驗:MSX openMSX、Apple IIgs MAME/GS-OS、6502 方法論等 |
 | [`docs/adr/0001-pluggable-asset-packs.md`](docs/adr/0001-pluggable-asset-packs.md) | 可替換素材包架構決策 |
 
