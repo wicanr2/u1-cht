@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include "src/Configuration.h"
 #include "src/SaveGame.h"
+#include "src/common/I18n.h"
 
 using namespace std;
 using namespace OpenUltima;
@@ -68,9 +69,9 @@ static void drawQuitDialog(SDL_Renderer *renderer) {
         t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c);
         t.render(renderer, box.x + (bw - t.getWidth()) / 2, y);
     };
-    line("確定要離開遊戲嗎?", box.y + 22, SDL_Color{0xFF, 0xD0, 0x40, 0xFF});   // accent 標題
-    line("Y / Enter — 離開", box.y + 60, SDL_Color{0xFF, 0xFF, 0xFF, 0xFF});
-    line("N / ESC — 取消", box.y + 88, SDL_Color{0xC0, 0xC0, 0xC0, 0xFF});
+    line(I18n::t("ui.quit.confirm"), box.y + 22, SDL_Color{0xFF, 0xD0, 0x40, 0xFF});   // accent 標題
+    line(I18n::t("ui.quit.yes"), box.y + 60, SDL_Color{0xFF, 0xFF, 0xFF, 0xFF});
+    line(I18n::t("ui.quit.no"), box.y + 88, SDL_Color{0xC0, 0xC0, 0xC0, 0xFF});
 }
 
 // F6 設定選單:即時調 speed_pct / spawn_pct(置中 modal,640x400 覆蓋層)
@@ -92,14 +93,14 @@ static void drawSettingsMenu(SDL_Renderer *renderer, int row) {
         t.render(renderer, x, y);
     };
     SDL_Color title{0xFF, 0xD0, 0x40, 0xFF}, on{0xFF, 0xFF, 0x60, 0xFF}, off{0xC0, 0xC0, 0xC0, 0xFF};
-    line("設定(F6)", box.x + (bw - 120) / 2, box.y + 16, title);
-    line((row == 0 ? "▶ " : "  ") + ("時間流速: " + to_string(Configuration::getSpeedPct()) + "%"),
+    line(I18n::t("ui.settings.title"), box.x + (bw - 120) / 2, box.y + 16, title);
+    line((row == 0 ? "▶ " : "  ") + (I18n::t("ui.settings.speed") + to_string(Configuration::getSpeedPct()) + "%"),
          box.x + 40, box.y + 56, row == 0 ? on : off);
-    line((row == 1 ? "▶ " : "  ") + ("怪物生成: " + to_string(Configuration::getSpawnPct()) + "%"),
+    line((row == 1 ? "▶ " : "  ") + (I18n::t("ui.settings.spawn") + to_string(Configuration::getSpawnPct()) + "%"),
          box.x + 40, box.y + 88, row == 1 ? on : off);
-    line((row == 2 ? "▶ " : "  ") + ("野外怪物追蹤: " + string(Configuration::getChaseMonsters() ? "開" : "關")),
+    line((row == 2 ? "▶ " : "  ") + (I18n::t("ui.settings.chase") + string(Configuration::getChaseMonsters() ? I18n::t("ui.on") : I18n::t("ui.off"))),
          box.x + 40, box.y + 120, row == 2 ? on : off);
-    line("↑↓ 選擇   ←→ 調整/切換   F6/ESC 關閉", box.x + 36, box.y + 168, off);
+    line(I18n::t("ui.settings.hint"), box.x + 36, box.y + 168, off);
 }
 
 // F1 說明畫面:列出全部指令(置中 modal,640x400 覆蓋層)
@@ -123,21 +124,21 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
         t.render(renderer, x, y);
     };
     int lx = box.x + 30, kx = box.x + 50, tx = box.x + 200, y = box.y + 18;
-    line("指令說明(F1)", box.x + (bw - 140) / 2, y, title); y += 38;
-    line("● 移動", lx, y, head); y += 28;
-    line("方向鍵", kx, y, key); line("世界/城鎮移動;地牢前進・轉向", tx, y, txt); y += 30;
-    line("● 動作指令", lx, y, head); y += 28;
-    line("A", kx, y, key); line("攻擊(Attack)", tx, y, txt); y += 26;
-    line("E", kx, y, key); line("進入 城鎮/城堡/地牢(Enter)", tx, y, txt); y += 26;
-    line("K", kx, y, key); line("攀爬 上下樓梯(Klimb,地牢)", tx, y, txt); y += 30;
-    line("● 系統", lx, y, head); y += 28;
-    line("F6", kx, y, key); line("設定:遊戲速度 / 怪物生成", tx, y, txt); y += 24;
-    line("M  /  F9", kx, y, key); line("音樂開關 / 音效開關", tx, y, txt); y += 24;
-    line("PageDown", kx, y, key); line("循環切換畫面風格(7 平台)", tx, y, txt); y += 24;
-    line("F5", kx, y, key); line("手動存檔", tx, y, txt); y += 24;
-    line("F10 / Ctrl+Q", kx, y, key); line("離開(自動存檔後退出)", tx, y, txt); y += 24;
-    line("ESC", kx, y, key); line("取消 / 返回上一層", tx, y, txt); y += 30;
-    line("按任意鍵關閉", box.x + (bw - 120) / 2, box.y + bh - 30, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
+    line(I18n::t("ui.help.title"), box.x + (bw - 140) / 2, y, title); y += 38;
+    line(I18n::t("ui.help.move_head"), lx, y, head); y += 28;
+    line(I18n::t("ui.help.arrows"), kx, y, key); line(I18n::t("ui.help.arrows_desc"), tx, y, txt); y += 30;
+    line(I18n::t("ui.help.action_head"), lx, y, head); y += 28;
+    line("A", kx, y, key); line(I18n::t("ui.help.attack"), tx, y, txt); y += 26;
+    line("E", kx, y, key); line(I18n::t("ui.help.enter"), tx, y, txt); y += 26;
+    line("K", kx, y, key); line(I18n::t("ui.help.klimb"), tx, y, txt); y += 30;
+    line(I18n::t("ui.help.sys_head"), lx, y, head); y += 28;
+    line("F6", kx, y, key); line(I18n::t("ui.help.f6"), tx, y, txt); y += 24;
+    line("M  /  F9", kx, y, key); line(I18n::t("ui.help.audio"), tx, y, txt); y += 24;
+    line("PageDown", kx, y, key); line(I18n::t("ui.help.tileset"), tx, y, txt); y += 24;
+    line("F5", kx, y, key); line(I18n::t("ui.help.save"), tx, y, txt); y += 24;
+    line("F10 / Ctrl+Q", kx, y, key); line(I18n::t("ui.help.quit"), tx, y, txt); y += 24;
+    line("ESC", kx, y, key); line(I18n::t("ui.help.esc"), tx, y, txt); y += 30;
+    line(I18n::t("ui.help.dismiss"), box.x + (bw - 120) / 2, box.y + bh - 30, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
 }
 
 shared_ptr<PlayerStatusDisplay> _playerStatusDisplay;
@@ -158,7 +159,7 @@ bool init() {
         }
 
         //Create window
-        gWindow = SDL_CreateWindow("創世紀 I:黑暗紀元 (Ultima I) — 繁中", SDL_WINDOWPOS_UNDEFINED,
+        gWindow = SDL_CreateWindow(I18n::t("window.title").c_str(), SDL_WINDOWPOS_UNDEFINED,
                                    SDL_WINDOWPOS_UNDEFINED, Configuration::getScreenWidth(),
                                    Configuration::getScreenHeight(), SDL_WINDOW_SHOWN);
         if (gWindow == NULL) {
@@ -219,6 +220,7 @@ void close() {
 
 int main(int argc, char *args[]) {
     Configuration::init();
+    I18n::init("assets/strings/" + Configuration::getLanguage() + ".json");
     cout << Configuration::getEgaOverworldTilesFilePath();
 
     //Start up SDL and create window
@@ -267,7 +269,7 @@ int main(int argc, char *args[]) {
             for (size_t i = 0; i < pngPacks.size(); ++i)
                 if (pngPacks[i].tiles == pngPackPath) { cfgPngIdx = (int)i; break; }
             if (cfgPngIdx < 0) {
-                pngPacks.push_back({"自訂", pngPackPath, kDefaultMusic});
+                pngPacks.push_back({I18n::t("tileset.custom"), pngPackPath, kDefaultMusic});
                 cfgPngIdx = (int)pngPacks.size() - 1;
             }
             const int kBinModes = 2;  // EGA, CGA
@@ -362,7 +364,7 @@ int main(int argc, char *args[]) {
                             if (k == SDLK_y || k == SDLK_RETURN) {
                                 // 離開鐵則:離開前 autosave(失敗則提示,但仍允許離開)
                                 if (!SaveGame::save(*player, SaveGame::defaultPath()))
-                                    CommandDisplay::writeLn("⚠ 存檔失敗(仍離開)", false);
+                                    CommandDisplay::writeLn(I18n::t("msg.save_fail_exit"), false);
                                 quit = true;
                             } else if (k == SDLK_n || k == SDLK_ESCAPE) {
                                 quitDialogActive = false;
@@ -396,29 +398,29 @@ int main(int argc, char *args[]) {
                                 tilesetIdx = (tilesetIdx + 1) % tilesetCount;
                                 applyTileset(tilesetIdx);
                                 applyMusic(tilesetIdx);  // 音樂跟隨切換的平台
-                                CommandDisplay::writeLn(string("圖形模式:") + tilesetName(tilesetIdx), false);
+                                CommandDisplay::writeLn(string(I18n::t("msg.graphics_mode")) + tilesetName(tilesetIdx), false);
                             }
                             // M:切換背景音樂
                             if (pressedKey == SDLK_m) {
                                 if (Audio::available()) {
                                     bool on = Audio::toggleMute();
-                                    CommandDisplay::writeLn(on ? "音樂:開" : "音樂:關", false);
+                                    CommandDisplay::writeLn(on ? I18n::t("msg.music_on") : I18n::t("msg.music_off"), false);
                                 } else {
-                                    CommandDisplay::writeLn("音樂:無音訊裝置", false);
+                                    CommandDisplay::writeLn(I18n::t("msg.music_no_device"), false);
                                 }
                             }
                             // F5:手動存檔
                             if (pressedKey == SDLK_F5) {
                                 bool ok = SaveGame::save(*player, SaveGame::defaultPath());
-                                CommandDisplay::writeLn(ok ? "已存檔" : "⚠ 存檔失敗", false);
+                                CommandDisplay::writeLn(ok ? I18n::t("msg.saved") : I18n::t("msg.save_fail"), false);
                             }
                             // F9:切換音效(獨立於音樂)
                             if (pressedKey == SDLK_F9) {
                                 if (Audio::available()) {
                                     bool on = Audio::toggleSfx();
-                                    CommandDisplay::writeLn(on ? "音效:開" : "音效:關", false);
+                                    CommandDisplay::writeLn(on ? I18n::t("msg.sfx_on") : I18n::t("msg.sfx_off"), false);
                                 } else {
-                                    CommandDisplay::writeLn("音效:無音訊裝置", false);
+                                    CommandDisplay::writeLn(I18n::t("msg.sfx_no_device"), false);
                                 }
                             }
                             // 音效:移動踏步 / 攻擊撞擊(音效靜音時自動 no-op)

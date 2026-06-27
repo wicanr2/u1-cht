@@ -1,4 +1,5 @@
 #include "OverworldScreen.h"
+#include "../common/I18n.h"
 #include "TileTypeLoader.h"
 #include "../common/graphics/PixelDecodeStrategy.h"
 #include "Constants.h"
@@ -169,19 +170,19 @@ void OverworldScreen::move(int deltaX, int deltaY) {
     // Don't allow player to walk across mountains or through water.
     OverworldSpriteType::SpriteType typeTypeSteppedOn = _tiles[getTileOffset(playerX, playerY)]->getSpriteType();
     if (typeTypeSteppedOn == OverworldSpriteType::SpriteType::MOUNTAIN) {
-        CommandDisplay::writeLn("山脈無法通行!", true);
+        CommandDisplay::writeLn(I18n::t("ow.mountain_blocked"), true);
         return;
     }
 
     if (typeTypeSteppedOn == OverworldSpriteType::SpriteType::WATER) {
-        CommandDisplay::writeLn("無法在水上行走!", true);
+        CommandDisplay::writeLn(I18n::t("ow.water_blocked"), true);
         return;
     }
 
     // Don't allow player to walk past an enemy
     for (const auto &enemy: _enemies) {
         if (enemy->getX() == playerX && enemy->getY() == playerY) {
-            CommandDisplay::writeLn("被" + enemy->getName() + "擋住!", true);
+            CommandDisplay::writeLn(I18n::tf("ow.blocked_by", {enemy->getName()}), true);
             return;
         }
     }
@@ -219,7 +220,7 @@ void OverworldScreen::attack(int deltaX, int deltaY) {
     //target->receiveDamage(1);
     CommandDisplay::writeLn(getCardinalPointFromDeltas(deltaX, deltaY), true);
 
-    CommandDisplay::writeLn("擊殺了" + target->getName() + "!", false);
+    CommandDisplay::writeLn(I18n::tf("ow.killed", {target->getName()}), false);
     _enemies.erase(_enemies.begin() + index, _enemies.begin() + index + 1);
 
     _attackMode = false;
@@ -412,8 +413,8 @@ void OverworldScreen::onStep() {
         pl->consumeFood(1);
         if (pl->isStarving()) {
             pl->receiveDamage(2);
-            CommandDisplay::writeLn("飢餓!損失 2 點生命", false);
-            if (pl->isDead()) CommandDisplay::writeLn("你已餓死!", false);
+            CommandDisplay::writeLn(I18n::t("common.starving"), false);
+            if (pl->isDead()) CommandDisplay::writeLn(I18n::t("common.starved"), false);
         }
     }
 }
@@ -459,9 +460,9 @@ void OverworldScreen::overworldMonsterTurn() {
         if (abs(e->getX() - px) + abs(e->getY() - py) == 1) {
             int dmg = 2 + rand() % 5;   // 2–6 點
             player->receiveDamage(dmg);
-            CommandDisplay::writeLn("遭" + e->getName() + "攻擊!損失 " + to_string(dmg) + " 點生命", false);
+            CommandDisplay::writeLn(I18n::tf("ow.attacked", {e->getName(), to_string(dmg)}), false);
             if (player->isDead()) {
-                CommandDisplay::writeLn("你已死亡!", false);
+                CommandDisplay::writeLn(I18n::t("common.dead"), false);
                 break;
             }
         }
@@ -475,7 +476,7 @@ void OverworldScreen::spawnNpcs() {
         int ax = pl->getOverworldX() + 1, ay = pl->getOverworldY();
         auto st = _spritesMap.find(OverworldSpriteType::SpriteType::WANDERING_WARLOCK)->second;
         auto tl = make_shared<OverworldTile>(ax, ay, st, make_shared<TileAnimation>());
-        _enemies.push_back(make_shared<OverworldEnemy>(10, ax, ay, "遊蕩術士", tl));
+        _enemies.push_back(make_shared<OverworldEnemy>(10, ax, ay, I18n::t("monster.wandering_warlock"), tl));
         return;
     }
 
@@ -505,7 +506,7 @@ void OverworldScreen::spawnNpcs() {
 
         auto spriteType = _spritesMap.find(OverworldSpriteType::SpriteType::WANDERING_WARLOCK)->second;
         auto tile = make_shared<OverworldTile>(x, y, spriteType, make_shared<TileAnimation>());
-        _enemies.push_back(make_shared<OverworldEnemy>(10, x, y, "遊蕩術士", tile));
+        _enemies.push_back(make_shared<OverworldEnemy>(10, x, y, I18n::t("monster.wandering_warlock"), tile));
         return;
     }
 }
@@ -513,23 +514,23 @@ void OverworldScreen::spawnNpcs() {
 void OverworldScreen::setAttackMode(bool set) {
     if (set) {
         _attackMode = true;
-        CommandDisplay::write("用匕首攻擊:");
+        CommandDisplay::write(I18n::t("ow.dagger_attack"));
     } else {
         if (_attackMode) {
             _attackMode = false;
-            CommandDisplay::writeLn("沒有目標!", true);
+            CommandDisplay::writeLn(I18n::t("ow.no_target"), true);
         }
     }
 }
 
 string OverworldScreen::getCardinalPointFromDeltas(int deltaX, int deltaY) {
     if (deltaX < 0) {
-        return "西";
+        return I18n::t("dir.west");
     } else if (deltaX > 0) {
-        return "東";
+        return I18n::t("dir.east");
     } else if (deltaY > 0) {
-        return "北";
+        return I18n::t("dir.north");
     } else if (deltaY < 0) {
-        return "南";
+        return I18n::t("dir.south");
     }
 }

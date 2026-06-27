@@ -1,4 +1,5 @@
 #include "PlayerStatusDisplay.h"
+#include "common/I18n.h"
 
 #include <utility>
 #include "common/Fonts.h"
@@ -26,13 +27,13 @@ void PlayerStatusDisplay::draw(SDL_Renderer *renderer) {
     SDL_Rect bg = {0, 0, WIDTH * S, HEIGHT * S};
     SDL_RenderFillRect(renderer, &bg);
 
-    _textureLine1->loadFromRenderedText(Fonts::cjkUi(), renderer, "生命: " + to_string(_player->getHP()),
+    _textureLine1->loadFromRenderedText(Fonts::cjkUi(), renderer, I18n::t("status.hp") + to_string(_player->getHP()),
                                         Colors::TEXT_COLOR);
-    _textureLine2->loadFromRenderedText(Fonts::cjkUi(), renderer, "食物: " + to_string(_player->getFood()),
+    _textureLine2->loadFromRenderedText(Fonts::cjkUi(), renderer, I18n::t("status.food") + to_string(_player->getFood()),
                                         Colors::TEXT_COLOR);
-    _textureXP->loadFromRenderedText(Fonts::cjkUi(), renderer, "經驗: " + to_string(_player->getXP()),
+    _textureXP->loadFromRenderedText(Fonts::cjkUi(), renderer, I18n::t("status.xp") + to_string(_player->getXP()),
                                      Colors::TEXT_COLOR);
-    _textureMoney->loadFromRenderedText(Fonts::cjkUi(), renderer, "金幣: " + to_string(_player->getMoney()),
+    _textureMoney->loadFromRenderedText(Fonts::cjkUi(), renderer, I18n::t("status.money") + to_string(_player->getMoney()),
                                         Colors::TEXT_COLOR);
 
     constexpr int LINE_HEIGHT = 18;

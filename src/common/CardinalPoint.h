@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "I18n.h"
 
 using namespace std;
 
@@ -13,13 +14,13 @@ public:
     static string toString(CardinalPoint cardinalPoint) {
         switch (cardinalPoint) {
             case CardinalPoint::East:
-                return "東";
+                return I18n::t("dir.east");
             case CardinalPoint::West:
-                return "西";
+                return I18n::t("dir.west");
             case CardinalPoint::North:
-                return "北";
+                return I18n::t("dir.north");
             case CardinalPoint::South:
-                return "南";
+                return I18n::t("dir.south");
         }
     }
 };

@@ -1,4 +1,5 @@
 #include "TownScreen.h"
+#include "../common/I18n.h"
 #include "../common/graphics/EGARowPlanarDecodeStrategy.h"
 #include "../CommandDisplay.h"
 #include "../Configuration.h"
@@ -117,7 +118,7 @@ void TownScreen::playerMove(CardinalPoint direction) {
     }
 
     if (blocked) {
-        CommandDisplay::writeLn("受阻!", true);
+        CommandDisplay::writeLn(I18n::t("town.blocked"), true);
         return;
     }
 

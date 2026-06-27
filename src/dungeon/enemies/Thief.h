@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL_render.h>
+#include "../../common/I18n.h"
 #include "Enemy.h"
 
 class Thief : public Enemy {
@@ -11,7 +12,7 @@ public:
 
     void update(float elapsed) override;
 
-    string getName() override { return "盜賊"; };
+    string getName() override { return I18n::t("monster.thief"); };
 };
 
 
