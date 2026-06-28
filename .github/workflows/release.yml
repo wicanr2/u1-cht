@@ -59,8 +59,8 @@ jobs:
             arch: x86_64
     steps:
       - uses: actions/checkout@v4
-      - name: 安裝工具(SDL2 從源碼自編)
-        run: brew install cmake pkg-config dylibbundler autoconf automake libtool
+      - name: 安裝工具 + 預編 SDL2(brew;u4-cht 證實的 macOS CI 方案)
+        run: brew install cmake pkg-config dylibbundler sdl2 sdl2_image sdl2_ttf sdl2_mixer
       - name: 建 macOS .app(${{ matrix.arch }})
         env:
           MAC_ARCH: ${{ matrix.arch }}

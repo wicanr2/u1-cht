@@ -37,26 +37,29 @@ build_dep() {  # $1 repo  $2 tag  $3 extra-cmake-args
     echo "  built $name"
 }
 
-echo "== 1) 自編 SDL2 系列(vendored deps;只開遊戲用得到的格式以免巨庫拖垮編譯)=="
-build_dep SDL "$SDL2_VER"
-# SDL_image:遊戲只載 PNG → 關掉 AVIF(dav1d)/JXL(libjxl)/WEBP/TIF/JPG 這些
-# 從源碼編很慢的大庫(正是 universal/單架構都 >30min 的真兇),只留 PNG。
-build_dep SDL_image "$IMG_VER" -DSDL2IMAGE_VENDORED=ON -DSDL2IMAGE_SAMPLES=OFF \
-    -DSDL2IMAGE_PNG=ON \
-    -DSDL2IMAGE_AVIF=OFF -DSDL2IMAGE_JXL=OFF -DSDL2IMAGE_WEBP=OFF \
-    -DSDL2IMAGE_TIF=OFF -DSDL2IMAGE_JPG=OFF
-# SDL_ttf:CJK+英文只需 freetype 算繪字形,不需 harfbuzz(複雜文字塑形,如阿拉伯/印度文)。
-# 關 harfbuzz → 省下編譯那顆大 C++ 庫(剩下最後的編譯長尾)。
-build_dep SDL_ttf   "$TTF_VER" -DSDL2TTF_VENDORED=ON  -DSDL2TTF_SAMPLES=OFF -DSDL2TTF_HARFBUZZ=OFF
-# SDL_mixer:遊戲只用 OGG(Vorbis)+ WAV → VORBIS 後端用內建 STB(免外部 vorbis/ogg/tremor,
-# 編更快;注意 SDL2MIXER_VORBIS 是 enum=STB|TREMOR|VORBISFILE,不可填 ON)。關 FLAC/MOD/MIDI/OPUS/MP3。
-build_dep SDL_mixer "$MIX_VER" -DSDL2MIXER_VENDORED=ON -DSDL2MIXER_SAMPLES=OFF \
-    -DSDL2MIXER_VORBIS=STB -DSDL2MIXER_WAVE=ON \
-    -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_MOD=OFF -DSDL2MIXER_MIDI=OFF \
-    -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_MP3=OFF
+if [ "${MAC_FROM_SOURCE:-0}" = "1" ]; then
+  # ── 從源碼自編 SDL2(opt-in)──────────────────────────────────────────
+  # ⚠ macOS CI 上這條路會卡很久(本機 build 僅 ~1min,但 GitHub macOS runner 上
+  # 從源碼編 + bundling 步驟會 hang/超慢,屢試不過)。本機 Mac 自編可用;CI 預設走 brew。
+  echo "== 1) 自編 SDL2 系列(MAC_FROM_SOURCE=1;只開遊戲用得到的格式)=="
+  build_dep SDL "$SDL2_VER"
+  build_dep SDL_image "$IMG_VER" -DSDL2IMAGE_VENDORED=ON -DSDL2IMAGE_SAMPLES=OFF \
+      -DSDL2IMAGE_PNG=ON -DSDL2IMAGE_AVIF=OFF -DSDL2IMAGE_JXL=OFF -DSDL2IMAGE_WEBP=OFF \
+      -DSDL2IMAGE_TIF=OFF -DSDL2IMAGE_JPG=OFF
+  build_dep SDL_ttf   "$TTF_VER" -DSDL2TTF_VENDORED=ON  -DSDL2TTF_SAMPLES=OFF -DSDL2TTF_HARFBUZZ=OFF
+  build_dep SDL_mixer "$MIX_VER" -DSDL2MIXER_VENDORED=ON -DSDL2MIXER_SAMPLES=OFF \
+      -DSDL2MIXER_VORBIS=STB -DSDL2MIXER_WAVE=ON -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_MOD=OFF \
+      -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_MP3=OFF
+  export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+else
+  # ── 預設:用 brew 的預編 SDL2(u4-cht 證實的 macOS CI 方案,快又穩)──────
+  echo "== 1) 用 brew 預編 SDL2(brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer)=="
+  BREW="$(brew --prefix)"
+  brew list sdl2 >/dev/null 2>&1 || brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer
+  export PKG_CONFIG_PATH="$BREW/lib/pkgconfig"
+fi
 
-echo "== 2) 編遊戲(指向自編 SDL2)=="
-export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+echo "== 2) 編遊戲(指向 SDL2)=="
 rm -rf "$WORK/cmake"
 cmake -S . -B "$WORK/cmake" \
     -DCMAKE_BUILD_TYPE=Release \
