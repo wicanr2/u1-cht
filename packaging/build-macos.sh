@@ -37,11 +37,20 @@ build_dep() {  # $1 repo  $2 tag  $3 extra-cmake-args
     echo "  built $name"
 }
 
-echo "== 1) 自編 SDL2 系列(vendored deps,universal)=="
+echo "== 1) 自編 SDL2 系列(vendored deps;只開遊戲用得到的格式以免巨庫拖垮編譯)=="
 build_dep SDL "$SDL2_VER"
-build_dep SDL_image "$IMG_VER" -DSDL2IMAGE_VENDORED=ON -DSDL2IMAGE_SAMPLES=OFF
+# SDL_image:遊戲只載 PNG → 關掉 AVIF(dav1d)/JXL(libjxl)/WEBP/TIF/JPG 這些
+# 從源碼編很慢的大庫(正是 universal/單架構都 >30min 的真兇),只留 PNG。
+build_dep SDL_image "$IMG_VER" -DSDL2IMAGE_VENDORED=ON -DSDL2IMAGE_SAMPLES=OFF \
+    -DSDL2IMAGE_PNG=ON \
+    -DSDL2IMAGE_AVIF=OFF -DSDL2IMAGE_JXL=OFF -DSDL2IMAGE_WEBP=OFF \
+    -DSDL2IMAGE_TIF=OFF -DSDL2IMAGE_JPG=OFF
 build_dep SDL_ttf   "$TTF_VER" -DSDL2TTF_VENDORED=ON  -DSDL2TTF_SAMPLES=OFF
-build_dep SDL_mixer "$MIX_VER" -DSDL2MIXER_VENDORED=ON -DSDL2MIXER_SAMPLES=OFF
+# SDL_mixer:遊戲只用 OGG(Vorbis)+ WAV → 關 FLAC/MOD/MIDI/OPUS/MP3。
+build_dep SDL_mixer "$MIX_VER" -DSDL2MIXER_VENDORED=ON -DSDL2MIXER_SAMPLES=OFF \
+    -DSDL2MIXER_VORBIS=ON -DSDL2MIXER_WAVE=ON \
+    -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_MOD=OFF -DSDL2MIXER_MIDI=OFF \
+    -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_MP3=OFF
 
 echo "== 2) 編遊戲(指向自編 SDL2)=="
 export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
