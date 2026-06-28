@@ -98,8 +98,11 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </dict></plist>
 PLIST
 # 收 dylib 進 .app/Contents/Frameworks 並修 install_name(u4-cht 慣例)
+# -s "$PREFIX/lib":自編 SDL 的 install name 是 @rpath/...,必須給搜尋路徑,
+#   否則 dylibbundler 找不到實體會進互動問答(CI 無 stdin → 無限「Try again」hang 40min)。
+# </dev/null:保險,真找不到時 fail-fast 而非卡死等輸入。
 dylibbundler -od -b -x "$MACOS/u1_cht" -d "$APP/Contents/Frameworks/" \
-    -p "@executable_path/../Frameworks/" >/dev/null
+    -p "@executable_path/../Frameworks/" -s "$PREFIX/lib" >/dev/null </dev/null
 # ad-hoc 簽章(降低 Gatekeeper 直接拒;u4-cht 經驗)
 codesign --force --deep --sign - "$APP" || true
 
