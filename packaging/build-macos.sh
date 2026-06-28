@@ -5,7 +5,10 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; cd "$ROOT"
 OUT="$ROOT/dist"; WORK="$ROOT/build-macos"; PREFIX="$WORK/prefix"
-ARCHS="arm64;x86_64"
+# 預設 universal(單一 runner 通吃兩架構);MAC_ARCH=arm64|x86_64 則只建該架構
+# (u4-cht 矩陣策略:雙 runner 各建單架構,避免 universal 編 vendored 相依太慢/卡)。
+ARCHS="${MAC_ARCH:-arm64;x86_64}"
+ARCHTAG="${MAC_ARCH:-universal}"; ARCHTAG="${ARCHTAG//;/-}"
 mkdir -p "$OUT" "$WORK" "$PREFIX"
 export MACOSX_DEPLOYMENT_TARGET=11.0
 
@@ -83,11 +86,11 @@ cat > "$WORK/安裝說明.txt" <<'NOTE'
    xattr -dr com.apple.quarantine Ultima1-CHT.app
 3. 遊戲內按 F1 看完整指令。存檔在 ~/Library/Application Support/LCY/Ultima1-CHT/。
 NOTE
-rm -f "$OUT/Ultima1-CHT-macos.zip"
-( cd "$WORK" && ditto -c -k --sequesterRsrc --keepParent Ultima1-CHT.app "$OUT/Ultima1-CHT-macos.zip" \
-  && zip -qj "$OUT/Ultima1-CHT-macos.zip" 安裝說明.txt )
+rm -f "$OUT/Ultima1-CHT-macos-${ARCHTAG}.zip"
+( cd "$WORK" && ditto -c -k --sequesterRsrc --keepParent Ultima1-CHT.app "$OUT/Ultima1-CHT-macos-${ARCHTAG}.zip" \
+  && zip -qj "$OUT/Ultima1-CHT-macos-${ARCHTAG}.zip" 安裝說明.txt )
 # .dmg 雙保險(失敗不致命)
 hdiutil create -volname "Ultima1-CHT" -srcfolder "$APP" -ov -format UDZO \
-    "$OUT/Ultima1-CHT-macos.dmg" >/dev/null 2>&1 || true
-echo "完成 → $OUT/Ultima1-CHT-macos.zip"
+    "$OUT/Ultima1-CHT-macos-${ARCHTAG}.dmg" >/dev/null 2>&1 || true
+echo "完成 → $OUT/Ultima1-CHT-macos-${ARCHTAG}.zip"
 lipo -archs "$MACOS/u1_cht" 2>/dev/null && echo "(以上為 binary 架構)"

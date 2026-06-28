@@ -72,7 +72,10 @@ macOS `~/Library/Application Support/`、Linux `~/.local/share/LCY/`);
 | macOS | `bash packaging/build-macos.sh`(僅 macOS runner;SDL2 自源碼編) | `Ultima1-CHT-macos.zip` |
 
 - **Windows**:MinGW 交叉編譯,自動下載 SDL2 系列 MinGW devel、收 DLL、靜態連 libgcc/libstdc++。
-- **macOS**:SDL2/image/ttf/mixer 從源碼自編(universal arm64+x86_64),`dylibbundler` 收 dylib 成 `.app`。
+- **macOS**:SDL2/image/ttf/mixer 從源碼自編,`dylibbundler` 收 dylib + ad-hoc 簽章 + `ditto` 打包成 `.app`。
+  - **策略**:**universal 優先**(`macos-latest` arm64 runner,`CMAKE_OSX_ARCHITECTURES=arm64;x86_64`,一個 `.app` 通吃 Apple Silicon + Intel)。
+  - **universal >30 分鐘未完成 / 失敗 → 退雙 runner 矩陣**(u4-cht 證實):`macos-14`(arm64)+ `macos-15-intel`(x86_64),`build-macos.sh` 認 `MAC_ARCH=arm64|x86_64` 各建單架構。
+  - ⚠ `macos-13` 已 **2025-12-04 退役**,勿用。
 - **CJK 字型**:`assets/fonts/u1-cjk.ttf`(子集 Noto Serif CJK)已隨庫,打包自帶,無系統字型依賴。
 
 ### CI(GitHub Actions)

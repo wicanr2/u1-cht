@@ -45,6 +45,15 @@ open_ultima 自述「very very early」。**已實作**:世界地圖移動、基
 - 設定/資料路徑集中於 `src/Configuration.h`,讀 `config.json`(需自備原始遊戲 `*.BIN`)。
 - 上游用 `taoJSON` + MSVC `throw exception("...")`(非可攜)→ Linux 需改 `nlohmann/json` + `std::runtime_error`。
 
+## 打包(`packaging/` + `.github/workflows/release.yml`,詳見 `docs/DEV-SETUP.md`)
+- 四平台:Windows(MinGW 交叉)、macOS(.app)、Linux AppImage;Android 規劃見 `docs/ANDROID-PLAN.md`。
+- 路徑穩健:啟動 `chdir(SDL_GetBasePath())`;存檔 `SDL_GetPrefPath`;gamedata 側載(版權,不入庫)。
+- 自帶子集 CJK 字型 `assets/fonts/u1-cjk.ttf`、vendored `third_party/SDL2_gfx` + `nlohmann`(免系統依賴)。
+- **macOS 策略**:**universal 優先**(`macos-latest` arm64 runner,`CMAKE_OSX_ARCHITECTURES=arm64;x86_64`,
+  從源碼自編 SDL)。**universal >30min 未完成/失敗 → 退 u4-cht 雙 runner 矩陣**
+  (`macos-14` arm64 + `macos-15-intel` x86_64,`build-macos.sh` 認 `MAC_ARCH`)。
+  ⚠ `macos-13` 已 2025-12-04 退役勿用。詳見記憶 `macos-ci-packaging-strategy`。
+
 ## 硬規則
 - 編譯一律走 docker(見 `docker/Dockerfile`)。
 - 原始遊戲資料檔(版權)不入庫(`.gitignore` 已排除 `*.BIN` / `gamedata/`)。
