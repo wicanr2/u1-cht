@@ -1,4 +1,5 @@
 #include "EGARowPlanarDecodeStrategy.h"
+#include <functional>   // std::reference_wrapper(GCC 11/MinGW 需顯式 include,否則型別不完整)
 
 uint32_t EGARowPlanarDecodeStrategy::GetPixel(int colorData) {
     // EGA palette is 16 colors only.

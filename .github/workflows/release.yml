@@ -1,0 +1,75 @@
+name: Build & Release
+
+# 推 v* tag 或手動觸發 → 三平台打包,上傳 artifact;tag 時建 Release。
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  linux-appimage:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安裝建置依賴(SDL2_gfx 已 vendored,不需系統套件)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake pkg-config wget file fuse libfuse2 \
+            libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev \
+            nlohmann-json3-dev
+      - name: 建 AppImage
+        run: bash packaging/build-appimage.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ultima1-CHT-linux-appimage
+          path: dist/*.AppImage
+
+  windows:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安裝 MinGW 交叉工具
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            g++-mingw-w64-x86-64 mingw-w64-tools cmake pkg-config wget zip
+      - name: 交叉編譯 Windows 包
+        run: bash packaging/build-windows.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ultima1-CHT-windows-x64
+          path: dist/Ultima1-CHT-windows-x64.zip
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安裝工具(SDL2 從源碼自編)
+        run: brew install cmake pkg-config dylibbundler autoconf automake libtool
+      - name: 建 macOS .app
+        run: bash packaging/build-macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ultima1-CHT-macos
+          path: dist/Ultima1-CHT-macos.zip
+
+  release:
+    needs: [linux-appimage, windows, macos]
+    runs-on: ubuntu-22.04
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts }
+      - name: 建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          body: |
+            創世紀一代繁體中文 remake — ${{ github.ref_name }}
+
+            內含:Windows(.zip)、macOS(.app zip)、Linux(.AppImage)。
+            ⚠ 需自備原版 Ultima I 的 *.BIN 放進 gamedata/(見 README）。
