@@ -45,17 +45,31 @@ jobs:
           path: dist/Ultima1-CHT-windows-x64.zip
 
   macos:
-    runs-on: macos-latest
+    # u4-cht 證實的雙 runner 矩陣:各建單一架構(universal 在單 runner 上自編 vendored
+    # 相依太慢,>30min;改每 arch 一台 runner 平行,各自單架構較快較穩)。
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14         # Apple Silicon
+            arch: arm64
+          - os: macos-15-intel   # Intel(macos-13 已 2025-12-04 退役)
+            arch: x86_64
     steps:
       - uses: actions/checkout@v4
       - name: 安裝工具(SDL2 從源碼自編)
         run: brew install cmake pkg-config dylibbundler autoconf automake libtool
-      - name: 建 macOS .app
+      - name: 建 macOS .app(${{ matrix.arch }})
+        env:
+          MAC_ARCH: ${{ matrix.arch }}
         run: bash packaging/build-macos.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: Ultima1-CHT-macos
-          path: dist/Ultima1-CHT-macos.zip
+          name: Ultima1-CHT-macos-${{ matrix.arch }}
+          path: |
+            dist/Ultima1-CHT-macos-${{ matrix.arch }}.zip
+            dist/Ultima1-CHT-macos-${{ matrix.arch }}.dmg
 
   release:
     needs: [linux-appimage, windows, macos]
