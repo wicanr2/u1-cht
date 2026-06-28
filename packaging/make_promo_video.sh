@@ -17,7 +17,10 @@ PARCH='#e8d8b0'; PARCHDK='#c9b083'
 RED='#7c1f12'; CREAM='#f4ecd8'
 FB=/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc      # 襯線粗(標題)
 FR=/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc   # 襯線(字幕)
-MUSIC=assets/music/fmtowns.ogg                                # 遊戲自製 BGM(對味、無版權)
+# FM Towns 版創世紀三部曲的「真實 CD 音軌」(CD-DA 錄音,非 FM 合成逼近)。
+# 可用 PROMO_MUSIC 覆寫挑不同軌(track03=主題曲最長)。
+MUSIC="${PROMO_MUSIC:-assets/music/fmtowns_cd.ogg}"
+[ -f "$MUSIC" ] || MUSIC=assets/music/fmtowns.ogg
 [ -f "$MUSIC" ] || MUSIC=assets/music/theme.ogg
 
 # 星空底(深夜藍 + 疏散星點 + 暗角)
