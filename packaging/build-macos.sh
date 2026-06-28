@@ -17,14 +17,18 @@ IMG_VER=release-2.8.2
 TTF_VER=release-2.22.0
 MIX_VER=release-2.8.0
 
-build_dep() {  # $1 repo  $2 tag  $3 extra-cmake-args
-    local name="$1" tag="$2"; shift 2
+build_dep() {  # $1 repo  $2 tag  $3 "需要的 submodule(空格分隔,空=無)"  $4.. cmake args
+    local name="$1" tag="$2" subs="$3"; shift 3
     if [ ! -d "$WORK/src/$name" ]; then
-        # --recurse-submodules:SDL_image/ttf/mixer 的 VENDORED 相依(libpng/freetype/
-        # harfbuzz/libogg/vorbis…)以 git submodule 放在 external/,不抓會編不出來。
-        git clone --depth 1 --recurse-submodules --shallow-submodules \
-            --branch "$tag" "https://github.com/libsdl-org/$name" "$WORK/src/$name"
+        # ⚠ 不用 --recurse-submodules:它會把 dav1d/libjxl/libavif/libwebp/harfbuzz/flac/opus
+        # 這些「我們 build 時關掉、但 clone 仍會抓」的巨大 repo 全下載(macOS CI 上正是卡死主因)。
+        # 改成只 init 真正需要的 submodule(PNG→zlib+libpng、ttf→freetype、mixer STB→無)。
+        git clone --depth 1 --branch "$tag" "https://github.com/libsdl-org/$name" "$WORK/src/$name"
+        if [ -n "$subs" ]; then
+            ( cd "$WORK/src/$name" && git submodule update --init --depth 1 $subs )
+        fi
     fi
+    echo "  [$(date +%H:%M:%S)] config $name"
     cmake -S "$WORK/src/$name" -B "$WORK/b/$name" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX="$PREFIX" \
@@ -32,31 +36,38 @@ build_dep() {  # $1 repo  $2 tag  $3 extra-cmake-args
         -DCMAKE_PREFIX_PATH="$PREFIX" \
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -DBUILD_SHARED_LIBS=ON "$@" >/dev/null
+    echo "  [$(date +%H:%M:%S)] build $name"
     cmake --build "$WORK/b/$name" -j"$(sysctl -n hw.ncpu)" >/dev/null
     cmake --install "$WORK/b/$name" >/dev/null
-    echo "  built $name"
+    echo "  [$(date +%H:%M:%S)] OK $name"
 }
 
-if [ "${MAC_FROM_SOURCE:-0}" = "1" ]; then
-  # ── 從源碼自編 SDL2(opt-in)──────────────────────────────────────────
-  # ⚠ macOS CI 上這條路會卡很久(本機 build 僅 ~1min,但 GitHub macOS runner 上
-  # 從源碼編 + bundling 步驟會 hang/超慢,屢試不過)。本機 Mac 自編可用;CI 預設走 brew。
-  echo "== 1) 自編 SDL2 系列(MAC_FROM_SOURCE=1;只開遊戲用得到的格式)=="
-  build_dep SDL "$SDL2_VER"
-  build_dep SDL_image "$IMG_VER" -DSDL2IMAGE_VENDORED=ON -DSDL2IMAGE_SAMPLES=OFF \
-      -DSDL2IMAGE_PNG=ON -DSDL2IMAGE_AVIF=OFF -DSDL2IMAGE_JXL=OFF -DSDL2IMAGE_WEBP=OFF \
-      -DSDL2IMAGE_TIF=OFF -DSDL2IMAGE_JPG=OFF
-  build_dep SDL_ttf   "$TTF_VER" -DSDL2TTF_VENDORED=ON  -DSDL2TTF_SAMPLES=OFF -DSDL2TTF_HARFBUZZ=OFF
-  build_dep SDL_mixer "$MIX_VER" -DSDL2MIXER_VENDORED=ON -DSDL2MIXER_SAMPLES=OFF \
-      -DSDL2MIXER_VORBIS=STB -DSDL2MIXER_WAVE=ON -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_MOD=OFF \
-      -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_MP3=OFF
-  export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
-else
-  # ── 預設:用 brew 的預編 SDL2(u4-cht 證實的 macOS CI 方案,快又穩)──────
-  echo "== 1) 用 brew 預編 SDL2(brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer)=="
+if [ "${MAC_USE_BREW:-0}" = "1" ]; then
+  # ── 應急 opt-in:brew 預編(預設不走;此專案要求 SDL2 自編)──────────────
+  echo "== 1) 用 brew 預編 SDL2(MAC_USE_BREW=1)=="
   BREW="$(brew --prefix)"
   brew list sdl2 >/dev/null 2>&1 || brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer
   export PKG_CONFIG_PATH="$BREW/lib/pkgconfig"
+else
+  # ── 預設:從源碼自編 SDL2 系列(只 init 需要的 submodule,跳過巨庫 clone)──
+  echo "== 1) 自編 SDL2 系列(只開遊戲用得到的格式 + 選擇性 submodule)=="
+  build_dep SDL       "$SDL2_VER" ""
+  # SDL_image 只要 PNG → 只 init zlib + libpng(跳過 dav1d/libavif/libjxl/libwebp/libtiff/libjpeg)
+  build_dep SDL_image "$IMG_VER" "external/zlib external/libpng" \
+      -DSDL2IMAGE_VENDORED=ON -DSDL2IMAGE_SAMPLES=OFF \
+      -DSDL2IMAGE_PNG=ON -DSDL2IMAGE_AVIF=OFF -DSDL2IMAGE_JXL=OFF -DSDL2IMAGE_WEBP=OFF \
+      -DSDL2IMAGE_TIF=OFF -DSDL2IMAGE_JPG=OFF
+  # SDL_ttf 只要 freetype(harfbuzz off → 跳過 harfbuzz submodule)
+  build_dep SDL_ttf   "$TTF_VER" "external/freetype" \
+      -DSDL2TTF_VENDORED=ON -DSDL2TTF_SAMPLES=OFF -DSDL2TTF_HARFBUZZ=OFF
+  # SDL_mixer:VORBIS=STB 內建、WAVE 內建 → 關掉所有需 submodule 的格式(含 WavPack/GME,
+  # 它們預設 ON 且 VENDORED 會要 external/wavpack、external/libgme)→ 不需任何 submodule
+  build_dep SDL_mixer "$MIX_VER" "" \
+      -DSDL2MIXER_VENDORED=ON -DSDL2MIXER_SAMPLES=OFF \
+      -DSDL2MIXER_VORBIS=STB -DSDL2MIXER_WAVE=ON \
+      -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_MOD=OFF -DSDL2MIXER_MIDI=OFF \
+      -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_MP3=OFF -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_GME=OFF
+  export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
 fi
 
 echo "== 2) 編遊戲(指向 SDL2)=="
