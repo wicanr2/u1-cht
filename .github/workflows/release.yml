@@ -68,9 +68,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Ultima1-CHT-macos-${{ matrix.arch }}
-          path: |
-            dist/Ultima1-CHT-macos-${{ matrix.arch }}.zip
-            dist/Ultima1-CHT-macos-${{ matrix.arch }}.dmg
+          path: dist/Ultima1-CHT-macos-${{ matrix.arch }}.zip
 
   release:
     needs: [linux-appimage, windows, macos]

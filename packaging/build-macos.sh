@@ -101,8 +101,7 @@ NOTE
 rm -f "$OUT/Ultima1-CHT-macos-${ARCHTAG}.zip"
 ( cd "$WORK" && ditto -c -k --sequesterRsrc --keepParent Ultima1-CHT.app "$OUT/Ultima1-CHT-macos-${ARCHTAG}.zip" \
   && zip -qj "$OUT/Ultima1-CHT-macos-${ARCHTAG}.zip" 安裝說明.txt )
-# .dmg 雙保險(失敗不致命)
-hdiutil create -volname "Ultima1-CHT" -srcfolder "$APP" -ov -format UDZO \
-    "$OUT/Ultima1-CHT-macos-${ARCHTAG}.dmg" >/dev/null 2>&1 || true
+# 註:不做 .dmg —— hdiutil create 在 CI/headless 會 hang(本機 SDL build 僅數十秒,
+# 50min 卡死定位於此)。zip(ditto)即 macOS 主交付;需要 .dmg 可本機另跑。
 echo "完成 → $OUT/Ultima1-CHT-macos-${ARCHTAG}.zip"
 lipo -archs "$MACOS/u1_cht" 2>/dev/null && echo "(以上為 binary 架構)"
