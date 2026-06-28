@@ -17,7 +17,10 @@ MIX_VER=release-2.8.0
 build_dep() {  # $1 repo  $2 tag  $3 extra-cmake-args
     local name="$1" tag="$2"; shift 2
     if [ ! -d "$WORK/src/$name" ]; then
-        git clone --depth 1 --branch "$tag" "https://github.com/libsdl-org/$name" "$WORK/src/$name"
+        # --recurse-submodules:SDL_image/ttf/mixer 的 VENDORED 相依(libpng/freetype/
+        # harfbuzz/libogg/vorbis…)以 git submodule 放在 external/,不抓會編不出來。
+        git clone --depth 1 --recurse-submodules --shallow-submodules \
+            --branch "$tag" "https://github.com/libsdl-org/$name" "$WORK/src/$name"
     fi
     cmake -S "$WORK/src/$name" -B "$WORK/b/$name" \
         -DCMAKE_BUILD_TYPE=Release \
