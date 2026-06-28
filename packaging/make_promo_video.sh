@@ -69,16 +69,20 @@ endcard(){  # $1 out
   convert "$1" -font "$FR" -pointsize 26 -gravity center -fill "$PARCHDK" -annotate +0+250 "github.com/wicanr2/u1-cht" "$1"
 }
 
-# 羊皮紙引子卡(底紋 + 史詩字幕)
+# 羊皮紙引子卡(有機紙紋 + 做舊暗角 + 史詩字幕)
 parchcard(){  # $1 out  $2 line1  $3 line2  $4 line3
+  # 淺羊皮紙底 + 適度可見的纖維噪聲(multiply 壓在亮底上)+ 輕做舊暗角
   convert -size ${W}x${H} xc:"$PARCH" \
-    \( -size ${W}x${H} xc: +noise Gaussian -channel A -blur 0x1 -colorspace Gray -level 45%,72% \) \
-    -compose multiply -composite -fill "$PARCHDK" -colorize 8% \
-    \( +clone -fill black -colorize 100% -fill white -draw "roundrectangle 50,50 $((W-50)),$((H-50)) 30,30" -blur 0x70 \) \
+    \( -size ${W}x${H} xc: +noise Gaussian -colorspace Gray -level 35%,66% -blur 0x0.5 \) \
+    -compose multiply -composite \
+    \( -size ${W}x${H} xc: +noise Impulse -colorspace Gray -level 80%,100% \) \
+    -compose multiply -composite \
+    -fill "$PARCHDK" -colorize 7% \
+    \( +clone -fill black -colorize 100% -fill white \
+       -draw "roundrectangle 44,44 $((W-44)),$((H-44)) 22,22" -blur 0x55 -level 0%,72% \) \
     -compose multiply -composite "$1"
-  convert "$1" -font "$FR" -gravity center -fill '#3a2c12' -pointsize 42 \
+  convert "$1" -font "$FR" -gravity center -fill '#3a2c0e' -pointsize 42 \
     -annotate +0-70 "$2" -annotate +0+0 "$3" -annotate +0+70 "$4" "$1"
-  # 羊皮紙金框
   convert "$1" -fill none -stroke "$GOLDSH" -strokewidth 2 -draw "roundrectangle 36,36 $((W-36)),$((H-36)) 14,14" "$1"
 }
 
@@ -97,9 +101,10 @@ montage7(){  # $1 out
   starfield "$TMP/_mb.png"
   montage "$SHOT/screen_ega.png" "$SHOT/screen_cga.png" "$SHOT/screen_fmtowns.png" "$SHOT/screen_msx.png" \
           "$SHOT/screen_pc98.png" "$SHOT/screen_iigs.png" "$SHOT/screen_atari.png" "$SHOT/screen_vga.png" \
-          -tile 4x2 -geometry 290x180+6+6 -background none "$TMP/_grid.png"
-  convert "$TMP/_mb.png" \( "$TMP/_grid.png" -resize ${W}x480\> \) -gravity north -geometry +0+60 -compose over -composite "$1"
-  emboss "$1" "$FB" 42 "七平台美術　橫跨四十年的經典重生" 300
+          -tile 4x2 -geometry 300x188+5+5 -bordercolor "$GOLDSH" -border 1 -background none "$TMP/_grid.png"
+  convert "$TMP/_mb.png" \( "$TMP/_grid.png" -resize $((W*92/100))x560\> \) \
+    -gravity center -geometry +0-26 -compose over -composite "$1"
+  emboss "$1" "$FB" 40 "七平台美術　橫跨四十年的經典重生" 312
   convert "$1" -fill none -stroke "$GOLDSH" -strokewidth 2 -draw "roundrectangle 28,28 $((W-28)),$((H-28)) 12,12" "$1"
 }
 
