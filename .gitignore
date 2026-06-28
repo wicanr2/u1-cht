@@ -4,6 +4,9 @@
 # 建置產物
 /build/
 /dist/
+/build-appimage/
+/build-windows/
+/build-macos/
 cmake-build-*/
 *.o
 *.obj

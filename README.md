@@ -154,9 +154,9 @@ docker run --rm -v "$PWD":/work -w /work u1-cht \
 
 **執行需求**
 
-- SDL2 / SDL2_image / SDL2_ttf / SDL2_gfx / SDL2_mixer、nlohmann/json(Docker 內已備)。
-- **原始遊戲資料檔**(版權，使用者自備，來自 GOG 版 U1):放入 `gamedata/`。
-- `config.json`(複製 `config.json.example` 調路徑;可調 `speed_pct` / `spawn_pct` / `tileset`)。
+- SDL2 / SDL2_image / SDL2_ttf / SDL2_mixer、nlohmann/json(Docker 內已備;**SDL2_gfx 已 vendored** 直接編入)。
+- **原始遊戲資料檔**(版權，使用者自備,來自 GOG 版 U1):放入 `gamedata/`。
+- `config.json`(複製 `config.json.example` 調路徑;可調 `speed_pct` / `spawn_pct` / `food_pct` / `tileset`)。
 
 **測試(game tester)**
 
@@ -164,6 +164,11 @@ docker run --rm -v "$PWD":/work -w /work u1-cht \
 docker run --rm -v "$PWD":/work -w /work u1-cht bash tools/game_tester.sh
 # 在 xvfb 下驅動正常玩家路徑(移動／切 tileset／音樂／離開)，逐步截圖到 tests/snapshots/out/
 ```
+
+**打包(Windows / macOS / Linux AppImage)**
+
+三平台打包腳本在 `packaging/`,CI 在 `.github/workflows/release.yml`(推 `v*` tag 自動發 Release)。
+完整建置・執行・測試・打包流程見 **[`docs/DEV-SETUP.md`](docs/DEV-SETUP.md)**。
 
 ---
 
