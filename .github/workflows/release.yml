@@ -48,6 +48,7 @@ jobs:
     # u4-cht 證實的雙 runner 矩陣:各建單一架構(universal 在單 runner 上自編 vendored
     # 相依太慢,>30min;改每 arch 一台 runner 平行,各自單架構較快較穩)。
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 40   # 護欄:從源碼編 SDL 卡住時快速失敗,別卡到預設 6 小時
     strategy:
       fail-fast: false
       matrix:
