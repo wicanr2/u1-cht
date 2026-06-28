@@ -12,7 +12,15 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
-find_package(nlohmann_json 3 REQUIRED)
+
+# nlohmann/json:有系統套件用之,否則用 vendored 單檔(MinGW 交叉編譯無 CMake package)
+find_package(nlohmann_json 3 QUIET)
+if(NOT nlohmann_json_FOUND)
+    message(STATUS "nlohmann_json: using vendored third_party/nlohmann/json.hpp")
+    add_library(u1_nlohmann_json INTERFACE)
+    add_library(nlohmann_json::nlohmann_json ALIAS u1_nlohmann_json)
+    target_include_directories(u1_nlohmann_json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
+endif()
 
 # SDL2_gfx 無官方跨平台二進位 → vendor 原始碼直接編進(Windows/macOS/Linux 一致,免系統依賴)
 set(SDL2_GFX_SRC
@@ -28,6 +36,11 @@ target_include_directories(u1_cht PRIVATE
         ${SDL2_TTF_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS}
         third_party/SDL2_gfx
         src)
+
+# pkg-config 給的是 library 名稱;link dir 要另外加(交叉編譯 sysroot 不在預設搜尋路徑)
+target_link_directories(u1_cht PRIVATE
+        ${SDL2_LIBRARY_DIRS} ${SDL2_IMAGE_LIBRARY_DIRS}
+        ${SDL2_TTF_LIBRARY_DIRS} ${SDL2_MIXER_LIBRARY_DIRS})
 
 target_link_libraries(u1_cht PRIVATE
         ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
