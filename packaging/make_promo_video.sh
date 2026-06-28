@@ -131,7 +131,8 @@ endcard "$TMP/99.png"
 
 echo "== 卡片轉片段(Ken Burns)=="
 LIST="$TMP/list.txt"; : > "$LIST"
-for spec in 00:5.0 01:6.0 02:4.5 03:4.5 04:4.5 05:4.5 06:4.5 07:5.0 08:5.0 09:5.0 99:6.0; do
+# 段落總長刻意 ≈48s(略短於 fmtowns.ogg 49.9s)→ 音樂只播一次、不必 loop(loop 接縫是「怪」的主因)
+for spec in 00:4.5 01:5.0 02:4.0 03:4.0 04:4.0 05:4.0 06:4.0 07:4.5 08:4.5 09:4.0 99:5.5; do
   f=${spec%%:*}; d=${spec##*:}
   kb "$TMP/$f.png" "$TMP/seg_$f.mp4" "$d"
   echo "file '$TMP/seg_$f.mp4'" >> "$LIST"
@@ -141,10 +142,11 @@ echo "== concat =="
 ffmpeg -y -loglevel error -f concat -safe 0 -i "$LIST" -c:v libx264 -pix_fmt yuv420p -crf 19 "$TMP/silent.mp4"
 DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$TMP/silent.mp4")
 
-echo "== 鋪遊戲音樂(loop + 淡入淡出)總長 ${DUR}s =="
-FO=$(awk "BEGIN{print $DUR-3}")
-ffmpeg -y -loglevel error -stream_loop -1 -i "$MUSIC" -i "$TMP/silent.mp4" \
-  -filter_complex "[0:a]atrim=0:$DUR,afade=t=in:st=0:d=2,afade=t=out:st=$FO:d=3,volume=0.85[a]" \
+MDUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$MUSIC")
+echo "== 鋪 FM Towns 遊戲音樂(只播一次,不 loop;影片 ${DUR}s ≤ 音樂 ${MDUR}s)=="
+FO=$(awk "BEGIN{print $DUR-3.5}")
+ffmpeg -y -loglevel error -i "$MUSIC" -i "$TMP/silent.mp4" \
+  -filter_complex "[0:a]atrim=0:$DUR,afade=t=in:st=0:d=2.5,afade=t=out:st=$FO:d=3.5,volume=0.9[a]" \
   -map 1:v -map "[a]" -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart \
   "$OUT/u1cht-promo.mp4"
 rm -rf "$TMP"
