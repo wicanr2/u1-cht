@@ -8,7 +8,6 @@
 #include "../common/ShapeUtils.h"
 #include "../common/Fonts.h"
 #include "../common/Colors.h"
-#include "enemies/Thief.h"
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>

@@ -36,7 +36,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            g++-mingw-w64-x86-64 mingw-w64-tools cmake pkg-config wget zip
+            g++-mingw-w64-x86-64 mingw-w64-tools cmake make pkg-config wget zip
       - name: 交叉編譯 Windows 包
         run: bash packaging/build-windows.sh
       - uses: actions/upload-artifact@v4

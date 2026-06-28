@@ -27,6 +27,7 @@ build_dep() {  # $1 repo  $2 tag  $3 extra-cmake-args
         -DCMAKE_INSTALL_PREFIX="$PREFIX" \
         -DCMAKE_OSX_ARCHITECTURES="$ARCHS" \
         -DCMAKE_PREFIX_PATH="$PREFIX" \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -DBUILD_SHARED_LIBS=ON "$@" >/dev/null
     cmake --build "$WORK/b/$name" -j"$(sysctl -n hw.ncpu)" >/dev/null
     cmake --install "$WORK/b/$name" >/dev/null
@@ -67,11 +68,26 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
-# 收 dylib 進 .app 並修 install_name(@executable_path 相對)
-dylibbundler -od -b -x "$MACOS/u1_cht" -d "$MACOS/libs" -p "@executable_path/libs/" >/dev/null
+# 收 dylib 進 .app/Contents/Frameworks 並修 install_name(u4-cht 慣例)
+dylibbundler -od -b -x "$MACOS/u1_cht" -d "$APP/Contents/Frameworks/" \
+    -p "@executable_path/../Frameworks/" >/dev/null
+# ad-hoc 簽章(降低 Gatekeeper 直接拒;u4-cht 經驗)
+codesign --force --deep --sign - "$APP" || true
 
-echo "== 4) 打包 zip =="
-( cd "$WORK" && zip -qry "$OUT/Ultima1-CHT-macos.zip" Ultima1-CHT.app )
-cp packaging/README-dist.txt "$OUT/README-macos.txt"
+echo "== 4) 打包 zip(ditto 保留 .app 結構/符號連結/簽章;非 zip)=="
+cat > "$WORK/安裝說明.txt" <<'NOTE'
+創世紀一代繁體中文 remake(macOS）
+1. 解壓得到 Ultima1-CHT.app。把原版 *.BIN 放進 app 內 Contents/MacOS/gamedata/
+   (或與 app 同層的 gamedata/)。
+2. 首次開啟若被 Gatekeeper 擋:右鍵「打開」→「打開」,或終端機:
+   xattr -dr com.apple.quarantine Ultima1-CHT.app
+3. 遊戲內按 F1 看完整指令。存檔在 ~/Library/Application Support/LCY/Ultima1-CHT/。
+NOTE
+rm -f "$OUT/Ultima1-CHT-macos.zip"
+( cd "$WORK" && ditto -c -k --sequesterRsrc --keepParent Ultima1-CHT.app "$OUT/Ultima1-CHT-macos.zip" \
+  && zip -qj "$OUT/Ultima1-CHT-macos.zip" 安裝說明.txt )
+# .dmg 雙保險(失敗不致命)
+hdiutil create -volname "Ultima1-CHT" -srcfolder "$APP" -ov -format UDZO \
+    "$OUT/Ultima1-CHT-macos.dmg" >/dev/null 2>&1 || true
 echo "完成 → $OUT/Ultima1-CHT-macos.zip"
-lipo -archs "$MACOS/u1_cht" 2>/dev/null && echo "(universal binary)"
+lipo -archs "$MACOS/u1_cht" 2>/dev/null && echo "(以上為 binary 架構)"
