@@ -45,6 +45,11 @@ public:
     static bool getChaseMonsters() { return _chaseMonsters; }
     static void setChaseMonsters(bool v) { _chaseMonsters = v; }
 
+    // 場景切換(進出城鎮/城堡/地牢)時是否播 Apple II 5.25" 磁碟機讀取聲(MAME CC0 樣本)。
+    // 預設關;開 = 每次場景轉換播一次 disk.ogg(懷舊效果,issue #2)。
+    static bool getDiskSound() { return _diskSound; }
+    static void setDiskSound(bool v) { _diskSound = v; }
+
     static string getEgaOverworldTilesFilePath() {
         return getGameFilesPath() + "EGATILES.BIN";
     }
@@ -90,6 +95,7 @@ private:
     static int _spawnPct;
     static int _foodPct;
     static bool _chaseMonsters;
+    static bool _diskSound;
     static string _launchDir;          // 啟動目錄(chdir 前)
     static string _resolvedGameFiles;  // 解析後的 gamedata 路徑
     static int clampPct(int v) { return v < 10 ? 10 : (v > 200 ? 200 : v); }

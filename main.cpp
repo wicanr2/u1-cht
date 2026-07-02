@@ -92,7 +92,7 @@ static void drawSettingsMenu(SDL_Renderer *renderer, int row) {
     SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
     SDL_RenderFillRect(renderer, &scrim);
 
-    const int bw = 440, bh = 246;
+    const int bw = 440, bh = 278;
     SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
     SDL_RenderFillRect(renderer, &box);
@@ -113,7 +113,9 @@ static void drawSettingsMenu(SDL_Renderer *renderer, int row) {
          box.x + 40, box.y + 120, row == 2 ? on : off);
     line((row == 3 ? "▶ " : "  ") + (I18n::t("ui.settings.chase") + string(Configuration::getChaseMonsters() ? I18n::t("ui.on") : I18n::t("ui.off"))),
          box.x + 40, box.y + 152, row == 3 ? on : off);
-    line(I18n::t("ui.settings.hint"), box.x + 36, box.y + 200, off);
+    line((row == 4 ? "▶ " : "  ") + (I18n::t("ui.settings.disk") + string(Configuration::getDiskSound() ? I18n::t("ui.on") : I18n::t("ui.off"))),
+         box.x + 40, box.y + 184, row == 4 ? on : off);
+    line(I18n::t("ui.settings.hint"), box.x + 36, box.y + 232, off);
 }
 
 // F1 說明畫面:列出全部指令(置中 modal,640x400 覆蓋層)
@@ -812,11 +814,13 @@ int main(int argc, char *args[]) {
                         if (e.type == SDL_KEYDOWN) {
                             auto k = e.key.keysym.sym;
                             if (k == SDLK_F6 || k == SDLK_ESCAPE) settingsActive = false;
-                            else if (k == SDLK_UP) settingsRow = (settingsRow + 3) % 4;
-                            else if (k == SDLK_DOWN) settingsRow = (settingsRow + 1) % 4;
+                            else if (k == SDLK_UP) settingsRow = (settingsRow + 4) % 5;
+                            else if (k == SDLK_DOWN) settingsRow = (settingsRow + 1) % 5;
                             else if (k == SDLK_LEFT || k == SDLK_RIGHT) {
                                 if (settingsRow == 3) {
                                     Configuration::setChaseMonsters(!Configuration::getChaseMonsters());  // 開關
+                                } else if (settingsRow == 4) {
+                                    Configuration::setDiskSound(!Configuration::getDiskSound());  // 磁碟機音效開關
                                 } else {
                                     int d = (k == SDLK_RIGHT) ? 5 : -5;
                                     if (settingsRow == 0) Configuration::setSpeedPct(Configuration::getSpeedPct() + d);

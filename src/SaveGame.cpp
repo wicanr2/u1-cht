@@ -67,6 +67,7 @@ bool SaveGame::save(const Player &player, const std::string &path) {
         {"spawn_pct", Configuration::getSpawnPct()},
         {"food_pct", Configuration::getFoodPct()},
         {"chase_monsters", Configuration::getChaseMonsters()},
+        {"disk_sound", Configuration::getDiskSound()},
     };
 
     std::ofstream out(path, std::ios::trunc);
@@ -125,6 +126,7 @@ bool SaveGame::load(Player &player, const std::string &path) {
             Configuration::setSpawnPct(s.value("spawn_pct", Configuration::getSpawnPct()));
             Configuration::setFoodPct(s.value("food_pct", Configuration::getFoodPct()));
             Configuration::setChaseMonsters(s.value("chase_monsters", Configuration::getChaseMonsters()));
+            Configuration::setDiskSound(s.value("disk_sound", Configuration::getDiskSound()));
         }
     } catch (const std::exception &ex) {
         printf("[SaveGame] 存檔損毀,略過: %s (%s)\n", path.c_str(), ex.what());

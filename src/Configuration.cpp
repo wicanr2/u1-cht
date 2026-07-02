@@ -10,6 +10,7 @@ int Configuration::_speedPct = 100;
 int Configuration::_spawnPct = 55;
 int Configuration::_foodPct = 100;
 bool Configuration::_chaseMonsters = false;
+bool Configuration::_diskSound = false;
 string Configuration::_launchDir;
 string Configuration::_resolvedGameFiles = "./gamedata/";
 
@@ -27,6 +28,7 @@ void Configuration::init() {
     _spawnPct = clampPct(_value.value("spawn_pct", 55));
     _foodPct = clampPct(_value.value("food_pct", 100));
     _chaseMonsters = _value.value("chase_monsters", false);
+    _diskSound = _value.value("disk_sound", false);
 
     // 解析版權 gamedata 目錄:先試執行檔旁(chdir 後的 CWD),找不到 MAP.BIN
     // 再試啟動目錄旁(AppImage/zip 把 BIN 放在程式旁的情形)。

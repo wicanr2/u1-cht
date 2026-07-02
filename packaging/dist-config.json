@@ -8,5 +8,6 @@
   "food_pct": 100,
   "tileset": "png",
   "tileset_png": "assets/tilesets/fmtowns.png",
-  "chase_monsters": false
+  "chase_monsters": false,
+  "disk_sound": false
 }
