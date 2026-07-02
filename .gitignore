@@ -40,3 +40,4 @@ assets/music/**/*.ogg
 
 # 執行期存檔
 save.json
+build-verify/
