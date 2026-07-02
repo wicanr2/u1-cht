@@ -603,7 +603,10 @@ int main(int argc, char *args[]) {
             // 音樂跟隨平台:平台 BGM 載入失敗(缺檔)→ 退回占位曲,不中斷。
             auto applyMusic = [&](int idx) {
                 std::string m = idx >= kBinModes ? pngPacks[idx - kBinModes].music : kDefaultMusic;
-                if (!Audio::playMusic(m)) Audio::playMusic(kDefaultMusic);
+                // 平台原版 BGM 常屬版權素材未隨附(見 .gitignore):quiet 嘗試,缺檔靜默 fallback
+                // 占位曲(theme.ogg,已入庫),不噴 error 誤導使用者以為壞掉。
+                bool quiet = (m != kDefaultMusic);
+                if (!Audio::playMusic(m, quiet) && m != kDefaultMusic) Audio::playMusic(kDefaultMusic);
             };
             auto applyTileset = [&](int idx) {
                 if (idx >= kBinModes)

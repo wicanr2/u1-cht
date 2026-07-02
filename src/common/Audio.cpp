@@ -29,13 +29,15 @@ void Audio::init() {
     printf("[Audio] initialized\n");
 }
 
-bool Audio::playMusic(const std::string &path) {
+bool Audio::playMusic(const std::string &path, bool quiet) {
     if (!_ok) return false;
     // 同一首已在播 → 不重載(避免切回同平台時音樂從頭跳)。
     if (_hasMusic && path == gMusicPath) return true;
     Mix_Music *next = Mix_LoadMUS(path.c_str());
     if (!next) {
-        printf("[Audio] Mix_LoadMUS failed (%s): %s\n", path.c_str(), Mix_GetError());
+        // quiet:平台原版 BGM 屬版權素材、常未隨附(見 .gitignore),缺檔是預期 → 不噴 error,
+        // 由呼叫端 fallback 占位曲。非 quiet(如占位曲也載不到)才是真問題,印出診斷。
+        if (!quiet) printf("[Audio] Mix_LoadMUS failed (%s): %s\n", path.c_str(), Mix_GetError());
         return false;
     }
     if (gMusic) { Mix_HaltMusic(); Mix_FreeMusic(gMusic); }  // 釋放舊曲,避免 leak

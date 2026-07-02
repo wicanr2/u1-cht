@@ -8,8 +8,9 @@ public:
     static void init();
     static void shutdown();
 
-    // 載入並循環播放背景音樂(ogg/mp3/wav)。失敗則靜默忽略。
-    static bool playMusic(const std::string &path);
+    // 載入並循環播放背景音樂(ogg/mp3/wav)。失敗回傳 false。
+    // quiet=true:缺檔屬預期(如版權平台曲未隨附),不印 error,交由呼叫端 fallback。
+    static bool playMusic(const std::string &path, bool quiet = false);
 
     // 切換音樂靜音(暫停/恢復)。回傳切換後是否「開啟」。
     static bool toggleMute();
