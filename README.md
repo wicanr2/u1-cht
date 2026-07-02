@@ -216,6 +216,7 @@ docker run --rm -v "$PWD":/work -w /work u1-cht bash tools/game_tester.sh
 | [**`docs/re/apple-iigs-reverse-engineering.md`**](docs/re/apple-iigs-reverse-engineering.md) | **★ Apple IIgs 逆向工程全紀錄**(woz 抽檔 → 反組譯 65816 → 破解 LZSS 圖格式) |
 | [`docs/re/`](docs/re/) | 逆向工程經驗:MSX openMSX、Apple IIgs MAME/GS-OS、6502 方法論等 |
 | [`docs/adr/0001-pluggable-asset-packs.md`](docs/adr/0001-pluggable-asset-packs.md) | 可替換素材包架構決策 |
+| [**`docs/engineering-notes.md`**](docs/engineering-notes.md) | **★ 打包與交付工程筆記**(cwd 陷阱、程式碼/資產/版權三分離、缺素材降級、MAME CC0 音效、只公開程式碼的發布邊界) |
 
 ---
 
