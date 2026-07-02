@@ -61,7 +61,10 @@ done
 # winpthread runtime DLL(libgcc/libstdc++ 已靜態連)
 wp=$(find /usr -name libwinpthread-1.dll 2>/dev/null | head -1)
 [ -n "$wp" ] && cp -n "$wp" "$PKG/"
-echo "  bundled DLLs:"; ls "$PKG"/*.dll | xargs -n1 basename | sort
+# strip 符號:官方預編 SDL2_ttf.dll 帶完整 debug 符號達 65M(Mac 自編同庫僅 798K),
+# strip 後大幅瘦身。exe/其他 DLL 一併去符號。
+x86_64-w64-mingw32-strip --strip-unneeded "$PKG"/*.dll "$PKG"/*.exe 2>/dev/null || true
+echo "  bundled DLLs:"; ls -1sh "$PKG"/*.dll | sed 's|/.*/|  |'
 
 ( cd "$WORK" && zip -qr "$OUT/Ultima1-CHT-windows-x64.zip" "$(basename "$PKG")" )
 echo "完成 → $OUT/Ultima1-CHT-windows-x64.zip"
