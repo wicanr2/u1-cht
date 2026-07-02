@@ -1,13 +1,16 @@
-name: Build & Release
+name: Build (artifacts only)
 
-# 推 v* tag 或手動觸發 → 三平台打包,上傳 artifact;tag 時建 Release。
+# 推 v* tag 或手動觸發 → 四平台打包,artifact 上傳到 Actions(供本機 gh run download 做個人完整包)。
+# ⚠ [HARD] 刻意「不建 GitHub Release、不上傳任何二進位/完整包」到公開頁面。
+#   L.CY 指示:GitHub 只公開「程式碼」;編譯產物與含版權原版 gamedata 的完整包一律本機自留、不對外散布。
+#   要標版本用 git tag(GitHub 自動附的 Source code 是純原始碼 archive,不含 build 產物/gamedata)。
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read   # 只讀:build+upload-artifact 不需 write;移除建 Release 的權限,杜絕誤上傳
 
 jobs:
   linux-appimage:
@@ -70,19 +73,5 @@ jobs:
           name: Ultima1-CHT-macos-${{ matrix.arch }}
           path: dist/Ultima1-CHT-macos-${{ matrix.arch }}.zip
 
-  release:
-    needs: [linux-appimage, windows, macos]
-    runs-on: ubuntu-22.04
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - uses: actions/download-artifact@v4
-        with: { path: artifacts }
-      - name: 建 GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/**/*
-          body: |
-            創世紀一代繁體中文 remake — ${{ github.ref_name }}
-
-            內含:Windows(.zip)、macOS(.app zip)、Linux(.AppImage)。
-            ⚠ 需自備原版 Ultima I 的 *.BIN 放進 gamedata/(見 README）。
+  # (刻意移除 release job)不自動建 GitHub Release、不上傳二進位/完整包。理由見檔頭 [HARD]。
+  # 需要成品時:本機 `gh run download <run>` 抓 artifact,再 packaging/make_complete_backup.sh 注入 gamedata。
