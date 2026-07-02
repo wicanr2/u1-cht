@@ -113,7 +113,9 @@ static void drawSettingsMenu(SDL_Renderer *renderer, int row) {
          box.x + 40, box.y + 120, row == 2 ? on : off);
     line((row == 3 ? "▶ " : "  ") + (I18n::t("ui.settings.chase") + string(Configuration::getChaseMonsters() ? I18n::t("ui.on") : I18n::t("ui.off"))),
          box.x + 40, box.y + 152, row == 3 ? on : off);
-    line((row == 4 ? "▶ " : "  ") + (I18n::t("ui.settings.disk") + string(Configuration::getDiskSound() ? I18n::t("ui.on") : I18n::t("ui.off"))),
+    const string &dsMode = Configuration::getDiskSound();
+    string dsLabel = dsMode == "mame" ? "MAME" : dsMode == "applefritter" ? "Applefritter" : I18n::t("ui.off");
+    line((row == 4 ? "▶ " : "  ") + (I18n::t("ui.settings.disk") + dsLabel),
          box.x + 40, box.y + 184, row == 4 ? on : off);
     line(I18n::t("ui.settings.hint"), box.x + 36, box.y + 232, off);
 }
@@ -820,7 +822,7 @@ int main(int argc, char *args[]) {
                                 if (settingsRow == 3) {
                                     Configuration::setChaseMonsters(!Configuration::getChaseMonsters());  // 開關
                                 } else if (settingsRow == 4) {
-                                    Configuration::setDiskSound(!Configuration::getDiskSound());  // 磁碟機音效開關
+                                    Configuration::cycleDiskSound();  // 循環音源:關→MAME→Applefritter
                                 } else {
                                     int d = (k == SDLK_RIGHT) ? 5 : -5;
                                     if (settingsRow == 0) Configuration::setSpeedPct(Configuration::getSpeedPct() + d);

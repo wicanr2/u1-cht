@@ -71,7 +71,9 @@ issue #2 要「場景切換播 Apple II 5.25" 磁碟機讀取聲」,素材來源
 
 - 它是真實磁碟機錄音,而且授權是 **CC0 1.0**(公有領域,可商用、可修改、免署名)——對任何專案都乾淨。
 - 檔名有規律:`35_*` 是 3.5" 磁碟機、`525_*` 是 5.25"(Apple II Disk II 用這組),各含 spin(馬達)/ seek(尋道)/ step(單步)。
-- 這個專案用 `525_spin_start_loaded + 525_seek_20ms + 525_seek_6ms` 串成一段 0.7 秒的「起轉 → 跨道 → 找道」讀取聲(`assets/sfx/disk.ogg`),原始樣本與授權說明保留在 `assets/sfx/mame-floppy/`。
+- 這個專案用 `525_spin_start_loaded + 525_seek_20ms + 525_seek_6ms` 串成一段 0.7 秒的「起轉 → 跨道 → 找道」讀取聲(`assets/sfx/disk-mame.ogg`),原始樣本與授權說明保留在 `assets/sfx/mame-floppy/`。
+
+**音源可切換**:F6 設定選單那列是「關 / MAME / Applefritter」循環,不是單純開關。設計上把音源做成字串(`off`/`mame`/`applefritter`),播放檔就是 `assets/sfx/disk-<音源>.ogg`——**要多一個音源,只要放對應的 ogg、把名字加進循環清單**,程式其他地方不動。這樣「用哪套錄音」變成玩家的選擇,而不是寫死。
 
 下載點:<https://github.com/mamedev/mame/tree/master/samples/floppy>(授權見該目錄 `LICENSE`)。
 

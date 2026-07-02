@@ -126,7 +126,12 @@ bool SaveGame::load(Player &player, const std::string &path) {
             Configuration::setSpawnPct(s.value("spawn_pct", Configuration::getSpawnPct()));
             Configuration::setFoodPct(s.value("food_pct", Configuration::getFoodPct()));
             Configuration::setChaseMonsters(s.value("chase_monsters", Configuration::getChaseMonsters()));
-            Configuration::setDiskSound(s.value("disk_sound", Configuration::getDiskSound()));
+            // disk_sound 相容:舊存檔可能是 bool(true→mame),新的是字串音源
+            if (s.contains("disk_sound")) {
+                auto &d = s["disk_sound"];
+                if (d.is_boolean()) Configuration::setDiskSound(d.get<bool>() ? "mame" : "off");
+                else if (d.is_string()) Configuration::setDiskSound(d.get<std::string>());
+            }
         }
     } catch (const std::exception &ex) {
         printf("[SaveGame] 存檔損毀,略過: %s (%s)\n", path.c_str(), ex.what());

@@ -9,5 +9,5 @@
   "tileset": "png",
   "tileset_png": "assets/tilesets/fmtowns.png",
   "chase_monsters": false,
-  "disk_sound": false
+  "disk_sound": "off"
 }

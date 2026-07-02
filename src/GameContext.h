@@ -37,10 +37,11 @@ public:
     bool isInCastle() { return _inCastle; }
 
 private:
-    // 場景切換 hook:開啟磁碟機音效時,每次進出場景播一次 Apple II 5.25" 讀取聲(issue #2)。
-    // 缺檔時 Audio::playSfx 靜默忽略,不影響遊戲。
+    // 場景切換 hook:選了磁碟機音源(≠off)時,每次進出場景播一次讀取聲(issue #2)。
+    // 播放檔依音源:disk-mame.ogg / disk-applefritter.ogg。缺檔時 playSfx 靜默忽略,不影響遊戲。
     void _onSceneChange() {
-        if (Configuration::getDiskSound()) Audio::playSfx("./assets/sfx/disk.ogg");
+        const string &m = Configuration::getDiskSound();
+        if (m != "off") Audio::playSfx("./assets/sfx/disk-" + m + ".ogg");
     }
 
     ScreenType _currentScreen = ScreenType::Overworld;
