@@ -23,7 +23,7 @@
   "ui.help.sys_head": "● 系統",
   "ui.help.f6": "設定:時間流速 / 生怪率 / 食物消耗 / 怪物追蹤 / 磁碟機音效",
   "ui.help.audio": "音樂開關 / 音效開關",
-  "ui.help.tileset": "循環切換畫面風格(7 平台)",
+  "ui.help.tileset": "循環切換畫面風格",
   "ui.help.save": "手動存檔",
   "ui.help.quit": "離開(自動存檔後退出)",
   "ui.help.esc": "取消 / 返回上一層",

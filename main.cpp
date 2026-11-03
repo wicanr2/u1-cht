@@ -129,7 +129,8 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
     SDL_Rect scrim = {0, 0, CANVAS_W, CANVAS_H};
     SDL_RenderFillRect(renderer, &scrim);
 
-    const int bw = 540, bh = 522;
+    // 畫布只有 CANVAS_W x CANVAS_H(640x400),19 列都要放得下,所以列高固定 19。
+    const int bw = 620, bh = 392, row = 19;
     SDL_Rect box = {(CANVAS_W - bw) / 2, (CANVAS_H - bh) / 2, bw, bh};
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
     SDL_RenderFillRect(renderer, &box);
@@ -142,27 +143,30 @@ static void drawHelpScreen(SDL_Renderer *renderer) {
         LTexture t; t.loadFromRenderedText(Fonts::cjkUi(), renderer, s, c);
         t.render(renderer, x, y);
     };
-    int lx = box.x + 30, kx = box.x + 50, tx = box.x + 200, y = box.y + 18;
-    line(I18n::t("ui.help.title"), box.x + (bw - 140) / 2, y, title); y += 38;
-    line(I18n::t("ui.help.move_head"), lx, y, head); y += 28;
-    line(I18n::t("ui.help.arrows"), kx, y, key); line(I18n::t("ui.help.arrows_desc"), tx, y, txt); y += 30;
-    line(I18n::t("ui.help.action_head"), lx, y, head); y += 28;
-    line("A", kx, y, key); line(I18n::t("ui.help.attack"), tx, y, txt); y += 26;
-    line("E", kx, y, key); line(I18n::t("ui.help.enter"), tx, y, txt); y += 26;
-    line("K", kx, y, key); line(I18n::t("ui.help.klimb"), tx, y, txt); y += 26;
-    line("B", kx, y, key); line(I18n::t("ui.help.buy"), tx, y, txt); y += 26;
-    line("T", kx, y, key); line(I18n::t("ui.help.talk"), tx, y, txt); y += 26;
-    line("C", kx, y, key); line(I18n::t("ui.help.cast"), tx, y, txt); y += 26;
-    line("Z", kx, y, key); line(I18n::t("ui.help.ztats"), tx, y, txt); y += 26;
-    line("L", kx, y, key); line(I18n::t("ui.help.launch"), tx, y, txt); y += 30;
-    line(I18n::t("ui.help.sys_head"), lx, y, head); y += 28;
-    line("F6", kx, y, key); line(I18n::t("ui.help.f6"), tx, y, txt); y += 24;
-    line("M  /  F9", kx, y, key); line(I18n::t("ui.help.audio"), tx, y, txt); y += 24;
-    line("PageDown", kx, y, key); line(I18n::t("ui.help.tileset"), tx, y, txt); y += 24;
-    line("F5", kx, y, key); line(I18n::t("ui.help.save"), tx, y, txt); y += 24;
-    line("F10 / Ctrl+Q", kx, y, key); line(I18n::t("ui.help.quit"), tx, y, txt); y += 24;
-    line("ESC", kx, y, key); line(I18n::t("ui.help.esc"), tx, y, txt); y += 30;
-    line(I18n::t("ui.help.dismiss"), box.x + (bw - 120) / 2, box.y + bh - 30, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
+    int lx = box.x + 14, kx = box.x + 30, tx = box.x + 150, y = box.y + 5;
+    auto entry = [&](const string &k, const string &desc) {
+        line(k, kx, y, key); line(desc, tx, y, txt); y += row;
+    };
+    line(I18n::t("ui.help.title"), box.x + (bw - 140) / 2, y, title); y += 22;
+    line(I18n::t("ui.help.move_head"), lx, y, head); y += row;
+    entry(I18n::t("ui.help.arrows"), I18n::t("ui.help.arrows_desc"));
+    line(I18n::t("ui.help.action_head"), lx, y, head); y += row;
+    entry("A", I18n::t("ui.help.attack"));
+    entry("E", I18n::t("ui.help.enter"));
+    entry("K", I18n::t("ui.help.klimb"));
+    entry("B", I18n::t("ui.help.buy"));
+    entry("T", I18n::t("ui.help.talk"));
+    entry("C", I18n::t("ui.help.cast"));
+    entry("Z", I18n::t("ui.help.ztats"));
+    entry("L", I18n::t("ui.help.launch"));
+    line(I18n::t("ui.help.sys_head"), lx, y, head); y += row;
+    entry("F6", I18n::t("ui.help.f6"));
+    entry("M  /  F9", I18n::t("ui.help.audio"));
+    entry("PageDown", I18n::t("ui.help.tileset"));
+    entry("F5", I18n::t("ui.help.save"));
+    entry("F10 / Ctrl+Q", I18n::t("ui.help.quit"));
+    entry("ESC", I18n::t("ui.help.esc"));
+    line(I18n::t("ui.help.dismiss"), box.x + (bw - 120) / 2, box.y + bh - 23, SDL_Color{0xA0, 0xA0, 0xA0, 0xFF});
 }
 
 // 商店:mode 1=類別選單、mode 2=品項清單(置中 modal)

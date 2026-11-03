@@ -87,3 +87,14 @@ macOS 在 `macos-latest`。
 ```bash
 git tag v1.0 && git push origin v1.0     # 觸發 release
 ```
+
+## 重建中文字型子集
+
+`assets/fonts/u1-cjk.ttf` 是 Noto Serif CJK TC 的子集。譯文用到新字時要重建，否則畫面會出現空白：
+
+```bash
+# ttc 內的順序是 JP、KR、SC、TC、HK，TC 是 --font-number=3
+pyftsubset NotoSerifCJK-Regular.ttc --font-number=3 \
+  --text-file=<譯文與原始碼用到的字> --layout-features='*' \
+  --output-file=assets/fonts/u1-cjk.ttf
+```
