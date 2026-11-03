@@ -84,7 +84,10 @@ MACOS="$APP/Contents/MacOS"
 mkdir -p "$MACOS" "$APP/Contents/Resources"
 cp "$WORK/cmake/u1_cht" "$MACOS/"
 cp -r assets resources "$MACOS/"
+rm -rf "$MACOS/assets/tilesets"   # 平台圖塊衍生自原版美術,公開包不隨附
 cp packaging/dist-config.json "$MACOS/config.json"
+cp LICENSE.open_ultima "$APP/Contents/Resources/LICENSE.txt"
+cp packaging/LICENSE-NotoSerifCJK.txt packaging/README-dist.txt "$APP/Contents/Resources/"
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

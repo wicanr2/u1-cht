@@ -2,7 +2,7 @@
 
 > Ultima I: The First Age of Darkness — 一切角色扮演遊戲的起點，現在能用母語走進索薩利亞。
 
-基於 [`matiaslaino/open_ultima`](https://github.com/matiaslaino/open_ultima)(C++17 / SDL2，MIT 授權)的開源重製，
+基於 [`matiaslaino/open_ultima`](https://github.com/matiaslaino/open_ultima)(C++17 / SDL2，GPL-3.0 授權)的開源重製，
 加上繁體中文化、Linux 移植、功能補完，以及一個別處沒有的彩蛋——**七種平台的原汁原味畫面，一鍵切換**。
 
 ![索薩利亞的清晨，繁體中文狀態列](docs/img/screen_iigs.png)
@@ -196,7 +196,7 @@ docker run --rm -v "$PWD":/work -w /work u1-cht bash tools/game_tester.sh
 
 **打包(Windows / macOS / Linux AppImage)**
 
-三平台打包腳本在 `packaging/`,CI 在 `.github/workflows/release.yml`(推 `v*` tag 自動發 Release)。
+三平台打包腳本在 `packaging/`,CI 在 `.github/workflows/release.yml`(推 `v*` tag 只產出 artifact,檢查後手動發布 Release)。
 完整建置・執行・測試・打包流程見 **[`docs/DEV-SETUP.md`](docs/DEV-SETUP.md)**。
 
 ---
@@ -230,5 +230,5 @@ docker run --rm -v "$PWD":/work -w /work u1-cht bash tools/game_tester.sh
 - **[`matiaslaino/open_ultima`](https://github.com/matiaslaino/open_ultima)**——本專案的開源引擎基礎。
 - 台灣 1990 年代《電腦玩家》《軟體世界》《PC Game》三大誌——那些手冊翻譯，是一代人的入門書。
 
-程式碼承上游 **MIT**(見 `LICENSE.open_ultima`)。原始遊戲資料與各平台美術、音樂為原權利人版權所有，
-本專案不隨附、不重新散布;素材包僅作引擎與資料分離的技術示範。
+程式碼承上游 **GPL-3.0**(見 `LICENSE.open_ultima`)。原始遊戲資料與各平台美術、音樂為原權利人版權所有。
+[Release](https://github.com/wicanr2/u1-cht/releases) 是精簡版:不含 `assets/tilesets/` 的平台圖塊,也不含原版資料與平台原版音樂,玩家要自備 GOG 版的 BIN 檔。

@@ -6,7 +6,7 @@
   "speed_pct": 100,
   "spawn_pct": 55,
   "food_pct": 100,
-  "tileset": "png",
+  "tileset": "ega",
   "tileset_png": "assets/tilesets/fmtowns.png",
   "chase_monsters": false,
   "disk_sound": "off"

@@ -43,7 +43,7 @@ if (base) { chdir(base); SDL_free(base); }
 
 - 版權原版 BGM 用 `.gitignore` 擋在版控外(`assets/music/*.ogg`,只留一首自製占位曲 `theme.ogg`)。
 - 原版 `*.BIN` 同樣不入庫,由玩家自備、或本機做「個人完整包」時才注入。
-- 交付因此分兩種:**公開版**只有程式碼;**個人完整包**是本機把版權資料注入後自留,不上網。
+- 交付因此分三種:**原始碼**公開在 GitHub;**精簡版 Release** 只含程式、字型與自製或可再散布的資產,不含平台圖塊;**個人完整包**是本機把版權資料注入後自留,不上網。
 
 ---
 
@@ -79,17 +79,14 @@ issue #2 要「場景切換播 Apple II 5.25" 磁碟機讀取聲」,素材來源
 
 ---
 
-## 五、發布邊界:GitHub 只公開程式碼
+## 五、發布邊界:Release 只放精簡版
 
-這個專案刻意**不在 GitHub 發布任何編譯好的執行檔**(連不含版權資料的精簡 zip 也不發),原因見第二節——編譯後的二進位捆綁了美術/字型/音樂等資產,授權比純程式碼複雜。界線劃在「原始碼公開、任何 build 產物都不對外」最乾淨。
+公開 Release 是精簡版。編譯後的包會帶美術、字型和音樂,授權比純程式碼複雜,所以發布前要逐項確認內容。
 
-落實在 CI(`.github/workflows/release.yml`):
-
-- 移除了自動建 GitHub Release 的步驟,`permissions: contents: read`。
-- 四平台建置產物只上傳到 **Actions artifact**(供維護者本機 `gh run download` 抓回,做個人完整包)。
-- 要標版本就打 `git tag`——GitHub 自動附的「Source code」是純原始碼壓縮檔,不含 build 產物,安全。
-
-> 玩家要成品:由維護者本機建置後私下提供,或玩家自行 clone 建置。不透過公開 Release 散布二進位。
+- 打包腳本移除 `assets/tilesets/`,預設畫面改成讀玩家自備 BIN 的 EGA。程式只切換實際存在的圖塊包,缺檔不會出錯。
+- 包內附 `LICENSE.txt`(GPL-3.0,繼承 open_ultima)、Noto 字型條款、MAME 音效出處與原始碼網址。
+- CI(`.github/workflows/release.yml`)維持 `permissions: contents: read`,四平台產物只上傳成 Actions artifact。維護者下載後確認沒有圖塊和原版資料,才手動 `gh release create`。
+- 含原版資料的個人完整包仍只留在本機。
 
 ---
 

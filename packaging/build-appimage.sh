@@ -19,7 +19,11 @@ cmake --build build-appimage/cmake -j"$(nproc)" >/dev/null
 echo "== 2) 組 AppDir(binary 與資產同層,配合 chdir(SDL_GetBasePath)) =="
 cp build-appimage/cmake/u1_cht "$APPDIR/usr/bin/"
 cp -r assets resources "$APPDIR/usr/bin/"
+rm -rf "$APPDIR/usr/bin/assets/tilesets"   # 平台圖塊衍生自原版美術,公開包不隨附
 cp packaging/dist-config.json "$APPDIR/usr/bin/config.json"
+mkdir -p "$APPDIR/usr/share/doc/u1-cht"
+cp LICENSE.open_ultima "$APPDIR/usr/share/doc/u1-cht/LICENSE.txt"
+cp packaging/LICENSE-NotoSerifCJK.txt packaging/README-dist.txt "$APPDIR/usr/share/doc/u1-cht/"
 # desktop + icon(AppImage 規格要求在 AppDir 根)
 cp packaging/u1_cht.desktop "$APPDIR/u1_cht.desktop"
 cp packaging/icon.png "$APPDIR/u1_cht.png"

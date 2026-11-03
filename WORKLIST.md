@@ -157,7 +157,7 @@ docker run --rm -v "$PWD":/work -w /work u1-msxrun bash -c '
 - [x] **`CommandDisplay` 全形寬度感知換行**:依顯示寬度斷行(全形 2 / 半形 1 單位,上限 52),只在 UTF-8 字元邊界切。取代原 byte 數換行(中文行被切太短)。
 - [x] **各版本音樂原生還原**(MSX/PC-98/FM Towns 三版,自寫合成器、零模擬器;見 `docs/music.md`)。
       Atari/DOS 原版無 BGM、IIgs 僅音效(已考證)。overworld 曲目已用音級比對確認(PC-98=song1)。
-- [ ] 打包(AppImage / Windows)— **使用者指示不急著打包**
+- [x] 打包(AppImage / Windows / macOS):Release 發布精簡版,不含平台圖塊與原版資料(2026-11-03)
 
 ## C2. 城鎮內容 + 戰鬥深度(規劃見 [`docs/plan-town-combat.md`](docs/plan-town-combat.md))🔜
 

@@ -1,9 +1,9 @@
 name: Build (artifacts only)
 
-# 推 v* tag 或手動觸發 → 四平台打包,artifact 上傳到 Actions(供本機 gh run download 做個人完整包)。
-# ⚠ [HARD] 刻意「不建 GitHub Release、不上傳任何二進位/完整包」到公開頁面。
-#   L.CY 指示:GitHub 只公開「程式碼」;編譯產物與含版權原版 gamedata 的完整包一律本機自留、不對外散布。
-#   要標版本用 git tag(GitHub 自動附的 Source code 是純原始碼 archive,不含 build 產物/gamedata)。
+# 推 v* tag 或手動觸發 → 四平台打包,artifact 上傳到 Actions。
+# [HARD] 這裡不自動建 GitHub Release。維護者下載 artifact、確認不含 assets/tilesets 與原版資料後,
+#   才手動 gh release create 發布精簡版(決定日 2026-11-03,取代先前「不發布二進位」的做法)。
+#   含原版 gamedata 的完整包一律本機自留、不對外散布。
 on:
   push:
     tags: ['v*']
@@ -73,5 +73,5 @@ jobs:
           name: Ultima1-CHT-macos-${{ matrix.arch }}
           path: dist/Ultima1-CHT-macos-${{ matrix.arch }}.zip
 
-  # (刻意移除 release job)不自動建 GitHub Release、不上傳二進位/完整包。理由見檔頭 [HARD]。
+  # (刻意移除 release job)不自動建 GitHub Release,由維護者檢查內容後手動發布。理由見檔頭 [HARD]。
   # 需要成品時:本機 `gh run download <run>` 抓 artifact,再 packaging/make_complete_backup.sh 注入 gamedata。

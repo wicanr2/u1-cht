@@ -51,8 +51,11 @@ echo "== 5) 組 zip(exe + DLL + 資產)=="
 PKG="$WORK/Ultima1-CHT-windows-x64"; rm -rf "$PKG"; mkdir -p "$PKG"
 cp "$WORK/cmake/u1_cht.exe" "$PKG/"
 cp -r assets resources "$PKG/"
+rm -rf "$PKG/assets/tilesets"   # 平台圖塊衍生自原版美術,公開包不隨附
 cp packaging/dist-config.json "$PKG/config.json"
 cp packaging/README-dist.txt "$PKG/README.txt"
+cp LICENSE.open_ultima "$PKG/LICENSE.txt"
+cp packaging/LICENSE-NotoSerifCJK.txt "$PKG/LICENSE-NotoSerifCJK.txt"
 # 收 SDL DLL(devel 包的 bin/ 已含 image/ttf/mixer 各自的相依 DLL)
 for t in SDL2 SDL2_image SDL2_ttf SDL2_mixer; do
     src=$(find "$WORK/x_$t" -maxdepth 2 -type d -name x86_64-w64-mingw32 | head -1)

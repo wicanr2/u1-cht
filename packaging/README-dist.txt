@@ -17,3 +17,15 @@
 macOS: ~/Library/Application Support/、Linux: ~/.local/share/）。
 
 【操作】遊戲內按 F1 看完整指令說明。
+
+【這個版本的內容】
+這是精簡版，不含各平台的美術圖塊，也不含平台原版音樂。
+遊戲內按 PageDown 可切換 EGA、CGA，兩者都讀取你自備的 BIN。
+FM Towns、MSX、PC-98、Apple IIgs、Atari 的畫面要從原始碼建置才有。
+
+【授權】
+程式碼採 GPL-3.0（繼承 open_ultima），條款見 LICENSE.txt。
+原始碼：https://github.com/wicanr2/u1-cht
+中文字型 u1-cjk.ttf 是 Noto Serif CJK 的子集，條款見 LICENSE-NotoSerifCJK.txt。
+磁碟機音效來自 MAME 專案，出處見 assets/sfx/mame-floppy/ATTRIBUTION.md。
+原版遊戲資料屬原權利人，不包含在內。

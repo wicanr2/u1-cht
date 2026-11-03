@@ -26,6 +26,8 @@
 #include "src/ItemCatalog.h"
 #include "src/CharCreation.h"
 #include <array>
+#include <algorithm>
+#include <fstream>
 #ifdef _WIN32
 #include <direct.h>
 #define chdir _chdir
@@ -571,7 +573,8 @@ int main(int argc, char *args[]) {
             auto egaTilesPath = Configuration::getEgaOverworldTilesFilePath();
             auto cgaTilesPath = Configuration::getCgaOverworldTilesFilePath();
 
-            // tileset 變體:0=EGA(BIN),1=CGA(BIN),2..=各跨平台 PNG 素材包(F1 逐一循環)。
+            // tileset 變體:0=EGA(BIN),1=CGA(BIN),2..=各跨平台 PNG 素材包(PageDown 逐一循環)。
+            // 公開 Release 不隨附 PNG 素材包,所以只保留實際存在的,切換時才不會讀到缺檔。
             // music = 該平台原版 BGM(版權,使用者自備於 assets/music/,缺檔則 fallback 占位曲)。
             struct Pack { std::string name, tiles, music; };
             const std::string kDefaultMusic = "./assets/music/theme.ogg";
@@ -583,13 +586,17 @@ int main(int argc, char *args[]) {
                 {"Atari", "assets/tilesets/atari.png", "./assets/music/atari.ogg"},
                 {"VGA", "assets/tilesets/vga.png", kDefaultMusic},  // VGA=DOS 重染,無獨立 BGM
             };
+            auto fileExists = [](const std::string &path) { return std::ifstream(path).good(); };
+            pngPacks.erase(std::remove_if(pngPacks.begin(), pngPacks.end(),
+                                          [&](const Pack &pack) { return !fileExists(pack.tiles); }),
+                           pngPacks.end());
             // config 指定的 tileset_png:在清單則用其 index;不在(自訂路徑)→ 附加成新 pack,
             // 避免靜默 fallback 到 pngPacks[0] 而載錯 tileset。
             auto pngPackPath = Configuration::getTilesetPng();
             int cfgPngIdx = -1;
             for (size_t i = 0; i < pngPacks.size(); ++i)
                 if (pngPacks[i].tiles == pngPackPath) { cfgPngIdx = (int)i; break; }
-            if (cfgPngIdx < 0) {
+            if (cfgPngIdx < 0 && fileExists(pngPackPath)) {
                 pngPacks.push_back({I18n::t("tileset.custom"), pngPackPath, kDefaultMusic});
                 cfgPngIdx = (int)pngPacks.size() - 1;
             }
@@ -598,7 +605,7 @@ int main(int argc, char *args[]) {
             int tilesetIdx = 0;
             {
                 auto ts = Configuration::getTileset();
-                if (ts == "cga") tilesetIdx = 1; else if (ts == "png") tilesetIdx = kBinModes + cfgPngIdx;
+                if (ts == "cga") tilesetIdx = 1; else if (ts == "png" && cfgPngIdx >= 0) tilesetIdx = kBinModes + cfgPngIdx;
             }
             int tilesetCount = kBinModes + (int)pngPacks.size();
             auto tilesetName = [&](int idx) {

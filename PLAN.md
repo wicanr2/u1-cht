@@ -2,7 +2,7 @@
 
 > 本檔由 `CLAUDE.md` 潤飾展開為可執行工程計畫。
 > 立案日:2026-06-26 ・ 維護:L.CY (anr2) + Claude
-> 基礎:`matiaslaino/open_ultima`(C++17 / SDL2,MIT)。背景與語彙見 `CONTEXT.md`。
+> 基礎:`matiaslaino/open_ultima`(C++17 / SDL2,GPL-3.0)。背景與語彙見 `CONTEXT.md`。
 
 ---
 
