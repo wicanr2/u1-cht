@@ -14,7 +14,7 @@
 - **內部畫布 320→640**(中文 16px 銳利)+ Noto Serif CJK 抗鋸齒 + **全形寬度感知換行**。
 
 **七平台美術(全自行逆向)**
-- EGA / CGA / **FM Towns / MSX / PC-98 / Apple IIgs / Atari 8-bit** + VGA(EGA 擴色)tileset,`F1`/`PageDown` 熱鍵循環。
+- EGA / CGA / **FM Towns / MSX / PC-98 / Apple IIgs / Atari 8-bit** + VGA(EGA 擴色)tileset,`PageDown` 熱鍵循環。
 - 各自破解原版圖格式(IIgs LZSS 反組譯 65816、Atari $6400 1bpp charset、PC-98 4-plane planar、MSX SCREEN7、FM Towns chunky),
   完整 RE 紀錄於 `docs/re/`(含截圖 oracle 結構比對等方法)。
 
@@ -46,7 +46,7 @@
 - [x] 拉高內部畫布 320→640(底圖 crisp,中文不糊)
 - [x] 宋體(Noto Serif CJK)抗鋸齒 + 1280×800 乾淨 2× 縮放
 - [x] F10/Ctrl+Q 離開確認對話框 + ESC 取消(離開鐵則)
-- [x] tileset 熱鍵 F1/PageDown(EGA/CGA)+ 螢幕中文提示
+- [x] tileset 熱鍵 PageDown(EGA/CGA)+ 螢幕中文提示
 - [x] 切 tileset NPC 消失/變色修法
 - [x] 音樂系統(SDL_mixer)+ M 鍵切換(占位音樂)
 - [x] 回合制生怪 + `spawn_pct`/`speed_pct`(config 可調,參考 u2-cht)

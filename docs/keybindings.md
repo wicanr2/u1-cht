@@ -45,5 +45,5 @@
 - [x] **關窗(SDL_QUIT)也走確認流程**,不直接離開。
 - [x] **ESC = 取消**(關閉對話框/回上層),永不直接離開。
 - [x] **存檔系統 + 自動存檔 hook**:`SaveGame`(save.json)序列化玩家+設定;F10「Y 離開」autosave、F5 手動存檔、啟動載入。已截圖驗證。
-- [x] **tileset 熱鍵(F1 / PageDown)循環 EGA/CGA + 螢幕中文提示**(「圖形模式:EGA/CGA」)。驗證 `t07`。Tandy/其他平台美術屬 AssetPack(ADR 0001)後續。
+- [x] **tileset 熱鍵(PageDown)循環 EGA/CGA + 螢幕中文提示**(「圖形模式:EGA/CGA」)。驗證 `t07`。Tandy/其他平台美術屬 AssetPack(ADR 0001)後續。
 - [x] **音樂系統(SDL_mixer)+ M 鍵切換**(「音樂:開/關」提示)。占位音樂 `assets/music/theme.ogg`(程序生成,無版權);FM Towns 真音樂後續替換。驗證 `t09/t10`。

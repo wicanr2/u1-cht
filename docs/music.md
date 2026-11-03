@@ -3,7 +3,7 @@
 本檔記錄《Ultima I》各平台版本背景音樂(BGM)的**格式逆向查證**與**原生還原步驟**,作為歷史保存紀錄。
 方法依 L.CY 指示:**不錄模擬器**,而是「找到音樂資料檔 → 確認格式 → 理解發聲機制 → 自寫合成器原生 render 回 ogg」。
 
-> 設計:遊戲內切 tileset(`F1` / `PageDown`)時,背景音樂**一併換成該平台原版 BGM**(看哪版畫面、聽哪版音樂)。
+> 設計:遊戲內切 tileset(`PageDown`)時,背景音樂**一併換成該平台原版 BGM**(看哪版畫面、聽哪版音樂)。
 > 實作見 `main.cpp`(`pngPacks[].music` + `applyMusic()`)、`src/common/Audio.cpp`;缺檔自動退回占位曲 `theme.ogg`。
 
 ## 總表

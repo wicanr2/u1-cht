@@ -107,7 +107,7 @@
 最後再用實機截圖當對照、反推出整套地形與人物 tile 的確切位置,把全 52 格原汁原味的 IIgs 像素一格不差地取出來。
 全程紀錄成一個獨立章節:**[📖 Apple IIgs 逆向工程全紀錄](docs/re/apple-iigs-reverse-engineering.md)**。
 
-> 切換方式:`F1` / `PageDown` 循環 EGA → CGA → 各平台素材包(FM Towns → MSX → Apple IIgs → PC-98 → Atari → VGA),畫面即時換臉、不需重開。
+> 切換方式:`PageDown` 循環 EGA → CGA → 各平台素材包(FM Towns → MSX → Apple IIgs → PC-98 → Atari → VGA),畫面即時換臉、不需重開。
 
 ---
 
@@ -118,8 +118,8 @@
 - **內部畫布拉到 640**:底圖用 nearest 整數放大保持銳利，中文用 16px 不糊成一團。
 - **宋體抗鋸齒**:Noto Serif CJK，1280×800 乾淨 2× 縮放。
 - **離開鐵則**:`F10` / `Ctrl+Q` 跳置中中文確認框，`ESC` 永遠是取消——不會手滑噴掉進度。
-- **多版素材包熱鍵切換**:見上一章;`F1` 逐一循環全部平台包,切換不再讓 NPC 消失(這個雷 u4-cht 踩過)。
-- **音樂跟隨平台**:`F1` 切到哪一版畫面，背景音樂就換成那一版的原版 BGM。**MSX / PC-98 / FM Towns 三版已原生還原**——逆向各自的音樂序列格式(MCP / SCORE / EUPHONY，同一作曲團隊)，用自寫 2-op FM 合成器轉回 ogg，**完全不跑模擬器**。Atari/DOS 原版無地圖 BGM、IIgs 僅音效(考證見下)。缺檔自動退回占位曲，`M` 鍵開關。完整逆向與還原步驟見 [`docs/music.md`](docs/music.md)。
+- **多版素材包熱鍵切換**:見上一章;`PageDown` 逐一循環全部平台包,切換不再讓 NPC 消失(這個雷 u4-cht 踩過)。
+- **音樂跟隨平台**:`PageDown` 切到哪一版畫面，背景音樂就換成那一版的原版 BGM。**MSX / PC-98 / FM Towns 三版已原生還原**——逆向各自的音樂序列格式(MCP / SCORE / EUPHONY，同一作曲團隊)，用自寫 2-op FM 合成器轉回 ogg，**完全不跑模擬器**。Atari/DOS 原版無地圖 BGM、IIgs 僅音效(考證見下)。缺檔自動退回占位曲，`M` 鍵開關。完整逆向與還原步驟見 [`docs/music.md`](docs/music.md)。
 - **完整 RPG 迴路(上游沒有的補完)**:從「城鎮空殼 + 固定傷害」做到可通關的遊戲——
   - **建角開場**:U1 招牌的開場——選性別/種族/職業,再把 30 點分配到六屬性。種族給屬性修正(矮人力壯、精靈智高…),職業給起始裝備與法術(戰士配劍鎖甲、巫師配匕首飛彈…)。
   - **商店(店員定位)**:站到城鎮櫃檯招牌前 `B` 直接開該店(ARMOUR→防具、ARMS→武器、MAGIC→魔法、GROCERY→食物、INN→酒館);買武器/防具/食物/法術/載具,酒館聽線索。
@@ -145,13 +145,14 @@
 | 鍵 | 作用 |
 |---|---|
 | 方向鍵 | 在世界地圖移動(指令列顯示「東／南／西／北」) |
-| `F1` / `PageDown` | 循環切換 tileset(EGA / CGA / FM Towns / MSX / Apple IIgs / PC-98 / Atari / VGA) |
+| `F1` | 說明畫面(列出全部指令) |
+| `PageDown` | 循環切換 tileset(EGA / CGA / FM Towns / MSX / Apple IIgs / PC-98 / Atari / VGA) |
 | `B` / `T` | 城鎮商店買賣(站招牌前自動判店家) / 城堡晉見不列顛王(任務) |
 | `C` / `Z` | 地牢施放法術 / 角色屬性表 |
 | `E` / `L` | 進入地點・救公主(城堡牢房) / 太空梭升空(星海試煉) |
 | `F5` / `F9` | 手動存檔 / 音效開關 |
 | `F6` | 設定選單:時間流速 / 生怪率 / 食物消耗 / 野外怪物追蹤 / 磁碟機音效(關·MAME·Applefritter) |
-| `M` | 音樂開／關(背景音樂隨 `F1` 平台切換) |
+| `M` | 音樂開／關(背景音樂隨 `PageDown` 平台切換) |
 | `F10` / `Ctrl+Q` | 離開(跳確認框,`Y`/`Enter` 確定,`N`/`ESC` 取消) |
 
 完整對照與實作進度見 [`docs/keybindings.md`](docs/keybindings.md)。
